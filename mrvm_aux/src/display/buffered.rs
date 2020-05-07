@@ -70,14 +70,7 @@ impl Bus for BufferedDisplay {
         else if addr == self.words {
             match word {
                 0xAA => {
-                    // NOTE: `self.buffer.iter().flat_map(|word| word.to_be_bytes().iter())` results in a borrowing error
-                    //        so below is the most simple algorithm I came up with.
-
-                    let mut bytes = vec![];
-                    for word in &self.buffer {
-                        bytes.extend_from_slice(&word.to_be_bytes());
-                    }
-
+                    let bytes = self.buffer.iter().map(|word| word.to_be_bytes().to_vec()).flatten().collect::<Vec<_>>();
                     (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.clone())))
                 },
 
