@@ -8,8 +8,8 @@ use mrvm::board::Bus;
 /// The buffered display works with a buffer and a handler. When it receives a write request, it writes it into the buffer unless the
 /// write address is on its last word ; in this case, in interprets the word as:
 ///
-/// * `0xAAAAAAAA`: display the buffer's content and clear it afterwards
-/// * `0xFFFFFFFF`: clear the buffer's content
+/// * `0xAA`: display the buffer's content and clear it afterwards
+/// * `0xFF`: clear the buffer's content
 ///
 /// The buffer may contain invalid UTF-8 data. When a display request is received, the handler is called with the decoded UTF-8 string,
 /// which is a result object handling either the valid UTF-8 string or a decoding error object with the faulty raw buffer's content.
@@ -69,7 +69,7 @@ impl Bus for BufferedDisplay {
 
         else if addr == self.words {
             match word {
-                0xAAAAAAAA => {
+                0xAA => {
                     // NOTE: `self.buffer.iter().flat_map(|word| word.to_be_bytes().iter())` results in a borrowing error
                     //        so below is the most simple algorithm I came up with.
 
@@ -81,7 +81,7 @@ impl Bus for BufferedDisplay {
                     (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.clone())))
                 },
 
-                0xFFFFFFFF => self.reset(),
+                0xFF => self.reset(),
 
                 code => eprintln!("Warning: unknown action code {:#010X} received by buffered display", code)
             }

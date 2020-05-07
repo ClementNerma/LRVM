@@ -7,8 +7,8 @@ use mrvm::board::Bus;
 /// The keyboard works with a buffer and a handler. When it receives a read request, the data is read from the buffer.
 /// Writing into the buffer is forbidden but writing to the last word of the component results in it interpreting the provided action code:
 ///
-/// * `0xAAAAAAAA`: trigger a synchronous input and put the result in the buffer
-/// * `0xFFFFFFFF`: clear the buffer's content
+/// * `0xAA`: trigger a synchronous input and put the result in the buffer
+/// * `0xFF`: clear the buffer's content
 ///
 /// The buffer is guaranteed to contain valid UTF-8 data.
 pub struct SyncKeyboard {
@@ -69,7 +69,7 @@ impl Bus for SyncKeyboard {
             eprintln!("Warning: tried to write to synchronous keyboard");
         } else {
             match word {
-                0xAAAAAAAA => {
+                0xAA => {
                     let mut word = 0;
                     let mut byte_index = 0;
                     let mut pos = 0;
@@ -102,7 +102,7 @@ impl Bus for SyncKeyboard {
                     }
                 },
 
-                0xFFFFFFFF => self.reset(),
+                0xFF => self.reset(),
 
                 code => eprintln!("Warning: unknown action code {:#010X} received by buffered display", code)
             }

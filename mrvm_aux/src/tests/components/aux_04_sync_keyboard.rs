@@ -8,7 +8,7 @@ static PLACEHOLDER_KEYB_INPUT: &'static str = "Placeholder keyboard input";
 
 fn keyb_prog(input_end_addr: u32) -> Program {
     let mut prog = Program::from(ExtInstr::SetReg(Reg::ac0, input_end_addr).to_instr());
-    prog.append_all(ExtInstr::SetReg(Reg::avr, 0xAAAAAAAA).to_instr());
+    prog.append_all(ExtInstr::SetReg(Reg::avr, 0xAA).to_instr());
     prog.append(Instr::WEA(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
     
     prog

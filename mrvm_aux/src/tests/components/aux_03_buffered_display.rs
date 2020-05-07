@@ -34,7 +34,7 @@ fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Resul
         instr.push(Instr::WEA(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
     }
 
-    instr.extend_from_slice(&ExtInstr::WriteAddrLit(display_final_addr, 0xAAAAAAAA).to_instr());
+    instr.extend_from_slice(&ExtInstr::WriteAddrLit(display_final_addr, 0xAA).to_instr());
 
     Ok(Program::from(instr))
 }
