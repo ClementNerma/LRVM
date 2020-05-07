@@ -52,18 +52,18 @@
 
     #tokendef div_mode
     {
-        DIV_USG     = 0b00000000
-        DIV_SIG     = 0b00010000
+        DIV_USG     = 0b00000
+        DIV_SIG     = 0b10000
 
-        DIV_ZRO_FRB = 0b00000000
-        DIV_ZRO_MIN = 0b00000100
-        DIV_ZRO_ZRO = 0b00001000
-        DIV_ZRO_MAX = 0b00001100
+        DIV_ZRO_FRB = 0b0000
+        DIV_ZRO_MIN = 0b0100
+        DIV_ZRO_ZRO = 0b1000
+        DIV_ZRO_MAX = 0b1100
 
-        DIV_MBO_FRB = 0b00000000
-        DIV_MBO_MIN = 0b00000001
-        DIV_MBO_ZRO = 0b00000010
-        DIV_MBO_MAX = 0b00000011
+        DIV_MBO_FRB = 0b00
+        DIV_MBO_MIN = 0b01
+        DIV_MBO_ZRO = 0b10
+        DIV_MBO_MAX = 0b11
     }
 
     cpy  {reg_dest: reg}, {reg_val: reg} -> ((0x01 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_val[7:0] @ 0x00
@@ -177,4 +177,15 @@
     halt  -> ((0x1E << 3) + 0b000)[7:0] @ 0x00 @ 0x00 @ 0x00
 
     reset -> ((0x1F << 3) + 0b000)[7:0] @ 0x00 @ 0x00 @ 0x00
+
+    ; # Aliases
+    zro  {reg: reg} -> ((0x0A << 3) + 0b110)[7:0] @ reg[7:0] @ reg[7:0] @ 0x00
+    not  {reg: reg} -> ((0x0A << 3) + 0b110)[7:0] @ reg[7:0] @ reg[7:0] @ 0x00
+    inc  {reg: reg} -> ((0x03 << 3) + 0b100)[7:0] @ reg[7:0] @ 0x00 @ 0x01
+    sub  {reg: reg} -> ((0x04 << 3) + 0b100)[7:0] @ reg[7:0] @ 0x00 @ 0x01
+    
+    ajmp {reg_addr: reg} -> ((0x01 << 3) + 0b110)[7:0] @ 0x16 @ reg_addr[7:0] @ 0x00
+    ajmp {lit_addr: u16} -> ((0x01 << 3) + 0b100)[7:0] @ 0x16 @ lit_addr[15:8] @ lit_addr[7:0]
+    
+    ret -> ((0x1B << 3) + 0b100)[7:0] @ 0x16 @ 0x00 @ 0x00
 }
