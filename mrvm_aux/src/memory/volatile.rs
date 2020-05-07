@@ -13,34 +13,47 @@ pub struct VolatileMem {
 
 impl VolatileMem {
     /// Create a new volatile memory component
-    pub fn new(size: u32) -> Result<Self, ()> {
-        if size == 0 || size % 4 != 0 {
-            Err(())
+    /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
+    pub fn new(size: u32) -> Result<Self, &'static str> {
+        if size == 0 {
+            Err("Volatile memory's size cannot be 0")
+        } else if size % 4 != 0 {
+            Err("Volatile memory's size must be a multiple of 4 bytes")
         } else {
             Ok(Self {
-                storage: vec![0; size.try_into().expect("Volatile memory size cannot exceed your CPU architecture's supported size")],
+                storage: vec![0; size.try_into().map_err(|_| "Volatile memory size cannot exceed your CPU architecture's supported size")?],
                 size
             })
         }
     }
 
     /// Create a new volatile memory component from the provided storage
-    pub fn from(storage: Vec<u32>) -> Self {
-        let size: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
+    /// Returns an error message if the capacity is too large for the running CPU architecture.
+    pub fn from(storage: Vec<u32>) -> Result<Self, &'static str> {
+        let size: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
 
-        Self {
+        Ok(Self {
             storage,
             size
-        }
+        })
     }
 
     /// Create a new volatile memory component from the provided storage and with a larger size than its storage
-    pub fn from_with_size(mut storage: Vec<u32>, size: u32) -> Result<Self, ()> {
-        let _: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
-        let _: usize = size.try_into().expect("Volatile memory size cannot exceed your CPU architecture's supported size");
+    /// Returns an error message in case of fail
+    pub fn from_with_size(mut storage: Vec<u32>, size: u32) -> Result<Self, &'static str> {
+        let _: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
+        let _: usize = size.try_into().map_err(|_| "Volatile memory size cannot exceed your CPU architecture's supported size")?;
 
-        if storage.len() > size as usize || size == 0 {
-            return Err(())
+        if storage.len() > size as usize {
+            return Err("Volatile memory's size cannot be lower than its initial storage's size");
+        }
+
+        if size == 0 {
+            return Err("Volatile memory's size cannot be 0");
+        }
+
+        if size % 4 != 0 {
+            return Err("Volatile memory's size must be a multiple of 4 bytes");
         }
 
         let size = size / 4;

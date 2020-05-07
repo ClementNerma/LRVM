@@ -23,14 +23,14 @@ fn sync_keyboard() {
     let received_req_closure = Arc::clone(&received_req);
     
     let mut vm = prepare_vm(vec![
-        Box::new(BootROM::with_size(prog.encode_words(), 0x1000)),
+        Box::new(BootROM::with_size(prog.encode_words(), 0x1000).unwrap()),
         Box::new(SyncKeyboard::new(0x100, Box::new(move || {
             let mut received_req = received_req_closure.lock().unwrap();
             assert!(!*received_req, "Received a keyboard request twice");
             *received_req = true;
 
             Ok(String::from(PLACEHOLDER_KEYB_INPUT))
-        })))
+        })).unwrap())
     ]);
 
     run_until_halt(vm.cpu(), None);

@@ -10,7 +10,7 @@ fn bootrom() {
     ]);
 
     let mut vm = prepare_vm(vec![
-        Box::new(BootROM::with_size(prog.encode_words(), 0x1000))
+        Box::new(BootROM::with_size(prog.encode_words(), 0x1000).unwrap())
     ]);
 
     let cpu = &mut vm.cpu();

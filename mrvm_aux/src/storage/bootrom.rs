@@ -16,33 +16,41 @@ pub struct BootROM {
 
 impl BootROM {
     /// Create a new BootROM component
-    pub fn new(storage: Vec<u32>) -> Self {
-        let len: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
+    /// Returns an error message if the capacity is too large for the running CPU architecture.
+    pub fn new(storage: Vec<u32>) -> Result<Self, &'static str> {
+        let len: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
 
-        Self {
+        Ok(Self {
             storage,
             len,
             size: len,
             panic_on_invalid: false
-        }
+        })
     }
 
     /// Create a new BootROM component larger than its storage
-    pub fn with_size(storage: Vec<u32>, size: u32) -> Self {
-        let len: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
+    /// Returns an error message in case of fail
+    pub fn with_size(storage: Vec<u32>, size: u32) -> Result<Self, &'static str> {
+        let len: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
 
-        assert!(size % 4 == 0, "BootROM's size cannot be unaligned");
+        if storage.len() > size as usize {
+            return Err("Flash memory's size cannot be lower than its initial storage's size");
+        }
 
-        let size = size / 4;
+        if size == 0 {
+            return Err("Flash memory's size cannot be 0");
+        }
 
-        assert!(size >= len, "BootROM's size cannot be smaller than the storage's actual size");
+        if size % 4 != 0 {
+            return Err("Flash memory's size must be a multiple of 4 bytes");
+        }
 
-        Self {
+        Ok(Self {
             storage,
             len,
-            size,
+            size: size / 4,
             panic_on_invalid: false
-        }
+        })
     }
 
     /// Get the BootROM's real storage's length

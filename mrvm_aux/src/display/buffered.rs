@@ -23,19 +23,26 @@ impl BufferedDisplay {
     /// Create a buffered display component.
     /// The provided capacity must be a multiple of 4, and 4 bytes will be substracted for handling the action code.
     /// This means a capacity of 64 bytes will allow 60 bytes of data or 15 words.
-    pub fn new(capacity: u32, handler: Box<dyn FnMut(Result<&str, (Utf8Error, Vec<u8>)>)>) -> Self {
-        let _: usize = capacity.try_into().expect("Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)");
+    /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
+    pub fn new(capacity: u32, handler: Box<dyn FnMut(Result<&str, (Utf8Error, Vec<u8>)>)>) -> Result<Self, &'static str> {
+        let _: usize = capacity.try_into()
+            .map_err(|_| "Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)")?;
 
-        assert!(capacity % 4 == 0, "Buffered display's capacity must be aligned");
-        assert!(capacity != 0, "Buffered display's capacity cannot be 0");
+        if capacity == 0 {
+            return Err("Buffered display's capacity cannot be 0");
+        }
+
+        if capacity % 4 != 0 {
+            return Err("Buffered display's capacity must be aligned");
+        }
 
         let capacity = capacity / 4;
 
-        Self {
+        Ok(Self {
             buffer: vec![0; (capacity - 1) as usize],
             words: capacity - 1,
             handler
-        }
+        })
     }
 }
 

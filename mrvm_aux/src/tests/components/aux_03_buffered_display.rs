@@ -48,7 +48,7 @@ fn buffered_display() {
     let received_msg_closure = Arc::clone(&received_msg);
 
     let mut vm = prepare_vm(vec![
-        Box::new(BootROM::with_size(prog.encode_words(), 0x1000)),
+        Box::new(BootROM::with_size(prog.encode_words(), 0x1000).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(move |msg| {
             let mut received_msg = received_msg_closure.lock().unwrap();
 
@@ -58,7 +58,7 @@ fn buffered_display() {
             assert_eq!(msg, "Hello world!", "Invalid message received: {}", msg);
 
             *received_msg = true;
-        })))
+        })).unwrap())
     ]);
 
     run_until_halt(vm.cpu(), None);
