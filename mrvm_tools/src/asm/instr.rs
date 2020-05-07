@@ -1,5 +1,6 @@
 use super::{Reg, RegOrLit1, RegOrLit2};
 
+/// Native assembly instruction
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Instr {
     CPY(Reg, RegOrLit2),
@@ -36,7 +37,8 @@ pub enum Instr {
 }
 
 impl Instr {
-    pub fn decode(bytes: [u8; 4]) -> Result<Instr, InstrDecodingError /*TODO*/> {
+    /// Try to decode an assembly instruction
+    pub fn decode(bytes: [u8; 4]) -> Result<Instr, InstrDecodingError> {
         let opcode = bytes[0] >> 3;
 
         let (arg_reg, arg_reg_or_lit_1, arg_reg_or_lit_2) = {
@@ -69,6 +71,7 @@ impl Instr {
             )
         };
 
+        // Decode the instruction based on its opcode
         match opcode {
             0x01 => Ok(Self::CPY(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
             0x02 => Ok(Self::EX(arg_reg(1)?, arg_reg(2)?)),
@@ -105,6 +108,7 @@ impl Instr {
         }
     }
 
+    /// Encode the instruction as a set of 4 bytes
     pub fn encode(&self) -> [u8; 4] {
         let mut r: Vec<bool> = vec![];
         let mut p: Vec<u8> = vec![];
@@ -333,14 +337,19 @@ impl Instr {
         ]
     }
 
+    /// Encode the instruction as a single word
     pub fn encode_word(&self) -> u32 {
         u32::from_be_bytes(self.encode())
     }
 }
 
+/// Instruction decoding error
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum InstrDecodingError {
+    /// The source's length is not a multiple of 4 bytes
     SourceNotMultipleOf4Bytes,
+    /// An unknown opcode was found
     UnknownOpCode { opcode: u8 },
+    /// An unknown register code was used in a parameter
     UnknownRegister { param: usize, code: u8 },
 }

@@ -1,6 +1,7 @@
 use std::convert::TryFrom;
 use super::{RegOrLit1, RegOrLit2};
 
+/// CPU register
 #[allow(non_camel_case_types)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[repr(u8)]
@@ -40,6 +41,7 @@ pub enum Reg {
 }
 
 impl Reg {
+    /// Decode a register code
     pub fn from_code(code: u8) -> Result<Self, ()> {
         match code {
             0x00 => Ok(Self::a0),
@@ -78,6 +80,7 @@ impl Reg {
         }
     }
 
+    /// Decode a register from its name
     pub fn from_name(name: &str) -> Result<Self, ()> {
         match name {
             "a0"  => Ok(Self::a0),
@@ -102,8 +105,8 @@ impl Reg {
             "rr6" => Ok(Self::rr6),
             "rr7" => Ok(Self::rr7),
             "avr" => Ok(Self::avr),
-            "pc"  => Ok(Self::pc),
             "af"  => Ok(Self::af),
+            "pc"  => Ok(Self::pc),
             "ssp" => Ok(Self::ssp),
             "usp" => Ok(Self::usp),
             "et"  => Ok(Self::et),
@@ -116,6 +119,7 @@ impl Reg {
         }
     }
 
+    /// Get the register's code
     pub fn code(&self) -> u8 {
         match self {
             Self::a0  => 0x00,
@@ -152,7 +156,8 @@ impl Reg {
             Self::smt => 0x1F
         }
     }
-
+    
+    /// Get the register's name
     pub fn name(&self) -> &'static str {
         match self {
             Self::a0  => "a0",
@@ -177,8 +182,8 @@ impl Reg {
             Self::rr6 => "rr6",
             Self::rr7 => "rr7",
             Self::avr => "avr",
-            Self::af  => "af",
             Self::pc  => "pc",
+            Self::af  => "af",
             Self::ssp => "ssp",
             Self::usp => "usp",
             Self::et  => "et",
@@ -190,10 +195,12 @@ impl Reg {
         }
     }
 
+    /// Convert the register to a register-or-1-byte-literal parameter
     pub fn to_roc_1(&self) -> RegOrLit1 {
         RegOrLit1::reg(*self)
     }
 
+    /// Convert the register to a register-or-2-bytes-literal parameter
     pub fn to_roc_2(&self) -> RegOrLit2 {
         RegOrLit2::reg(*self)
     }

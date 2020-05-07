@@ -2,6 +2,7 @@ use super::Reg;
 
 macro_rules! declare_val {
     ($typename: ident, $num: ident, $inum: ident) => {
+        /// Strongly-typed assembly value
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
         pub enum $typename {
             Reg(Reg),
@@ -9,18 +10,22 @@ macro_rules! declare_val {
         }
 
         impl $typename {
+            /// Create a register value
             pub fn reg(reg: Reg) -> Self {
                 Self::Reg(reg)
             }
 
+            /// Create an (unsigned) literal value
             pub fn cst(cst: $num) -> Self {
                 Self::Lit(cst)
             }
 
+            /// Create a signed literal value
             pub fn signed_cst(cst: $inum) -> Self {
                 Self::Lit(cst as $num)
             }
 
+            /// Check if the value is a register
             pub fn is_reg(&self) -> bool {
                 match self {
                     Self::Reg(_) => true,
@@ -28,6 +33,7 @@ macro_rules! declare_val {
                 }
             }
 
+            // Check if the value is a literal
             pub fn is_cst(&self) -> bool {
                 match self {
                     Self::Reg(_) => false,
@@ -35,6 +41,7 @@ macro_rules! declare_val {
                 }
             }
 
+            // Get the value as a register code or as a literal (depending on its type)
             pub fn value(&self) -> $num {
                 match self {
                     Self::Reg(reg) => reg.code().into(),

@@ -1,9 +1,14 @@
+//! The persistent memory component offers a simple non-volatile storage that persists on the disk.
+//! See [`PersistentMem`] for more details.
+
 use std::fs::{File, OpenOptions};
 use std::path::Path;
 use std::io::{Result as IOResult, Read, Write, Seek, SeekFrom};
 use std::convert::TryInto;
 use mrvm::board::Bus;
 
+/// The persistent memory component contains a read-only or writable, persistent storage that does not reset with the motherboard.
+/// It uses a real file to store its data and is perfect for storing data that persists after the VM is destroyed.
 pub struct PersistentMem {
     handler: File,
     size: u32,
@@ -13,6 +18,7 @@ pub struct PersistentMem {
 }
 
 impl PersistentMem {
+    /// (Internal) open the provided path file in read-only or writable mode
     fn open(path: impl AsRef<Path>, writable: bool) -> IOResult<Self> {
         let handler = OpenOptions::new().read(true).write(writable).open(path)?;
 
@@ -36,10 +42,12 @@ impl PersistentMem {
         })
     }
 
+    /// Create a new writable persistent memory component
     pub fn writable(path: impl AsRef<Path>) -> IOResult<Self> {
         Self::open(path, true)
     }
 
+    /// Create a new writable persistent memory component with a custom size
     pub fn writable_with_size(path: impl AsRef<Path>, size: u32) -> IOResult<Self> {
         let mut mem = Self::writable(path)?;
 
@@ -52,16 +60,19 @@ impl PersistentMem {
         Ok(mem)
     }
 
+    /// Create a new read-only persistent memory component
     pub fn readonly(path: impl AsRef<Path>) -> IOResult<Self> {
         Self::open(path, false)
     }
 
+    /// Create a new writable persistent memory component with a custom size
     pub fn readonly_with_size(path: impl AsRef<Path>, size: u32) -> IOResult<Self> {
         let mut mem = Self::readonly(path)?;
         mem.size = size;
         Ok(mem)
     }
 
+    /// Set if the component must make the program panic on invalid access (writing attemps on read-only storage)
     pub fn set_panic_on_invalid(mut self, value: bool) -> Self {
         self.panic_on_invalid = value;
         self

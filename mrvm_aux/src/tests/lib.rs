@@ -1,4 +1,4 @@
-use mrvm::board::{MotherBoard, Bus, MappingStatus, ContiguousMappingStatus};
+use mrvm::board::{MotherBoard, Bus, MappingRange, ContiguousMappingStatus};
 use mrvm::cpu::CPU;
 
 pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
@@ -19,7 +19,7 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
                 result.aux_name,
                 if result.aux_mapping.is_ok() { "✓" } else { "✗" },
                 match result.aux_mapping {
-                    Ok(MappingStatus { start_addr, end_addr }) =>
+                    Ok(MappingRange { start_addr, end_addr }) =>
                         format!("{:#010X} -> {:#010X}", start_addr, end_addr),
                     Err(err) => format!("{:?}", err),
                 }
@@ -43,8 +43,8 @@ pub fn run_until_halt(cpu: &mut CPU, cycles_limit: Option<u32>) -> u32 {
             Err(ex) => println!(
                 "At address {:#010X} - Exception occurred: {:#04X} (data = {:#04X})",
                 was_at,
-                ex.0,
-                ex.1.unwrap_or(0)
+                ex.code,
+                ex.associated.unwrap_or(0)
             ),
         };
     }

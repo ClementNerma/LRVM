@@ -1,6 +1,12 @@
+//! The BootROM component offers a simple read-only storage.
+//! See [`BootROM`] for more details.
+
 use std::convert::TryInto;
 use mrvm::board::Bus;
 
+/// The BootROM component contains a read-only storage that is initialized during its creation.
+/// All write requests are invalid but read requests are invalid.
+/// The BootROM's size may be larger than its initialization storage. In such case, reading from the unitialized part will return `0x0000000`.
 pub struct BootROM {
     storage: Vec<u32>,
     len: u32,
@@ -9,6 +15,7 @@ pub struct BootROM {
 }
 
 impl BootROM {
+    /// Create a new BootROM component
     pub fn new(storage: Vec<u32>) -> Self {
         let len: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
 
@@ -20,6 +27,7 @@ impl BootROM {
         }
     }
 
+    /// Create a new BootROM component larger than its storage
     pub fn with_size(storage: Vec<u32>, size: u32) -> Self {
         let len: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
 
@@ -37,14 +45,17 @@ impl BootROM {
         }
     }
 
+    /// Get the BootROM's real storage's length
     pub fn len(&self) -> u32 {
         self.len
     }
 
+    /// Get the BootROM's size
     pub fn size(&self) -> u32 {
         self.size
     }
 
+    /// Set if the component must make the program panic on invalid access (writing attempts)
     pub fn set_panic_on_invalid(mut self, value: bool) -> Self {
         self.panic_on_invalid = value;
         self

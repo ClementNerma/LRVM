@@ -1,5 +1,8 @@
+//! Extended instructions (ExtInstr) are a set of powerful instructions that compile into several sub-instructions.
+
 use super::{Instr, Reg};
 
+/// Extended instruction
 pub enum ExtInstr {
     SetReg(Reg, u32),
     ReadAddr(u32),
@@ -9,6 +12,7 @@ pub enum ExtInstr {
 }
 
 impl ExtInstr {
+    /// Convert the extended instruction into a set of native instructions
     pub fn to_instr(&self) -> Vec<Instr> {
         match self {
             ExtInstr::SetReg(reg, value) => vec![
@@ -55,10 +59,12 @@ impl ExtInstr {
         }
     }
 
+    /// Convert the extended instruction into machine code (split in words)
     pub fn encode_words(&self) -> Vec<u32> {
         self.to_instr().into_iter().map(|instr| instr.encode_word()).collect()
     }
 
+    /// Convert the extended instruction into machine code
     pub fn encode(&self) -> Vec<u8> {
         self.to_instr().into_iter().map(|instr| instr.encode().to_vec()).flatten().collect()
     }

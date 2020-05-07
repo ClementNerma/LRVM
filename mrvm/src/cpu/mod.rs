@@ -1,3 +1,5 @@
+/// Virtual CPU-related structures.
+
 mod cpu;
 mod regs;
 

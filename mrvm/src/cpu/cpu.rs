@@ -3,15 +3,22 @@ use crate::board::MappedMemory;
 use crate::mmu::MMU;
 use super::Registers;
 
+/// Central Processing Unit (CPU)
 pub struct CPU {
+    /// Registers (available from the outside of the crate)
     pub regs: Registers,
+    /// MMU (available from the outside of the crate)
     pub mmu: MMU,
+    /// Current cycle count (goes back to 0 after reaching maximum)
     cycles: u32,
+    /// Is the CPU halted?
     halted: bool,
+    /// (Internal) Did the current cycle change the PC register?
     _cycle_changed_pc: bool
 }
 
 impl CPU {
+    /// Create a new CPU using an existing mapped memory (must be the same one the motherboard this CPU will be connected to uses).
     pub fn new(mem: Arc<Mutex<MappedMemory>>) -> Self {
         Self {
             regs: Registers::new(),
@@ -22,6 +29,7 @@ impl CPU {
         }
     }
 
+    /// Hanldle a RESET signal from the motherboard
     pub fn reset(&mut self) {
         self.regs.reset();
         self.cycles = 0;
@@ -29,33 +37,53 @@ impl CPU {
         self._cycle_changed_pc = true;
     }
 
+    /// Run the next instruction.
+    /// Returns `Ok(true)` if the instruction run correctly, `Ok(false)` if the CPU is currently halted and an `Err()` if an exception occurred.
     pub fn next(&mut self) -> Result<bool, Ex> {
+        // Do not run if the CPU is halted
         if self.halted {
             return Ok(false);
         }
 
+        // Cycle goes back to 0 when overflowing
         self.cycles = self.cycles.wrapping_add(1);
 
+        // Get the instruction to run
         let instr = self.exec_mem(self.regs.pc)?.to_be_bytes();
 
+        // Get its opcode (5 first bits of the first byte)
         let opcode = instr[0] >> 3;
+        // Determine which parameters are registers by reading the 3 last bits of the first byte
         let opregs = [instr[0] & 0b100 != 0, instr[0] & 0b10 != 0, instr[0] & 0b1 != 0];
+        // Get the instruction's parameters
         let params = [instr[1], instr[2], instr[3]];
 
+        // Used to determine if the current cycle changed PC (see below)
         self._cycle_changed_pc = false;
 
+        // Decode a register-or-literal parameter
         macro_rules! __reg_or_lit {
+            // '$param' is the parameter first byte's index (starting from 0)
+            // '$value' is the decoded parameter's value (combined bytes of params[$param..=$param+<param length>])
+            // If the specified parameter is marked as being a register, the provided value is considered to be a register ID and the we try
+            // to read its value. Else, the provided value is a plain number.
             (with_val $param: expr, $value: expr) => {
                 if opregs[$param] { self.read_reg(params[$param])? } else { $value }
             };
+            // 1-byte long parameters
             ($param: expr, 1) => {
                 __reg_or_lit!(with_val $param, params[$param].into())
             };
+            // 2-bytes long parameters
             ($param: expr, 2) => {
                 __reg_or_lit!(with_val $param, u16::from_be_bytes([ params[$param], params[$param + 1] ]).into())
             };
         }
 
+        // Decode the opcode's arguments
+        // 'REG' = parameter is always a register
+        // 'REG_OR_LIT_1' = parameter is either a register or a 1-byte literal
+        // 'REG_OR_LIT_2' = parameter is either a register or a 2-bytes literal
         macro_rules! args {
             (REG) => { params[0] };
             (REG_OR_LIT_1) => { __reg_or_lit!(0, 1) };
@@ -76,8 +104,12 @@ impl CPU {
             (REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1) => { (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1), __reg_or_lit!(2, 1)) };
         }
 
+        // Wrap the opcode's matching block in a closure in order to be able to interrupt the flow with the `?` operator
+        // This makes this part a **lot** more readable
         let ok_or_exception = (|| -> Result<(), Ex> {
+            // Run the instruction based on its opcode
             match opcode {
+                // <Unknown instruction>
                 0x00 => {
                     Err(self.exception(0x01, Some(opcode)))
                 },
@@ -92,6 +124,7 @@ impl CPU {
                 0x02 => {
                     let (reg_a, reg_b) = args!(REG, REG);
                     let pivot_a = self.read_reg(reg_a)?;
+
                     self.read_reg(reg_b).and_then(|reg_b_value| {
                         self.write_reg(reg_a, reg_b_value)?;
                         self.write_reg(reg_b, pivot_a)
@@ -102,6 +135,7 @@ impl CPU {
                 0x03..=0x05 | 0x08..=0x0C => {
                     let (reg, value) = if opcode != 0x0B && opcode != 0x0C { args!(REG, REG_OR_LIT_2) } else { args!(REG, REG_OR_LIT_1) };
                     let reg_value = self.read_reg(reg)?;
+
                     let compute = self.compute(reg_value, value.into(), match opcode {
                         0x03 => Op::Add,
                         0x04 => Op::Sub,
@@ -113,6 +147,7 @@ impl CPU {
                         0x0C => Op::Rsh,
                         _ => unreachable!()
                     })?;
+
                     self.write_reg(reg, compute)
                 },
 
@@ -120,6 +155,7 @@ impl CPU {
                 0x06 => {
                     let (reg, value, mode) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
                     let reg_value = self.read_reg(reg)?;
+
                     let compute = self.compute(reg_value, value, Op::Div { mode: (mode & 0xFF) as u8 })?;
                     self.write_reg(reg, compute)
                 },
@@ -128,6 +164,7 @@ impl CPU {
                 0x07 => {
                     let (reg, value, mode) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
                     let reg_value = self.read_reg(reg)?;
+
                     let compute = self.compute(reg_value, value, Op::Mod { mode: (mode & 0xFF) as u8 })?;
                     self.write_reg(reg, compute)
                 },
@@ -136,6 +173,7 @@ impl CPU {
                 0x0D => {
                     let (reg, value) = args!(REG, REG_OR_LIT_2);
                     let reg_value = self.read_reg(reg)?;
+
                     self.compute(reg_value, value, Op::Sub)?;
                     Ok(())
                 },
@@ -143,6 +181,7 @@ impl CPU {
                 // JMP
                 0x0E => {
                     let bytes = args!(REG_OR_LIT_2) as i16;
+
                     self.regs.pc = (self.regs.pc as i32).wrapping_add(bytes.into()) as u32;
                     self._cycle_changed_pc = true;
                     Ok(())
@@ -162,6 +201,7 @@ impl CPU {
                 // ITR
                 0x10 => {
                     let itr_code = args!(REG_OR_LIT_1);
+
                     Err(self.exception(0xAA, Some(itr_code as u8)))
                 },
 
@@ -201,6 +241,7 @@ impl CPU {
                 // LDA
                 0x17 => {
                     let (reg_dest, v_addr) = args!(REG, REG_OR_LIT_2);
+
                     let word = self.mem_read(v_addr)?;
                     self.write_reg(reg_dest, word)
                 },
@@ -208,6 +249,7 @@ impl CPU {
                 // LEA
                 0x18 => {
                     let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
+
                     self.regs.avr = self.mem_read(v_addr + add * mul)?;
                     Ok(())
                 },
@@ -215,6 +257,7 @@ impl CPU {
                 // WEA
                 0x19 => {
                     let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
+
                     self.mem_write(v_addr + add * mul, self.regs.avr)
                 },
 
@@ -288,6 +331,10 @@ impl CPU {
             }
         })();
 
+        // By default, the program counter (located in the PC register) is incremented of 4 bytes to make the CPU retrieve the next instruction
+        //  from the memory's next word.
+        // BUT if the current instruction purposedly modified PC, we don't want it to the be modified again.
+        // So, we only add 4 to PC if it hasn't been changed by the current instruction.
         if !self._cycle_changed_pc {
             self.regs.pc = self.regs.pc.wrapping_add(4);
         }
@@ -295,14 +342,19 @@ impl CPU {
         ok_or_exception.map(|()| true)
     }
 
+    /// Check if the CPU is halted
     pub fn halted(&self) -> bool {
         self.halted
     }
 
+    /// Get the number of cycles the CPU run so far
+    /// Note that this number goes back to 0 after reaching its maximum (overflow).
     pub fn cycles(&self) -> u32 {
         self.cycles
     }
 
+    /// Try to read a register's value.
+    /// Raises an exception if the specified register is only readable in supervisor mode and userland mode is active.
     fn read_reg(&mut self, code: u8) -> Result<u32, Ex> {
         if code >= 0x18 && !self.sv_mode() {
             return Err(self.exception(0x03, Some(code)));
@@ -330,6 +382,9 @@ impl CPU {
         }
     }
 
+    /// Try to write a register's value.
+    /// Raises an exception if the specified register is only writable in supervisor mode and userland mode is active.
+    /// Raises an exception if the specified register is not writable.
     fn write_reg(&mut self, code: u8, word: u32) -> Result<(), Ex> {
         let ucode = usize::from(code);
 
@@ -341,6 +396,7 @@ impl CPU {
             return Err(self.exception(0x04, Some(code)));
         }
 
+        // If we change PC, indicate it has been changed to the CPU won't jump 4 bytes ahead.
         if code == 0x16 {
             self._cycle_changed_pc = true;
         }
@@ -367,6 +423,8 @@ impl CPU {
         Ok(())
     }
 
+    /// Perform a numeric computation and set the arithmetic flags.
+    /// Raises an exception if a forbidden operation happens (e.g. division by zero when forbidden by the provided division mode).
     fn compute(&mut self, op1: u32, op2: u32, op: Op) -> Result<u32, Ex> {
         let iop1 = op1 as i32;
         let iop2 = op2 as i32;
@@ -387,27 +445,48 @@ impl CPU {
                 (result as u32, has_carry, has_carry)
             },
 
+            // This one is a bit tricky
             Op::Div { mode } | Op::Mod { mode } => {
-                match (op == Op::Div { mode }, mode & 0b00010000 != 0, iop1, iop2) {
+                // Must we perform a signed division / modulus?
+                let signed = mode & 0b00010000 != 0;
+
+                match (op == Op::Div { mode }, signed, iop1, iop2) {
+                    // Division / modulus by zero
                     (_, _, _, 0) => match (mode & 0b00001100) >> 2 {
+                        // Forbid
                         0b00 => return Err(self.exception(0x09, None)),
+                        // Result in the minimum signed value
                         0b01 => (0x80000000, true, true),
+                        // Result in zero
                         0b10 => (0x00000000, true, true),
+                        // Result in the maximum signed value
                         0b11 => (0x7FFFFFFF, true, true),
                         _ => unreachable!()
                     },
 
+                    // Maximum signed value divided / moduled by -1 (overflowing multiplication)
                     (_, true, std::i32::MIN, -1) => match (mode & 0b00000011) >> 2 {
+                        // Forbid
                         0b00 => return Err(self.exception(0x10, None)),
+                        // Result in the minimum signed value
                         0b01 => (0x80000000, true, true),
+                        // Result in zero
                         0b10 => (0x00000000, true, true),
+                        // Result in the maximum signed value
                         0b11 => (0x7FFFFFFF, true, true),
                         _ => unreachable!()
                     },
 
+                    // Safe unsigned division
                     (true, true, _, _) => ((iop1 / iop2) as u32, false, false),
+
+                    // Safe unsigned modulus
                     (false, true, _, _) => ((iop1 % iop2) as u32, false, false),
+
+                    // Safe signed division
                     (true, false, _, _) => (op1 / op2, false, false),
+
+                    // Safe signed modulus
                     (false, false, _, _) => (op1 % op2, false, false)
                 }
             },
@@ -429,6 +508,8 @@ impl CPU {
             }
         };
         
+        // => Compute and assign arithmetic flags to the `af` register
+
         self.regs.af = 0;
 
         let flags: [bool; 7] = [
@@ -457,25 +538,34 @@ impl CPU {
         Ok(result)
     }
 
+    /// Check if the CPU is currently in supervisor mode
     fn sv_mode(&self) -> bool {
         self.regs.smt != 0
     }
 
+    /// Raise an exception with the provided `code` and `associated` data.
+    /// Returns the related exception object.
     fn exception(&mut self, code: u8, associated: Option<u8>) -> Ex {
+        // Assign the Exception Type `et` register.
         self.regs.et =
             (if self.sv_mode() { 1 << 31 } else { 0 }) +
             (u32::from(code) << 23) +
             ((self.cycles % 256) << 15) +
             u32::from(associated.unwrap_or(0));
 
+        // Jump to the Exception Vector address
         self.regs.pc = self.regs.ev;
+
+        // Enable supervisor mode to deal with the exception
         self.regs.smt = 1;
 
+        // Do not forget to indicate we changed PC
         self._cycle_changed_pc = true;
 
-        (code, associated)
+        Ex { code, associated }
     }
 
+    /// Ensure an address is aligned, or raise an exception otherwise.
     fn ensure_aligned(&mut self, v_addr: u32) -> Result<u32, Ex> {
         if v_addr % 4 != 0 {
             Err(self.exception(0x05, Some((v_addr % 4) as u8)))
@@ -484,23 +574,36 @@ impl CPU {
         }
     }
 
+    /// Read an address in the mapped memory.
+    /// Raises an exception if address is unaligned or if the MMU doesn't accept reading this address in the current mode.
     fn mem_read(&mut self, v_addr: u32) -> Result<u32, Ex> {
         let v_addr = self.ensure_aligned(v_addr)?;
         self.mmu.read(&self.regs, v_addr).map_err(|()| self.exception(0x06, None))
     }
 
+    /// Write an address in the mapped memory.
+    /// Raises an exception if address is unaligned or if the MMU doesn't accept writing this address in the current mode.
     fn mem_write(&mut self, v_addr: u32, word: u32) -> Result<(), Ex> {
         let v_addr = self.ensure_aligned(v_addr)?;
         self.mmu.write(&self.regs, v_addr, word).map_err(|()| self.exception(0x07, None))
     }
 
+    /// Execute (read) an address in the mapped memory.
+    /// Raises an exception if address is unaligned or if the MMU doesn't accept executing this address in the current mode.
     fn exec_mem(&mut self, v_addr: u32) -> Result<u32, Ex> {
         let v_addr = self.ensure_aligned(v_addr)?;
         self.mmu.exec(&self.regs, v_addr).map_err(|()| self.exception(0x07, None))
     }
 }
 
+/// (Internal) Numeric operation
 #[derive(PartialEq, Debug)]
 enum Op { Add, Sub, Mul, Div { mode: u8 }, Mod { mode: u8 }, And, Bor, Xor, Lsh, Rsh }
 
-type Ex = (u8, Option<u8>);
+/// Occurred exception
+pub struct Ex {
+    /// Exception's code
+    pub code: u8,
+    /// Exception's associated data (not all exceptions have some)
+    pub associated: Option<u8>
+}

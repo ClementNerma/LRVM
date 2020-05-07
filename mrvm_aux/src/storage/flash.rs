@@ -1,12 +1,18 @@
+//! The flash memory component offers a simple non-volatile storage.
+//! See [`FlashMem`] for more details.
+
 use std::convert::TryInto;
 use mrvm::board::Bus;
 
+/// The flash memory component contains a writable, persistent storage that does not reset with the motherboard.
+/// It is though reset when the VM is destroyed.
 pub struct FlashMem {
     storage: Vec<u32>,
     size: u32,
 }
 
 impl FlashMem {
+    /// Create a new flash memory component from an existing storage
     pub fn new(storage: Vec<u32>) -> Self {
         let size: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
 
@@ -16,6 +22,8 @@ impl FlashMem {
         }
     }
 
+    /// Create a new flash memory component from an existing storage and a larger size.
+    /// The storage's extended part will be zeroed.
     pub fn with_size(storage: Vec<u32>, size: u32) -> Self {
         let size: u32 = size.try_into().expect("Storage's length cannot be larger than 2^32 words");
 
@@ -23,10 +31,6 @@ impl FlashMem {
             storage,
             size,
         }
-    }
-
-    pub fn size(&self) -> u32 {
-        self.size
     }
 }
 

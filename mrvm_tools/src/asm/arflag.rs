@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
 
+/// Arithmetic flag
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ArFlag {
     Zero,
@@ -12,6 +13,7 @@ pub enum ArFlag {
 }
 
 impl ArFlag {
+    /// Decode an arithmetic flag from its code
     pub fn from_code(code: u8) -> Result<Self, ()> {
         match code {
             0x00 => Ok(Self::Zero),
@@ -25,6 +27,7 @@ impl ArFlag {
         }
     }
 
+    /// Get the arithmetic flag's code
     pub fn code(&self) -> u8 {
         match self {
             Self::Zero => 0x00,
@@ -37,6 +40,7 @@ impl ArFlag {
         }
     }
 
+    /// Get the arithmetic flag's name
     pub fn name(&self) -> &'static str {
         match self {
             Self::Zero => "Zero",
@@ -49,6 +53,7 @@ impl ArFlag {
         }
     }
 
+    /// Get the arithmetic flag's short name
     pub fn short_name(&self) -> &'static str {
         match self {
             Self::Zero => "ZF",

@@ -1,8 +1,13 @@
+//! MRVM uses an assembly language called LASM (Lightweight Assembly).
+//! This module allows to assemble LASM source code through the [CustomAsm](https://github.com/hlorenzi/customasm) library.
+
 use crate::asm::{Program, InstrDecodingError};
 use customasm::{FileServerMock, AssemblerState, RcReport};
 
 static CUSTOMASM_HEADER: &'static str = include_str!("customasm.def");
 
+/// Assemble a LASM source code to machine code.
+/// Returns an error message in case of error.
 pub fn assemble(source: &str) -> Result<Vec<u8>, String> {
     let mut src = String::from("#include \"header.lasm\"");
     src.push('\n');
@@ -31,10 +36,13 @@ pub fn assemble(source: &str) -> Result<Vec<u8>, String> {
     })
 }
 
+/// Assemble a LASM source code to machine code and split it to words.
+/// Returns an error message in case of error.
 pub fn assemble_words(source: &str) -> Result<Vec<u32>, String> {
     assemble(source).map(|bytes| bytes_to_words(bytes))
 }
 
+/// Convert a list of bytes to a list of words
 pub fn bytes_to_words(bytes: impl AsRef<[u8]>) -> Vec<u32> {
     let bytes = bytes.as_ref();
 
@@ -58,7 +66,8 @@ pub fn bytes_to_words(bytes: impl AsRef<[u8]>) -> Vec<u32> {
     words
 }
 
-// May fail because Program::decode() may fail if for instance there is raw data in the assembled program (strings for instance)
+/// Convert a LASM source code to a strongly-typed program
+/// May fail because Program::decode() may fail if for instance there is raw data in the assembled program (strings for instance)
 pub fn assemble_prog(source: &str) -> Result<Result<Program, (usize, InstrDecodingError)>, String> {
     Ok(Program::decode(assemble(source)?))
 }

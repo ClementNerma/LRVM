@@ -1,7 +1,18 @@
+//! The buffered display component offers a simple UTF-8 display system.
+//! See [`BufferedDisplay`] for more details.
+
 use std::convert::TryInto;
 use std::str::{from_utf8, Utf8Error};
 use mrvm::board::Bus;
 
+/// The buffered display works with a buffer and a handler. When it receives a write request, it writes it into the buffer unless the
+/// write address is on its last word ; in this case, in interprets the word as:
+///
+/// * `0xAAAAAAAA`: display the buffer's content and clear it afterwards
+/// * `0xFFFFFFFF`: clear the buffer's content
+///
+/// The buffer may contain invalid UTF-8 data. When a display request is received, the handler is called with the decoded UTF-8 string,
+/// which is a result object handling either the valid UTF-8 string or a decoding error object.
 pub struct BufferedDisplay {
     buffer: Vec<u32>,
     words: u32,
@@ -9,6 +20,9 @@ pub struct BufferedDisplay {
 }
 
 impl BufferedDisplay {
+    /// Create a buffered display component.
+    /// The provided capacity must be a multiple of 4, and 4 bytes will be substracted for handling the action code.
+    /// This means a capacity of 64 bytes will allow 60 bytes of data or 15 words.
     pub fn new(capacity: u32, handler: Box<dyn FnMut(Result<&str, Utf8Error>)>) -> Self {
         let _: usize = capacity.try_into().expect("Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)");
 

@@ -1,5 +1,6 @@
 use std::mem;
 
+/// CPU registers
 #[derive(Debug, Default)]
 pub struct Registers {
     /// Arithmetic registers
@@ -49,10 +50,12 @@ pub struct Registers {
 }
 
 impl Registers {
+    /// Create zero-initialied registers
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Reset all registers
     #[allow(unused_must_use)]
     pub fn reset(&mut self) {
         mem::replace(self, Self::default());

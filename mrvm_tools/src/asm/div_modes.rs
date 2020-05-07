@@ -1,6 +1,9 @@
+//! Strongly-typed interfaces for division modes
+
 use std::convert::TryFrom;
 use super::{cst, RegOrLit1};
 
+/// Division sign
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DivSignMode {
     Unsigned,
@@ -63,6 +66,7 @@ impl Into<u8> for DivSignMode {
     }
 }
 
+/// Mode for division by zero
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DivByZeroMode {
     Forbid,
@@ -125,6 +129,7 @@ impl Into<u8> for DivByZeroMode {
     }
 }
 
+/// Mode for overflowing division by -1
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DivMinByLessOneMode {
     Forbid,

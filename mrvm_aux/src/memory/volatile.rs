@@ -1,12 +1,18 @@
+//! The volatile memory component offers a simple volatile memory that resets with the motherboard.
+//! See [`VolatileMem`] for more details.
+
 use std::convert::TryInto;
 use mrvm::board::Bus;
 
+/// The volatile memor component offers a simple non-persistent storage.
+/// When it receives a RESET request from the motherboard, all the storage is zeroed.
 pub struct VolatileMem {
     storage: Vec<u32>,
     size: u32,
 }
 
 impl VolatileMem {
+    /// Create a new volatile memory component from the provided storage
     pub fn new(storage: Vec<u32>) -> Self {
         let size: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
 
@@ -16,6 +22,7 @@ impl VolatileMem {
         }
     }
 
+    /// Create a new volatile memory component from the provided storage and with a larger size than its storage
     pub fn with_size(mut storage: Vec<u32>, size: u32) -> Result<Self, ()> {
         let _: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
         let _: usize = size.try_into().expect("Volatile memory size cannot exceed your CPU architecture's supported size");
@@ -34,6 +41,7 @@ impl VolatileMem {
         })
     }
 
+    /// Get the volatile memory's size
     pub fn size(&self) -> u32 {
         self.size
     }
