@@ -1,0 +1,180 @@
+#cpudef
+{
+    #bits 8
+    #labelalign 8
+
+    #tokendef reg
+    {
+        a0  = 0x00
+        a1  = 0x01
+        a2  = 0x02
+        a3  = 0x03
+        a4  = 0x04
+        a5  = 0x05
+        a6  = 0x06
+        a7  = 0x07
+        c0  = 0x08
+        c1  = 0x09
+        ac0 = 0x0A
+        ac1 = 0x0B
+        ac2 = 0x0C
+        rr0 = 0x0D
+        rr1 = 0x0E
+        rr2 = 0x0F
+        rr3 = 0x10
+        rr4 = 0x11
+        rr5 = 0x12
+        rr6 = 0x13
+        rr7 = 0x14
+        avr = 0x15
+        pc  = 0x16
+        af  = 0x17
+        ssp = 0x18
+        usp = 0x19
+        et  = 0x1A
+        era = 0x1B
+        ev  = 0x1C
+        mtt = 0x1D
+        pda = 0x1E
+        smt = 0x1F
+    }
+
+    #tokendef arflag
+    {
+        ZF  = 0x00
+        CF  = 0x01
+        OF  = 0x02
+        SF  = 0x03
+        PF  = 0x04
+        ZUF = 0x05
+        ZLF = 0x06
+    }
+
+    #tokendef div_mode
+    {
+        DIV_USG     = 0b00000000
+        DIV_SIG     = 0b00010000
+
+        DIV_ZRO_FRB = 0b00000000
+        DIV_ZRO_MIN = 0b00000100
+        DIV_ZRO_ZRO = 0b00001000
+        DIV_ZRO_MAX = 0b00001100
+
+        DIV_MBO_FRB = 0b00000000
+        DIV_MBO_MIN = 0b00000001
+        DIV_MBO_ZRO = 0b00000010
+        DIV_MBO_MAX = 0b00000011
+    }
+
+    cpy  {reg_dest: reg}, {reg_val: reg} -> ((0x01 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_val[7:0] @ 0x00
+    cpy  {reg_dest: reg}, {lit_val: u16} -> ((0x01 << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_val[15:8] @ lit_val[7:0]
+    
+    ex   {reg_a: reg}, {reg_b: reg} -> ((0x02 << 3) + 0b110)[7:0] @ reg_a[7:0] @ reg_b[7:0] @ 0x00
+    
+    add  {reg_obj: reg}, {reg_val: reg} -> ((0x03 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    add  {reg_obj: reg}, {lit_val: u16} -> ((0x03 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
+    
+    sub  {reg_obj: reg}, {reg_val: reg} -> ((0x04 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    sub  {reg_obj: reg}, {lit_val: u16} -> ((0x04 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
+    
+    mul  {reg_obj: reg}, {reg_val: reg} -> ((0x05 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    mul  {reg_obj: reg}, {lit_val: u16} -> ((0x05 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0] @ 0x00
+    
+    div  {reg_obj: reg}, {reg_val: reg}, {reg_mode: reg}      -> ((0x06 << 3) + 0b111)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ reg_mode[7:0]
+    div  {reg_obj: reg}, {lit_val:  u8}, {reg_mode: reg}      -> ((0x06 << 3) + 0b101)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ reg_mode[7:0]
+    div  {reg_obj: reg}, {reg_val: reg}, {lit_mode: div_mode} -> ((0x06 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ lit_mode[7:0]
+    div  {reg_obj: reg}, {lit_val:  u8}, {lit_mode: div_mode} -> ((0x06 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ lit_mode[7:0]
+    
+    mod  {reg_obj: reg}, {reg_val: reg}, {reg_mode: reg} -> ((0x07 << 3) + 0b111)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ reg_mode[7:0]
+    mod  {reg_obj: reg}, {lit_val:  u8}, {reg_mode: reg} -> ((0x07 << 3) + 0b101)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ reg_mode[7:0]
+    mod  {reg_obj: reg}, {reg_val: reg}, {lit_mode: div_mode} -> ((0x07 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ lit_mode[7:0]
+    mod  {reg_obj: reg}, {lit_val:  u8}, {lit_mode: div_mode} -> ((0x07 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ lit_mode[7:0]
+
+    and  {reg_obj: reg}, {reg_val: reg} -> ((0x08 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    and  {reg_obj: reg}, {lit_val: u16} -> ((0x08 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
+
+    bor  {reg_obj: reg}, {reg_val: reg} -> ((0x09 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    bor  {reg_obj: reg}, {lit_val: u16} -> ((0x09 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
+
+    xor  {reg_obj: reg}, {reg_val: reg} -> ((0x0A << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    xor  {reg_obj: reg}, {lit_val: u16} -> ((0x0A << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
+
+    lsh  {reg_obj: reg}, {reg_val: reg} -> ((0x0B << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    lsh  {reg_obj: reg}, {lit_val:  u8} -> ((0x0B << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
+
+    rsh  {reg_obj: reg}, {reg_val: reg} -> ((0x0C << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    rsh  {reg_obj: reg}, {lit_val:  u8} -> ((0x0C << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
+
+    cmp  {reg_obj: reg}, {reg_val: reg} -> ((0x0D << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    cmp  {reg_obj: reg}, {lit_val: u16} -> ((0x0D << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
+
+    jmp  {reg_addr: reg} -> ((0x0E << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    jmp  {lit_addr: i16} -> ((0x0E << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
+
+    lsm  {reg_addr: reg} -> ((0x0F << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    lsm  {lit_addr: u16} -> ((0x0F << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
+
+    itr  {reg_code: reg} -> ((0x10 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    itr  {lit_code:  u8} -> ((0x10 << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
+
+    if   {reg_flag: reg}    -> ((0x11 << 3) + 0b100)[7:0] @ reg_flag[7:0] @ 0x00 @ 0x00
+    if   {lit_flag: arflag} -> ((0x11 << 3) + 0b000)[7:0] @ lit_flag[7:0] @ 0x00 @ 0x00
+
+    ifn  {reg_flag: reg}    -> ((0x12 << 3) + 0b100)[7:0] @ reg_flag[7:0] @ 0x00 @ 0x00
+    ifn  {lit_flag: arflag} -> ((0x12 << 3) + 0b000)[7:0] @ lit_flag[7:0] @ 0x00 @ 0x00
+
+    ifand {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
+    ifand {reg_flag_a: reg}, {lit_flag_b: arflag} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
+    ifand {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
+    ifand {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
+
+    ifor {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x14 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
+    ifor {reg_flag_a: reg}, {lit_flag_b: arflag} -> ((0x14 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
+    ifor {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x14 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
+    ifor {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x14 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
+
+    ifnor {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x15 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
+    ifnor {reg_flag_a: reg}, {lit_flag_b: arflag} -> ((0x15 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
+    ifnor {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x15 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
+    ifnor {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x15 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
+
+    iflft {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x16 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
+    iflft {reg_flag_a: reg}, {lit_flag_b: arflag} -> ((0x16 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
+    iflft {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x16 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
+    iflft {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x16 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
+
+    lda {reg_dest: reg}, {reg_addr: reg} -> ((0x17 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_addr[7:0] @ 0x00
+    lda {reg_dest: reg}, {lit_addr: u16} -> ((0x17 << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_addr[15:8] @ lit_addr[7:0]
+
+    lea {reg_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x18 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
+    lea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x18 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
+    lea {reg_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x18 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
+    lea {reg_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x18 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+    lea {lit_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x18 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
+    lea {lit_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x18 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
+    lea {lit_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x18 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
+    lea {lit_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x18 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+
+    lea {reg_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x19 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
+    lea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x19 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
+    lea {reg_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x19 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
+    lea {reg_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x19 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+    lea {lit_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x19 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
+    lea {lit_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x19 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
+    lea {lit_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x19 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
+    lea {lit_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x19 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+
+    push {reg_value: reg} -> ((0x1A << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    push {lit_value: u16} -> ((0x1A << 3) + 0b000)[7:0] @ reg_addr[15:8] @ reg_addr[7:0] @ 0x00
+
+    pop  {reg_dest: reg} -> ((0x1B << 3) + 0b100)[7:0] @ reg_dest[7:0] @ 0x00 @ 0x00
+    
+    call {reg_addr: reg} -> ((0x1C << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    call {lit_addr: u16} -> ((0x1C << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
+
+    cycles {reg_dest: reg} -> ((0x1D << 3) + 0b100)[7:0] @ reg_dest[7:0] @ 0x00 @ 0x00
+
+    halt  -> ((0x1E << 3) + 0b000)[7:0] @ 0x00 @ 0x00 @ 0x00
+
+    reset -> ((0x1F << 3) + 0b000)[7:0] @ 0x00 @ 0x00 @ 0x00
+}
