@@ -24,8 +24,8 @@ impl SyncKeyboard {
     pub fn new(capacity: u32, handler: Box<dyn FnMut() -> Result<String, ()>>) -> Self {
         let _: usize = capacity.try_into().expect("Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)");
 
-        assert!(capacity % 4 == 0, "Synchrone keyboard's buffer capacity must be aligned");
-        assert!(capacity != 0, "Synchrone keyboard's buffer capacity cannot be 0");
+        assert!(capacity % 4 == 0, "Synchronous keyboard's buffer capacity must be aligned");
+        assert!(capacity != 0, "Synchronous keyboard's buffer capacity cannot be 0");
 
         let capacity = capacity / 4;
 
@@ -39,7 +39,7 @@ impl SyncKeyboard {
 
 impl Bus for SyncKeyboard {
     fn name(&self) -> &'static str {
-        "Synchrone Keyboard"
+        "Synchronous Keyboard"
     }
 
     fn size(&self) -> u32 {
