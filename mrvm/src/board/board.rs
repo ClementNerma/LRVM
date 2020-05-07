@@ -39,9 +39,10 @@ impl MotherBoard {
 
     /// Perform operations on memory through a handler, example:
     ///
-    /// ```
-    /// let motherboard = MotherBoard::new(vec![ /* component1 */ ]);
-    /// motherboard.map(|mem| mem.map(0x10000000, 0)); // Map first component (ID 0) to address 0x10000000
+    /// ```no_run
+    /// use mrvm::board::MotherBoard;
+    /// let mut motherboard = MotherBoard::new(vec![ /* component1 */ ]);
+    /// motherboard.map(|mut mem| mem.map(0x10000000, 0).unwrap()); // Map first component (ID 0) to address 0x10000000
     /// ```
     pub fn map<T>(&mut self, mut mapper: impl FnMut(MutexGuard<MappedMemory>) -> T) -> T {
         mapper(self.mem.lock().unwrap())
