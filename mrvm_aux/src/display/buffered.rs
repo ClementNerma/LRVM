@@ -9,6 +9,7 @@ use mrvm::board::Bus;
 /// write address is on its last word ; in this case, in interprets the word as:
 ///
 /// * `0xAA`: display the buffer's content and clear it afterwards
+/// * `0xBB`: display the buffer's content lossiliy (handles invalid UTF-8 characters) and clear it afterwards
 /// * `0xFF`: clear the buffer's content
 ///
 /// The buffer may contain invalid UTF-8 data. When a display request is received, the handler is called with the decoded UTF-8 string,
@@ -72,6 +73,11 @@ impl Bus for BufferedDisplay {
                 0xAA => {
                     let bytes = self.buffer.iter().map(|word| word.to_be_bytes().to_vec()).flatten().collect::<Vec<_>>();
                     (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.clone())))
+                },
+
+                0xBB => {
+                    let bytes = self.buffer.iter().map(|word| word.to_be_bytes().to_vec()).flatten().collect::<Vec<_>>();
+                    (self.handler)(Ok(&String::from_utf8_lossy(&bytes)))
                 },
 
                 0xFF => self.reset(),
