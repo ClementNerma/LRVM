@@ -241,7 +241,7 @@ impl DivMode {
     }
 
     pub fn to_roc(&self) -> RegOrLit1 {
-        RegOrLit1::cst(self.mode())
+        self.mode().into()
     }
 }
 

@@ -16,13 +16,13 @@ macro_rules! declare_val {
             }
 
             /// Create an (unsigned) literal value
-            pub fn cst(cst: $num) -> Self {
-                Self::Lit(cst)
+            pub fn lit(lit: $num) -> Self {
+                Self::Lit(lit)
             }
 
             /// Create a signed literal value
-            pub fn signed_cst(cst: $inum) -> Self {
-                Self::Lit(cst as $num)
+            pub fn signed_lit(lit: $inum) -> Self {
+                Self::Lit(lit as $num)
             }
 
             /// Check if the value is a register
@@ -34,7 +34,7 @@ macro_rules! declare_val {
             }
 
             // Check if the value is a literal
-            pub fn is_cst(&self) -> bool {
+            pub fn is_lit(&self) -> bool {
                 match self {
                     Self::Reg(_) => false,
                     Self::Lit(_) => true
@@ -63,14 +63,14 @@ macro_rules! declare_val {
         }
 
         impl From<$num> for $typename {
-            fn from(cst: $num) -> Self {
-                Self::cst(cst)
+            fn from(lit: $num) -> Self {
+                Self::lit(lit)
             }
         }
 
         impl From<$inum> for $typename {
-            fn from(cst: $inum) -> Self {
-                Self::signed_cst(cst)
+            fn from(lit: $inum) -> Self {
+                Self::signed_lit(lit)
             }
         }
     }
@@ -80,13 +80,13 @@ declare_val!(RegOrLit1, u8, i8);
 declare_val!(RegOrLit2, u16, i16);
 
 impl From<u8> for RegOrLit2 {
-    fn from(cst: u8) -> Self {
-        Self::cst(cst.into())
+    fn from(lit: u8) -> Self {
+        Self::lit(lit.into())
     }
 }
 
 impl From<i8> for RegOrLit2 {
-    fn from(cst: i8) -> Self {
-        Self::signed_cst(cst.into())
+    fn from(lit: i8) -> Self {
+        Self::signed_lit(lit.into())
     }
 }

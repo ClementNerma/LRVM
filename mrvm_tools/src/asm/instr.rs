@@ -53,14 +53,14 @@ impl Instr {
                 move |param: usize| _decode_reg(param),
                 move |param: usize| {
                     if bytes[0] & (1 << (3 - param)) == 0 {
-                        Ok(RegOrLit1::cst(bytes[param]))
+                        Ok(RegOrLit1::lit(bytes[param]))
                     } else {
                         Ok(RegOrLit1::reg(_decode_reg(param)?))
                     }
                 },
                 move |param: usize| {
                     if bytes[0] & (1 << (3 - param)) == 0 {
-                        Ok(RegOrLit2::cst(u16::from_be_bytes([
+                        Ok(RegOrLit2::lit(u16::from_be_bytes([
                             bytes[param],
                             bytes[param + 1],
                         ])))
