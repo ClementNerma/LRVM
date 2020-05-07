@@ -12,18 +12,18 @@ use mrvm::board::Bus;
 /// * `0xFFFFFFFF`: clear the buffer's content
 ///
 /// The buffer may contain invalid UTF-8 data. When a display request is received, the handler is called with the decoded UTF-8 string,
-/// which is a result object handling either the valid UTF-8 string or a decoding error object.
+/// which is a result object handling either the valid UTF-8 string or a decoding error object with the faulty raw buffer's content.
 pub struct BufferedDisplay {
     buffer: Vec<u32>,
     words: u32,
-    handler: Box<dyn FnMut(Result<&str, Utf8Error>)>
+    handler: Box<dyn FnMut(Result<&str, (Utf8Error, Vec<u8>)>)>
 }
 
 impl BufferedDisplay {
     /// Create a buffered display component.
     /// The provided capacity must be a multiple of 4, and 4 bytes will be substracted for handling the action code.
     /// This means a capacity of 64 bytes will allow 60 bytes of data or 15 words.
-    pub fn new(capacity: u32, handler: Box<dyn FnMut(Result<&str, Utf8Error>)>) -> Self {
+    pub fn new(capacity: u32, handler: Box<dyn FnMut(Result<&str, (Utf8Error, Vec<u8>)>)>) -> Self {
         let _: usize = capacity.try_into().expect("Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)");
 
         assert!(capacity % 4 == 0, "Buffered display's capacity must be aligned");
@@ -71,7 +71,7 @@ impl Bus for BufferedDisplay {
                         bytes.extend_from_slice(&word.to_be_bytes());
                     }
 
-                    (self.handler)(from_utf8(&bytes))
+                    (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.clone())))
                 },
 
                 0xFFFFFFFF => self.reset(),
