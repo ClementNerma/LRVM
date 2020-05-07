@@ -38,7 +38,7 @@ impl PersistentMem {
             real_size,
             handler,
             writable,
-            panic_on_invalid: true
+            panic_on_invalid: false
         })
     }
 

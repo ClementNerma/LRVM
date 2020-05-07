@@ -23,7 +23,7 @@ impl BootROM {
             storage,
             len,
             size: len,
-            panic_on_invalid: true
+            panic_on_invalid: false
         }
     }
 
