@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "mrvm",
+    "mrvm_aux",
+    "mrvm_tools"
+]
