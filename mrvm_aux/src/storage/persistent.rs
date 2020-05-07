@@ -89,14 +89,7 @@ impl Bus for PersistentMem {
     }
 
     fn read(&mut self, addr: u32) -> u32 {
-        if addr >= self.size {
-            if self.panic_on_invalid {
-                panic!("ERROR: Attempted to read outside persistent memory");
-            } else {
-                eprintln!("Warning: Attempted to read outside persistent memory");
-                0
-            }
-        } else if addr >= self.real_size {
+        if addr >= self.real_size {
             0
         } else {
             let mut buffer = [0; 4];
@@ -114,12 +107,6 @@ impl Bus for PersistentMem {
                 panic!("ERROR: Attempted to write readonly persistent memory");
             } else {
                 eprintln!("Warning: Attempted to write readonly persistent memory");
-            }
-        } else if addr >= self.size {
-            if self.panic_on_invalid {
-                panic!("ERROR: Attempted to write outside persistent memory");
-            } else {
-                eprintln!("Warning: Attempted to write outside persistent memory");
             }
         } else if addr < self.real_size {
             self.handler.seek(SeekFrom::Start(addr.into())).unwrap();
