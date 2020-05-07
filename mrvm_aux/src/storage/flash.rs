@@ -12,8 +12,20 @@ pub struct FlashMem {
 }
 
 impl FlashMem {
+    /// Create a new flash memory component
+    pub fn new(size: u32) -> Result<Self, ()> {
+        if size == 0 || size % 4 != 0 {
+            Err(())
+        } else {
+            Ok(Self {
+                storage: vec![0; size.try_into().expect("Volatile memory size cannot exceed your CPU architecture's supported size")],
+                size
+            })
+        }
+    }
+
     /// Create a new flash memory component from an existing storage
-    pub fn new(storage: Vec<u32>) -> Self {
+    pub fn from(storage: Vec<u32>) -> Self {
         let size: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
 
         Self {
@@ -24,7 +36,7 @@ impl FlashMem {
 
     /// Create a new flash memory component from an existing storage and a larger size.
     /// The storage's extended part will be zeroed.
-    pub fn with_size(storage: Vec<u32>, size: u32) -> Self {
+    pub fn from_with_size(storage: Vec<u32>, size: u32) -> Self {
         let size: u32 = size.try_into().expect("Storage's length cannot be larger than 2^32 words");
 
         Self {

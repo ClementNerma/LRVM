@@ -11,7 +11,7 @@ fn volatile_mem() {
 
     let mut vm = prepare_vm(vec![
         Box::new(BootROM::with_size(program.encode_words(), 0x1000)),
-        Box::new(VolatileMem::with_size(vec![], 0x1000).unwrap())
+        Box::new(VolatileMem::new(0x1000).unwrap())
     ]);
 
     run_until_halt(&mut vm.cpu(), None);

@@ -12,8 +12,20 @@ pub struct VolatileMem {
 }
 
 impl VolatileMem {
+    /// Create a new volatile memory component
+    pub fn new(size: u32) -> Result<Self, ()> {
+        if size == 0 || size % 4 != 0 {
+            Err(())
+        } else {
+            Ok(Self {
+                storage: vec![0; size.try_into().expect("Volatile memory size cannot exceed your CPU architecture's supported size")],
+                size
+            })
+        }
+    }
+
     /// Create a new volatile memory component from the provided storage
-    pub fn new(storage: Vec<u32>) -> Self {
+    pub fn from(storage: Vec<u32>) -> Self {
         let size: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
 
         Self {
@@ -23,7 +35,7 @@ impl VolatileMem {
     }
 
     /// Create a new volatile memory component from the provided storage and with a larger size than its storage
-    pub fn with_size(mut storage: Vec<u32>, size: u32) -> Result<Self, ()> {
+    pub fn from_with_size(mut storage: Vec<u32>, size: u32) -> Result<Self, ()> {
         let _: u32 = storage.len().try_into().expect("Storage's length cannot be larger than 2^32 words");
         let _: usize = size.try_into().expect("Volatile memory size cannot exceed your CPU architecture's supported size");
 
