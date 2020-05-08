@@ -2,8 +2,8 @@
 //! This module allows to assemble LASM source code through the [CustomAsm](https://github.com/hlorenzi/customasm) library.
 
 use customasm::{FileServerMock, AssemblerState, RcReport};
-use mrvm::utils::bytes_to_words;
 use crate::asm::{Program, InstrDecodingError};
+use crate::bytes::bytes_to_words;
 
 static CUSTOMASM_HEADER: &'static str = include_str!("customasm.def");
 

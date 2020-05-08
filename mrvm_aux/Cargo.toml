@@ -6,6 +6,4 @@ edition = "2018"
 
 [dependencies]
 mrvm = { path = "../mrvm" }
-
-[dev-dependencies]
 mrvm_tools = { path = "../mrvm_tools" }

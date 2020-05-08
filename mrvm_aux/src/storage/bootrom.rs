@@ -3,6 +3,8 @@
 
 use std::convert::TryInto;
 use mrvm::board::Bus;
+use mrvm_tools::metadata::{DeviceMetadata, StorageType};
+use mrvm_tools::exceptions::HwException;
 
 /// The BootROM component contains a read-only storage that is initialized during its creation.
 /// All write requests are invalid but read requests are valid (reading outside initialization storage will return '0x00000000').
@@ -10,25 +12,27 @@ use mrvm::board::Bus;
 pub struct BootROM {
     storage: Vec<u32>,
     len: u32,
-    size: u32
+    size: u32,
+    hw_id: u64
 }
 
 impl BootROM {
     /// Create a new BootROM component
     /// Returns an error message if the capacity is too large for the running CPU architecture.
-    pub fn new(storage: Vec<u32>) -> Result<Self, &'static str> {
+    pub fn new(storage: Vec<u32>, hw_id: u64) -> Result<Self, &'static str> {
         let len: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
 
         Ok(Self {
             storage,
             len,
-            size: len
+            size: len,
+            hw_id
         })
     }
 
     /// Create a new BootROM component larger than its storage
     /// Returns an error message in case of fail
-    pub fn with_size(storage: Vec<u32>, size: u32) -> Result<Self, &'static str> {
+    pub fn with_size(storage: Vec<u32>, size: u32, hw_id: u64) -> Result<Self, &'static str> {
         let len: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
 
         if storage.len() > size as usize {
@@ -46,7 +50,8 @@ impl BootROM {
         Ok(Self {
             storage,
             len,
-            size: size / 4
+            size: size / 4,
+            hw_id
         })
     }
 
@@ -66,8 +71,14 @@ impl Bus for BootROM {
         "BootROM"
     }
 
-    fn size(&self) -> u32 {
-        self.size * 4
+    fn metadata(&self) -> [u32; 8] {
+        DeviceMetadata::new(
+            self.hw_id,
+            self.size * 4,
+            StorageType::Readonly.into(),
+            0x00000000,
+            None
+        ).encode()
     }
 
     fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
@@ -81,7 +92,7 @@ impl Bus for BootROM {
     }
 
     fn write(&mut self, _addr: u32, _word: u32, ex: &mut u16) {
-        *ex = 0x31 << 8;
+        *ex = HwException::MemoryNotWritable.into();
     }
 
     fn reset(&mut self) { }

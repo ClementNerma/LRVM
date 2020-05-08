@@ -14,7 +14,7 @@ pub struct MemAuxComponent {
     /// Auxiliary component's [`Bus`] interface
     bus: Arc<Mutex<Box<dyn Bus>>>,
     /// Auxiliary component's generic name
-    name: &'static str,
+    name: String,
     /// Auxiliary component's size
     size: u32
 }
@@ -68,23 +68,28 @@ pub struct AuxMappingStatus {
     /// Auxiliary component's ID
     pub aux_id: usize,
     /// Auxiliary component's generic name
-    pub aux_name: &'static str,
+    pub aux_name: String,
     /// Mapping result
     pub aux_mapping: Result<MappingRange, MappingError>
 }
 
 impl MappedMemory {
     /// Create a new mapped memory from a list of auxiliary components' [`Bus`] interface
-    pub fn new(aux: Vec<Arc<Mutex<Box<dyn Bus>>>>) -> Self {
-        let aux = aux.into_iter().map(|aux| {
-            let (aux_name, aux_size) = { let lock = aux.lock().unwrap(); (lock.name(), lock.size()) };
-            assert!(aux_name.len() <= 32, "Auxiliary component's name must not exceed 32 bytes!");
-            MemAuxComponent { bus: aux, name: aux_name, size: aux_size }
-        }).collect();
-
+    pub fn new(aux_list: Vec<Arc<Mutex<Box<dyn Bus>>>>) -> Self {
         Self {
-            aux,
-            mappings: Vec::new()
+            aux: aux_list.into_iter().map(|shared_bus| {
+                let bus = shared_bus.lock().unwrap();
+
+                let aux_name = bus.name().chars().take(32).collect::<String>();
+                let aux_size = bus.metadata()[2];
+
+                std::mem::drop(bus);
+
+                assert!(aux_name.len() <= 32, "Auxiliary component's name must not exceed 32 bytes!");
+                MemAuxComponent { bus: shared_bus, name: aux_name, size: aux_size }
+            }).collect(),
+
+            mappings: vec![]
         }
     }
 
@@ -125,7 +130,7 @@ impl MappedMemory {
 
             aux_mapping.push(AuxMappingStatus {
                 aux_id: *aux_id,
-                aux_name: self.name_of(*aux_id).unwrap(),
+                aux_name: self.name_of(*aux_id).unwrap().clone(),
                 aux_mapping: result
             });
         }
@@ -137,8 +142,8 @@ impl MappedMemory {
     }
 
     /// Get the name of an auxiliary component from its ID
-    pub fn name_of(&self, aux_id: usize) -> Option<&'static str> {
-        self.aux.get(aux_id).map(|aux| aux.name)
+    pub fn name_of(&self, aux_id: usize) -> Option<&String> {
+        self.aux.get(aux_id).map(|aux| &aux.name)
     }
 
     /// Get the size of an auxiliary component from its ID

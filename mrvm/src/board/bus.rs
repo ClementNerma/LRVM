@@ -1,13 +1,17 @@
+//! In order to be able to connect to the motherboard, auxiliary components must implement the [`Bus`] trait.
+//!
+//! This trait describes how the component handles NAME, METADATA, READ, WRITE and RESET requests from the motherboard.
 
 /// Bus of an auxiliary component.
 /// All components must implement this type in order to be connected to the motherboard.
 pub trait Bus {
     /// Get the component's generic name.
-    /// **Must not exceed 32 bytes** (not 32 characters).
+    /// Any name longer than 32 bytes will be cut to 32.
     fn name(&self) -> &'static str;
 
-    /// Get the component's size. This will be used to determine the range of address to map the component on.
-    fn size(&self) -> u32;
+    /// Get the component's metadata.
+    /// See the documentation for the metadata's structure.
+    fn metadata(&self) -> [u32; 8];
 
     /// Answer a READ request from the bus.
     /// The provided address is guaranteed to be aligned (multiple of 4) and strictly lower than the provided size.

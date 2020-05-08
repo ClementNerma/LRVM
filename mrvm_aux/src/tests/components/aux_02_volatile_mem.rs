@@ -10,8 +10,8 @@ fn volatile_mem() {
     program.append(Instr::HALT());
 
     let mut vm = prepare_vm(vec![
-        Box::new(BootROM::with_size(program.encode_words(), 0x1000).unwrap()),
-        Box::new(VolatileMem::new(0x1000).unwrap())
+        Box::new(BootROM::with_size(program.encode_words(), 0x1000, 0x0).unwrap()),
+        Box::new(VolatileMem::new(0x1000, 0x1).unwrap())
     ]);
 
     run_until_halt(&mut vm.cpu());

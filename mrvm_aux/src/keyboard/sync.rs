@@ -3,6 +3,8 @@
 
 use std::convert::TryInto;
 use mrvm::board::Bus;
+use mrvm_tools::metadata::{DeviceMetadata, KeyboardType};
+use mrvm_tools::exceptions::HwException;
 
 /// The keyboard works with a buffer and a handler. When it receives a read request, the data is read from the buffer.
 /// Writing into the buffer is forbidden but writing to the last word of the component results in it interpreting the provided action code:
@@ -14,7 +16,8 @@ use mrvm::board::Bus;
 pub struct SyncKeyboard {
     buffer: Vec<u32>,
     words: u32,
-    handler: Box<dyn FnMut() -> Result<String, ()>>
+    handler: Box<dyn FnMut() -> Result<String, ()>>,
+    hw_id: u64
 }
 
 impl SyncKeyboard {
@@ -22,7 +25,7 @@ impl SyncKeyboard {
     /// The provided capacity must be a multiple of 4, and 4 bytes will be substracted for handling the action code.
     /// This means a capacity of 64 bytes will allow 60 bytes of data or 15 words.
     /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
-    pub fn new(capacity: u32, handler: Box<dyn FnMut() -> Result<String, ()>>) -> Result<Self, &'static str> {
+    pub fn new(capacity: u32, handler: Box<dyn FnMut() -> Result<String, ()>>, hw_id: u64) -> Result<Self, &'static str> {
         let _: usize = capacity.try_into()
             .map_err(|_| "Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)")?;
 
@@ -40,7 +43,8 @@ impl SyncKeyboard {
         Ok(Self {
             buffer: vec![0; (capacity - 1) as usize],
             words: capacity - 1,
-            handler
+            handler,
+            hw_id
         })
     }
 }
@@ -50,8 +54,14 @@ impl Bus for SyncKeyboard {
         "Synchronous Keyboard"
     }
 
-    fn size(&self) -> u32 {
-        self.words * 4 + 4
+    fn metadata(&self) -> [u32; 8] {
+        DeviceMetadata::new(
+            self.hw_id,
+            self.words * 4 + 4,
+            KeyboardType::ReadlineSynchronous.into(),
+            0x00000000,
+            None
+        ).encode()
     }
 
     fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
@@ -104,7 +114,7 @@ impl Bus for SyncKeyboard {
 
                 0xFF => self.reset(),
 
-                code => *ex = 0x10u16 << 8 + code as u8 as u16
+                code => *ex = HwException::UnknownOperation(code as u8).into()
             }
         }
     }

@@ -10,7 +10,7 @@ fn prepare(instr: Instr) -> MotherBoard {
     ]);
 
     prepare_vm(vec![
-        Box::new(BootROM::with_size(prog.encode_words(), 0x1000).unwrap())
+        Box::new(BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap())
     ])
 }
 
