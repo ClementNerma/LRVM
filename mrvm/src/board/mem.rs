@@ -91,6 +91,10 @@ impl MappedMemory {
     pub fn map(&mut self, addr: u32, aux_id: usize) -> Result<MappingRange, MappingError> {
         let aux_size = self.aux.get(aux_id).ok_or(MappingError::UnknownComponent)?.size;
 
+        if addr % 4 != 0 {
+            return Err(MappingError::UnalignedAddress);
+        }
+
         if aux_size == 0 {
             return Err(MappingError::NullBusSize);
         }
