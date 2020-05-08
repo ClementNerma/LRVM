@@ -5,7 +5,7 @@ use std::convert::TryInto;
 use mrvm::board::Bus;
 
 /// The BootROM component contains a read-only storage that is initialized during its creation.
-/// All write requests are invalid but read requests are invalid.
+/// All write requests are invalid but read requests are valid (reading outside initialization storage will return '0x00000000').
 /// The BootROM's size may be larger than its initialization storage. In such case, reading from the unitialized part will return `0x0000000`.
 pub struct BootROM {
     storage: Vec<u32>,
