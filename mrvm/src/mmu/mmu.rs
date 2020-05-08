@@ -17,9 +17,10 @@ impl MMU {
     }
 
     /// Decode an entry from a permission page for a specific action type.
-    pub fn decode_entry(&mut self, regs: &Registers, entry_addr: u32, action: MemAction) -> Result<u32, ()> {
+    /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
+    pub fn decode_entry(&mut self, regs: &Registers, entry_addr: u32, action: MemAction, ex: &mut u16) -> Result<u32, ()> {
         // Get the permissions from the provided entry address in memory
-        let v_table_entry = self.memory.lock().unwrap().read(entry_addr);
+        let v_table_entry = self.memory.lock().unwrap().read(entry_addr, ex);
 
         // We will know read the permission bit for this action
 
@@ -45,7 +46,8 @@ impl MMU {
 
     /// Translate a virtual address into a physical address.
     /// Returns an error if the requested action cannot be performed on this memory location in current mode.
-    pub fn translate(&mut self, regs: &Registers, v_addr: u32, action: MemAction) -> Result<u32, ()> {
+    /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
+    pub fn translate(&mut self, regs: &Registers, v_addr: u32, action: MemAction, ex: &mut u16) -> Result<u32, ()> {
         // Skip this if the MMU is disabled
         if regs.mtt == 0 {
             return Ok(v_addr);
@@ -56,12 +58,12 @@ impl MMU {
         let v1_page_addr = regs.pda + (v1_page_number * 4);
 
         // Get the level 2 page's number
-        let v2_page_number = self.decode_entry(regs, v1_page_addr, action)?;
+        let v2_page_number = self.decode_entry(regs, v1_page_addr, action, ex)?;
 
         let v2_page_addr = v2_page_number * PAGE_SIZE + (v_addr << 10 >> 22);
 
         // Get the final permission page's number
-        let p_page_number = self.decode_entry(regs, v2_page_addr, action)?;
+        let p_page_number = self.decode_entry(regs, v2_page_addr, action, ex)?;
 
         // Translate the address
         Ok(p_page_number * PAGE_SIZE + (v_addr << 20 >> 20))
@@ -69,20 +71,23 @@ impl MMU {
 
     /// Translate a virtual address for reading into a physical address.
     /// Returns an error if the requested action cannot be performed on this memory location in current mode.
-    pub fn read(&mut self, regs: &Registers, v_addr: u32) -> Result<u32, ()> {
-        self.translate(regs, v_addr, MemAction::Read).map(|p_addr| self.memory.lock().unwrap().read(p_addr))
+    /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
+    pub fn read(&mut self, regs: &Registers, v_addr: u32, ex: &mut u16) -> Result<u32, ()> {
+        self.translate(regs, v_addr, MemAction::Read, ex).map(|p_addr| self.memory.lock().unwrap().read(p_addr, ex))
     }
 
     /// Translate a virtual address for writing into a physical address.
     /// Returns an error if the requested action cannot be performed on this memory location in current mode.
-    pub fn write(&mut self, regs: &Registers, v_addr: u32, word: u32) -> Result<(), ()> {
-        self.translate(regs, v_addr, MemAction::Write).map(|p_addr| self.memory.lock().unwrap().write(p_addr, word))
+    /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
+    pub fn write(&mut self, regs: &Registers, v_addr: u32, word: u32, ex: &mut u16) -> Result<(), ()> {
+        self.translate(regs, v_addr, MemAction::Write, ex).map(|p_addr| self.memory.lock().unwrap().write(p_addr, word, ex))
     }
 
     /// Translate a virtual address for execution into a physical address.
     /// Returns an error if the requested action cannot be performed on this memory location in current mode.
-    pub fn exec(&mut self, regs: &Registers, v_addr: u32) -> Result<u32, ()> {
-        self.translate(regs, v_addr, MemAction::Exec).map(|p_addr| self.memory.lock().unwrap().read(p_addr))
+    /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
+    pub fn exec(&mut self, regs: &Registers, v_addr: u32, ex: &mut u16) -> Result<u32, ()> {
+        self.translate(regs, v_addr, MemAction::Exec, ex).map(|p_addr| self.memory.lock().unwrap().read(p_addr, ex))
     }
 }
 

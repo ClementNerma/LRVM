@@ -149,11 +149,12 @@ impl MappedMemory {
     /// Read an arbitrary address in the mapped memory.
     /// The related component will be contacted through its [`Bus`] if mounted at this address.
     /// If no component is mount at this address, the `0x00000000` value will be returned.
-    pub fn read(&mut self, addr: u32) -> u32 {
+    /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
+    pub fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
         assert!(addr % 4 == 0, "Memory does not support reading from unaligned addresses");
         
         if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.addr + mapping.size - 1) {
-            self.aux[mapping.aux_id].bus.lock().unwrap().read(addr - mapping.addr)
+            self.aux[mapping.aux_id].bus.lock().unwrap().read(addr - mapping.addr, ex)
         } else {
             if cfg!(debug_assertions) {
                 eprintln!("Warning: tried to read non-mapped memory at address {:#010X}", addr);
@@ -166,11 +167,12 @@ impl MappedMemory {
     /// Write an arbitrary address in the mapped memory.
     /// The related component will be contacted through its [`Bus`] if mounted at this address.
     /// If no component is mount at this address, the write will simply be ignored.
-    pub fn write(&mut self, addr: u32, word: u32) {
+    /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
+    pub fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
         assert!(addr % 4 == 0, "Memory does not support writing to unaligned addresses");
         
         if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.addr + mapping.size - 1) {
-            self.aux[mapping.aux_id].bus.lock().unwrap().write(addr - mapping.addr, word);
+            self.aux[mapping.aux_id].bus.lock().unwrap().write(addr - mapping.addr, word, ex);
         } else if cfg!(debug_assertions) {
             eprintln!("Warning: tried to read non-mapped memory at address {:#010X}", addr);
         }

@@ -577,21 +577,33 @@ impl CPU {
     /// Raises an exception if address is unaligned or if the MMU doesn't accept reading this address in the current mode.
     fn mem_read(&mut self, v_addr: u32) -> Result<u32, Ex> {
         let v_addr = self.ensure_aligned(v_addr)?;
-        self.mmu.read(&self.regs, v_addr).map_err(|()| self.exception(0x06, Some(v_addr as u16)))
+        let mut ex = 0;
+
+        self.mmu.read(&self.regs, v_addr, &mut ex)
+            .map_err(|()| self.exception(0x06, Some(v_addr as u16)))
+            .and_then(|word| { if ex != 0 { Err(self.exception(0x10, Some(ex))) } else { Ok(word) } })
     }
 
     /// Write an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept writing this address in the current mode.
     fn mem_write(&mut self, v_addr: u32, word: u32) -> Result<(), Ex> {
         let v_addr = self.ensure_aligned(v_addr)?;
-        self.mmu.write(&self.regs, v_addr, word).map_err(|()| self.exception(0x07, Some(v_addr as u16)))
+        let mut ex = 0;
+
+        self.mmu.write(&self.regs, v_addr, word, &mut ex)
+            .map_err(|()| self.exception(0x07, Some(v_addr as u16)))
+            .and_then(|()| { if ex != 0 { Err(self.exception(0x10, Some(ex))) } else { Ok(()) } })
     }
 
     /// Execute (read) an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept executing this address in the current mode.
     fn exec_mem(&mut self, v_addr: u32) -> Result<u32, Ex> {
         let v_addr = self.ensure_aligned(v_addr)?;
-        self.mmu.exec(&self.regs, v_addr).map_err(|()| self.exception(0x07, Some(v_addr as u16)))
+        let mut ex = 0;
+
+        self.mmu.exec(&self.regs, v_addr, &mut ex)
+            .map_err(|()| self.exception(0x07, Some(v_addr as u16)))
+            .and_then(|word| { if ex != 0 { Err(self.exception(0x10, Some(ex))) } else { Ok(word) } })
     }
 }
 
