@@ -23,7 +23,7 @@ pub struct MemAuxComponent {
 
 /// A single component mapping.
 /// End address can be computed as `mapping.addr + mapping.size - 1`
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Mapping {
     /// Mapped component's ID
     pub aux_id: usize,
@@ -196,6 +196,11 @@ impl MappedMemory {
         } else if cfg!(debug_assertions) {
             eprintln!("Warning: tried to read non-mapped memory at address {:#010X}", addr);
         }
+    }
+
+    /// Get the mapping of a given component
+    pub fn get_mapping(&self, aux_id: usize) -> Option<&Mapping> {
+        self.mappings.iter().find(|mapping| mapping.aux_id == aux_id)
     }
 
     /// (Internal) map an auxiliary component to the memory
