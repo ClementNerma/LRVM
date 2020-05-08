@@ -15,6 +15,8 @@ pub struct MemAuxComponent {
     bus: Arc<Mutex<Box<dyn Bus>>>,
     /// Auxiliary component's generic name
     name: String,
+    /// Auxiliary component's metadata
+    metadata: [u32; 8],
     /// Auxiliary component's size
     size: u32
 }
@@ -82,13 +84,14 @@ impl MappedMemory {
             aux: aux_list.into_iter().map(|shared_bus| {
                 let bus = shared_bus.lock().unwrap();
 
-                let aux_name = bus.name().chars().take(32).collect::<String>();
-                let aux_size = bus.metadata()[2];
+                let name = bus.name().chars().take(32).collect::<String>();
+                let metadata = bus.metadata();
+                let size = metadata[2];
 
                 std::mem::drop(bus);
 
-                assert!(aux_name.len() <= 32, "Auxiliary component's name must not exceed 32 bytes!");
-                MemAuxComponent { bus: shared_bus, name: aux_name, size: aux_size }
+                assert!(name.len() <= 32, "Auxiliary component's name must not exceed 32 bytes!");
+                MemAuxComponent { bus: shared_bus, name, metadata, size }
             }).collect(),
 
             mappings: vec![]
@@ -155,7 +158,7 @@ impl MappedMemory {
 
     /// Get the metadata of an axuiliary component from its ID
     pub fn metadata_of(&self, aux_id: usize) -> Option<[u32; 8]> {
-        self.aux.get(aux_id).map(|aux| aux.bus.lock().unwrap().metadata())
+        self.aux.get(aux_id).map(|aux| aux.metadata)
     }
 
     /// Get the size of an auxiliary component from its ID
