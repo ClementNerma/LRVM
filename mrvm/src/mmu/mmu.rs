@@ -62,7 +62,7 @@ impl MMU {
 
         let v2_page_addr = v2_page_number * PAGE_SIZE + (v_addr << 10 >> 22);
 
-        // Get the final permission page's number
+        // Get the permission content
         let p_page_number = self.decode_entry(regs, v2_page_addr, action, ex)?;
 
         // Translate the address
