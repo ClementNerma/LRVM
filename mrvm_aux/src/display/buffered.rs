@@ -6,7 +6,7 @@ use std::str::{from_utf8, Utf8Error};
 use mrvm::board::Bus;
 use mrvm_tools::bytes::words_to_bytes;
 use mrvm_tools::metadata::{DeviceMetadata, DisplayType};
-use mrvm_tools::exceptions::HwException;
+use mrvm_tools::exceptions::AuxHwException;
 
 /// The buffered display works with a buffer and a handler. When it receives a write request, it writes it into the buffer unless the
 /// write address is on its last word ; in this case, in interprets the word as:
@@ -68,7 +68,7 @@ impl Bus for BufferedDisplay {
     }
 
     fn read(&mut self, _addr: u32, ex: &mut u16) -> u32 {
-        *ex = HwException::MemoryNotReadable.into();
+        *ex = AuxHwException::MemoryNotReadable.into();
         0
     }
 
@@ -93,7 +93,7 @@ impl Bus for BufferedDisplay {
 
                 0xFF => self.reset(),
 
-                code => *ex = HwException::UnknownOperation(code as u8).into()
+                code => *ex = AuxHwException::UnknownOperation(code as u8).into()
             }
         }
     }

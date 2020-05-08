@@ -4,7 +4,7 @@
 use std::convert::TryInto;
 use mrvm::board::Bus;
 use mrvm_tools::metadata::{DeviceMetadata, StorageType};
-use mrvm_tools::exceptions::HwException;
+use mrvm_tools::exceptions::AuxHwException;
 
 /// The BootROM component contains a read-only storage that is initialized during its creation.
 /// All write requests are invalid but read requests are valid (reading outside initialization storage will return '0x00000000').
@@ -92,7 +92,7 @@ impl Bus for BootROM {
     }
 
     fn write(&mut self, _addr: u32, _word: u32, ex: &mut u16) {
-        *ex = HwException::MemoryNotWritable.into();
+        *ex = AuxHwException::MemoryNotWritable.into();
     }
 
     fn reset(&mut self) { }

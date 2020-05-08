@@ -4,7 +4,7 @@
 use std::convert::TryInto;
 use mrvm::board::Bus;
 use mrvm_tools::metadata::{DeviceMetadata, KeyboardType};
-use mrvm_tools::exceptions::HwException;
+use mrvm_tools::exceptions::AuxHwException;
 
 /// The keyboard works with a buffer and a handler. When it receives a read request, the data is read from the buffer.
 /// Writing into the buffer is forbidden but writing to the last word of the component results in it interpreting the provided action code:
@@ -114,7 +114,7 @@ impl Bus for SyncKeyboard {
 
                 0xFF => self.reset(),
 
-                code => *ex = HwException::UnknownOperation(code as u8).into()
+                code => *ex = AuxHwException::UnknownOperation(code as u8).into()
             }
         }
     }

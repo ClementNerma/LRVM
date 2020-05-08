@@ -7,7 +7,7 @@ use std::io::{Result as IOResult, Read, Write, Seek, SeekFrom};
 use std::convert::TryInto;
 use mrvm::board::Bus;
 use mrvm_tools::metadata::{DeviceMetadata, StorageType};
-use mrvm_tools::exceptions::HwException;
+use mrvm_tools::exceptions::AuxHwException;
 
 /// The persistent memory component contains a read-only or writable, persistent storage that does not reset with the motherboard.
 /// It uses a real file to store its data and is perfect for storing data that persists after the VM is destroyed.
@@ -97,12 +97,12 @@ impl Bus for PersistentMem {
             let mut buffer = [0; 4];
             
             if let Err(_) = self.handler.seek(SeekFrom::Start(addr.into())) {
-                *ex = HwException::GenericPhysicalReadError.into();
+                *ex = AuxHwException::GenericPhysicalReadError.into();
                 return 0;
             }
 
             if let Err(_) = self.handler.read_exact(&mut buffer) {
-                *ex = HwException::GenericPhysicalReadError.into();
+                *ex = AuxHwException::GenericPhysicalReadError.into();
                 return 0;
             }
 
@@ -112,7 +112,7 @@ impl Bus for PersistentMem {
 
     fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
         if !self.writable {
-            *ex = HwException::MemoryNotWritable.into();
+            *ex = AuxHwException::MemoryNotWritable.into();
         } else if addr < self.real_size {
             self.handler.seek(SeekFrom::Start(addr.into())).unwrap();
             self.handler.write(&word.to_be_bytes()).unwrap();
