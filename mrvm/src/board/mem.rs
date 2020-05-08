@@ -153,6 +153,11 @@ impl MappedMemory {
         self.aux.get(aux_id).map(|aux| &aux.name)
     }
 
+    /// Get the metadata of an axuiliary component from its ID
+    pub fn metadata_of(&self, aux_id: usize) -> Option<[u32; 8]> {
+        self.aux.get(aux_id).map(|aux| aux.bus.lock().unwrap().metadata())
+    }
+
     /// Get the size of an auxiliary component from its ID
     pub fn size_of(&self, aux_id: usize) -> Option<u32> {
         self.aux.get(aux_id).map(|aux| aux.size)
