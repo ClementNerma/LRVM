@@ -37,6 +37,7 @@ pub enum MappingError {
     UnknownComponent,
     UnalignedAddress,
     UnalignedBusSize,
+    AlreadyMapped,
     NullBusSize,
     AddressOverlaps(Mapping)
 }
@@ -96,6 +97,10 @@ impl MappedMemory {
 
         if aux_size % 4 != 0 {
             return Err(MappingError::UnalignedBusSize);
+        }
+
+        if self.mappings.iter().find(|mapping| mapping.aux_id == aux_id).is_some() {
+            return Err(MappingError::AlreadyMapped);
         }
 
         // Check if a component is already mapped on this address range
