@@ -274,6 +274,16 @@ impl CPU {
                     self.mem_write(v_addr + add * mul, self.regs.avr)
                 },
 
+                // SRM
+                0x18 => {
+                    let (v_addr, add, reg_swap) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG);
+
+                    let old_word = self.mem_read(v_addr + add)?;
+                    let to_write = self.read_reg(reg_swap)?;
+                    self.mem_write(v_addr + add, to_write)?;
+                    self.write_reg(reg_swap, old_word)
+                },
+
                 // PUSH
                 0x19 => {
                     let word = args!(REG_OR_LIT_2);

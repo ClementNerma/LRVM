@@ -26,6 +26,7 @@ pub enum Instr {
     LEA(RegOrLit1, RegOrLit1, RegOrLit1),
     WSA(RegOrLit1, RegOrLit1, RegOrLit1),
     WEA(RegOrLit1, RegOrLit1, RegOrLit1),
+    SRM(RegOrLit1, RegOrLit1, Reg),
     PUSH(RegOrLit2),
     POP(Reg),
     CALL(RegOrLit2),
@@ -95,6 +96,7 @@ impl Instr {
             0x15 => Ok(Self::LEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x16 => Ok(Self::WSA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x17 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x18 => Ok(Self::SRM(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg(3)?)),
             0x19 => Ok(Self::PUSH(arg_reg_or_lit_2(1)?)),
             0x1A => Ok(Self::POP(arg_reg(1)?)),
             0x1B => Ok(Self::CALL(arg_reg_or_lit_2(1)?)),
@@ -270,6 +272,13 @@ impl Instr {
                 doo!(r a.is_reg(), b.is_reg(), c.is_reg());
                 doo!(roc a, b, c);
                 0x17
+            }
+
+            Self::SRM(a, b, c) => {
+                doo!(r a.is_reg(), b.is_reg(), true);
+                doo!(roc a, b);
+                doo!(er c);
+                0x18
             }
 
             Self::PUSH(a) => {

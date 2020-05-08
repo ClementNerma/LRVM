@@ -428,6 +428,11 @@ The memory instructions allow to manipulate the memory:
   Write the value of `avr` to address at (`addr` + `add` \* `mul`)  
   The address must be aligned or an exception will be raised
 
+- `SRM [reg_addr | 1-byte], [reg_add | 1-byte], reg_swap` (Swap Register and Memory) | opcode: `0x18`  
+  Swap the values of `reg_swap` and address at (`reg_addr` + `reg_add`)  
+  Equivalent to `LSA <temporary>, addr, add`, `WSA addr, add, reg_swap`, `CPY reg_swap, <temporary>`  
+  **Affects** `reg_swap`
+
 - `PUSH [reg_value | 2-bytes]` (PUSH) | opcode: `0x19`  
   Decreases the current mode's stack pointer by 4, then write the provided value to the address it now points to  
   Equivalent to: `ADD [s|u]sp, [s|u]sp, 4` + `LDB [s|u]sp, <value>`  

@@ -200,6 +200,11 @@
     wea {lit_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x17 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
     wea {lit_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x17 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
 
+    srm {reg_addr: reg}, {reg_add: reg}, {reg_swap: reg} -> ((0x17 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_swap[7:0]
+    srm {reg_addr: reg}, {lit_add: reg}, {reg_swap: reg} -> ((0x17 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_swap[7:0]
+    srm {lit_addr: reg}, {reg_add: reg}, {reg_swap: reg} -> ((0x17 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_swap[7:0]
+    srm {lit_addr: reg}, {lit_add: reg}, {reg_swap: reg} -> ((0x17 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_swap[7:0]
+
     push {reg_value: reg} -> ((0x19 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
     push {lit_value: u16} -> ((0x19 << 3) + 0b000)[7:0] @ reg_addr[15:8] @ reg_addr[7:0] @ 0x00
 
