@@ -54,7 +54,7 @@ impl Bus for SyncKeyboard {
         self.words * 4 + 4
     }
 
-    fn read(&mut self, addr: u32) -> u32 {
+    fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
         let addr = addr / 4;
 
         if addr == self.words {
@@ -64,9 +64,9 @@ impl Bus for SyncKeyboard {
         }
     }
 
-    fn write(&mut self, addr: u32, word: u32) {
+    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
         if addr / 4 != self.words {
-            eprintln!("Warning: tried to write to synchronous keyboard");
+            *ex = 0x31 << 8;
         } else {
             match word {
                 0xAA => {
@@ -104,7 +104,7 @@ impl Bus for SyncKeyboard {
 
                 0xFF => self.reset(),
 
-                code => eprintln!("Warning: unknown action code {:#010X} received by buffered display", code)
+                code => *ex = 0x10u16 << 8 + code as u8 as u16
             }
         }
     }

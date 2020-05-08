@@ -35,25 +35,41 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
     motherboard
 }
 
-pub fn run_until_halt_limit(cpu: &mut CPU, cycles_limit: Option<u32>) -> u32 {
+pub fn run_until_halt_ex_limit(cpu: &mut CPU, halt_on_ex: bool, cycles_limit: Option<u32>) -> (u32, bool) {
+    let mut had_ex = false;
+
     while !cpu.halted() && cycles_limit.map(|limit| cpu.cycles() < limit).unwrap_or(true) {
         let was_at = cpu.regs.pc;
 
         match cpu.next() {
             Ok(true) => {}
             Ok(false) => unreachable!("CPU can't run because it's halted"),
-            Err(ex) => println!(
-                "At address {:#010X} - Exception occurred: {:#04X} (data = {:#04X})",
-                was_at,
-                ex.code,
-                ex.associated.unwrap_or(0)
-            ),
+            Err(ex) => {
+                println!(
+                    "At address {:#010X} - Exception occurred: {:#04X} (data = {:#04X})",
+                    was_at,
+                    ex.code,
+                    ex.associated.unwrap_or(0)
+                );
+
+                if halt_on_ex { had_ex = true; break }
+            },
         };
     }
 
-    cpu.cycles()
+    (cpu.cycles(), had_ex)
 }
 
-pub fn run_until_halt(cpu: &mut CPU) -> u32 {
-    run_until_halt_limit(cpu, None)
+pub fn run_until_halt(cpu: &mut CPU) -> (u32, bool) {
+    run_until_halt_ex_limit(cpu, false, None)
+}
+
+pub fn run_until_halt_or_ex(cpu: &mut CPU) -> Result<u32, u32> {
+    let res = run_until_halt_ex_limit(cpu, true, None);
+    
+    if res.1 {
+        Err(cpu.regs.et)
+    } else {
+        Ok(res.0)
+    }
 }

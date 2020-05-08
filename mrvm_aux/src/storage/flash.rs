@@ -55,11 +55,11 @@ impl Bus for FlashMem {
         self.size * 4
     }
 
-    fn read(&mut self, addr: u32) -> u32 {
+    fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
         self.storage[addr as usize / 4]
     }
 
-    fn write(&mut self, addr: u32, word: u32) {
+    fn write(&mut self, addr: u32, word: u32, _ex: &mut u16) {
         self.storage[addr as usize / 4] = word;
     }
 

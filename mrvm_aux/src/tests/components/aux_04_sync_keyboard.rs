@@ -40,8 +40,11 @@ fn sync_keyboard() {
     vm.map(|mut mem| {
         let mut bytes = vec![];
 
+        let mut ex = 0;
+
         for addr_r in 0x1000/4..=(0x1100-4)/4 {
-            bytes.extend(&mem.read(addr_r * 4).to_be_bytes());
+            bytes.extend(&mem.read(addr_r * 4, &mut ex).to_be_bytes());
+            assert_eq!(ex, 0, "Exception occurred while reading word at address {:#010X}: {:#008X}", addr_r * 4, ex);
         }
 
         let string = String::from_utf8(bytes).expect("Received invalid UTF-8 string from keyboard");

@@ -16,9 +16,15 @@ fn volatile_mem() {
 
     run_until_halt(&mut vm.cpu());
 
+    let (mut err_a, mut err_b, mut err_c) = (0, 0, 0);
+
     let (word_a, word_b, word_c) = vm.map(|mut mem|
-        (mem.read(0x1000), mem.read(0x1008), mem.read(0x1010))
+        (mem.read(0x1000, &mut err_a), mem.read(0x1008, &mut err_b), mem.read(0x1010, &mut err_c))
     );
+
+    assert_eq!(err_a, 0, "Hardware exception occurred while reading word at address 0x00001000: {:#008X}", err_a);
+    assert_eq!(err_b, 0, "Hardware exception occurred while reading word at address 0x00001008: {:#008X}", err_b);
+    assert_eq!(err_c, 0, "Hardware exception occurred while reading word at address 0x00001010: {:#008X}", err_c);
 
     assert_eq!(word_a, 0x01234567, "Expected word at address 0x00001000 to contain 0x01234567 but it actually contains {:#010X}", word_a);
     assert_eq!(word_b, 0x89ABCDEF, "Expected word at address 0x00001008 to contain 0x89ABCDEF but it actually contains {:#010X}", word_b);

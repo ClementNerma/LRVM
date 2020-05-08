@@ -13,8 +13,7 @@ pub struct PersistentMem {
     handler: File,
     size: u32,
     real_size: u32,
-    writable: bool,
-    pub panic_on_invalid: bool
+    writable: bool
 }
 
 impl PersistentMem {
@@ -37,8 +36,7 @@ impl PersistentMem {
             size: real_size,
             real_size,
             handler,
-            writable,
-            panic_on_invalid: false
+            writable
         })
     }
 
@@ -71,12 +69,6 @@ impl PersistentMem {
         mem.size = size;
         Ok(mem)
     }
-
-    /// Set if the component must make the program panic on invalid access (writing attemps on read-only storage)
-    pub fn set_panic_on_invalid(mut self, value: bool) -> Self {
-        self.panic_on_invalid = value;
-        self
-    }
 }
 
 impl Bus for PersistentMem {
@@ -88,26 +80,29 @@ impl Bus for PersistentMem {
         self.size
     }
 
-    fn read(&mut self, addr: u32) -> u32 {
+    fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
         if addr >= self.real_size {
             0
         } else {
             let mut buffer = [0; 4];
             
-            self.handler.seek(SeekFrom::Start(addr.into())).unwrap();
-            self.handler.read_exact(&mut buffer).unwrap();
+            if let Err(_) = self.handler.seek(SeekFrom::Start(addr.into())) {
+                *ex = 0x21 << 8;
+                return 0;
+            }
+
+            if let Err(_) = self.handler.read_exact(&mut buffer) {
+                *ex = 0x21 << 8;
+                return 0;
+            }
 
             u32::from_be_bytes(buffer)
         }
     }
 
-    fn write(&mut self, addr: u32, word: u32) {
+    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
         if !self.writable {
-            if self.panic_on_invalid {
-                panic!("ERROR: Attempted to write readonly persistent memory");
-            } else {
-                eprintln!("Warning: Attempted to write readonly persistent memory");
-            }
+            *ex = 0x31 << 8;
         } else if addr < self.real_size {
             self.handler.seek(SeekFrom::Start(addr.into())).unwrap();
             self.handler.write(&word.to_be_bytes()).unwrap();

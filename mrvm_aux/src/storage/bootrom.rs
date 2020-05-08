@@ -10,8 +10,7 @@ use mrvm::board::Bus;
 pub struct BootROM {
     storage: Vec<u32>,
     len: u32,
-    size: u32,
-    pub panic_on_invalid: bool
+    size: u32
 }
 
 impl BootROM {
@@ -23,8 +22,7 @@ impl BootROM {
         Ok(Self {
             storage,
             len,
-            size: len,
-            panic_on_invalid: false
+            size: len
         })
     }
 
@@ -48,8 +46,7 @@ impl BootROM {
         Ok(Self {
             storage,
             len,
-            size: size / 4,
-            panic_on_invalid: false
+            size: size / 4
         })
     }
 
@@ -62,12 +59,6 @@ impl BootROM {
     pub fn size(&self) -> u32 {
         self.size
     }
-
-    /// Set if the component must make the program panic on invalid access (writing attempts)
-    pub fn set_panic_on_invalid(mut self, value: bool) -> Self {
-        self.panic_on_invalid = value;
-        self
-    }
 }
 
 impl Bus for BootROM {
@@ -79,29 +70,18 @@ impl Bus for BootROM {
         self.size * 4
     }
 
-    fn read(&mut self, addr: u32) -> u32 {
+    fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
         let addr = addr / 4;
 
         if addr < self.len {
             self.storage[addr as usize]
-        } else if addr < self.size {
-            0
         } else {
-            if self.panic_on_invalid {
-                panic!("Error: attempted to read outside the BootROM");
-            } else {
-                eprintln!("Warning: attempted to read outside the BootROM");
-                0
-            }
+            0
         }
     }
 
-    fn write(&mut self, _addr: u32, _word: u32) {
-        if self.panic_on_invalid {
-            panic!("Error: attempted to write the BootROM");
-        } else {
-            eprintln!("Warning: attempted to write the BootROM");
-        }
+    fn write(&mut self, _addr: u32, _word: u32, ex: &mut u16) {
+        *ex = 0x31 << 8;
     }
 
     fn reset(&mut self) { }

@@ -56,12 +56,12 @@ impl Bus for BufferedDisplay {
         self.words * 4 + 4
     }
 
-    fn read(&mut self, _addr: u32) -> u32 {
-        eprintln!("Warning: tried to read from buffered display");
+    fn read(&mut self, _addr: u32, ex: &mut u16) -> u32 {
+        *ex = 0x21 << 8;
         0
     }
 
-    fn write(&mut self, addr: u32, word: u32) {
+    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
         let addr = addr / 4;
 
         if addr < self.words {
@@ -82,7 +82,7 @@ impl Bus for BufferedDisplay {
 
                 0xFF => self.reset(),
 
-                code => eprintln!("Warning: unknown action code {:#010X} received by buffered display", code)
+                code => *ex = 0x10u16 << 8 + code as u8 as u16
             }
         }
     }
