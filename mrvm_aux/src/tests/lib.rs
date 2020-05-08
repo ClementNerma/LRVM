@@ -26,7 +26,9 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
             );
         }
 
-        assert!(mapping.is_ok(), "At least one component could not be mounted correctly!");
+        if let Err(failed) = mapping {
+            panic!("Failed to map {} component{}!", failed.len(), if failed.len() == 1 { "" } else { "s" });
+        }
     });
 
     motherboard.reset();
