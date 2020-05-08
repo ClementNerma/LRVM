@@ -24,6 +24,25 @@ pub enum AuxHwException {
 }
 
 impl AuxHwException {
+    /// Decode an auxiliary component's exception
+    pub fn decode(code: u16) -> Result<Self, ()> {
+        let code = (code >> 8) as u8;
+        let data = (code & 0xFF) as u8;
+
+        match code {
+            0x10 => Ok(Self::UnknownOperation(data)),
+            0x11 => Ok(Self::UnsupportedOperation),
+            
+            0x20 => Ok(Self::GenericPhysicalReadError),
+            0x21 => Ok(Self::MemoryNotReadable),
+
+            0x30 => Ok(Self::GenericPhysicalWriteError),
+            0x31 => Ok(Self::MemoryNotWritable),
+
+            _ => Err(())
+        }
+    }
+
     /// Get the exception's code
     pub fn code(&self) -> u8 {
         match self {
