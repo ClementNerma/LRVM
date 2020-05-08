@@ -37,6 +37,8 @@ pub enum MappingError {
     UnknownComponent,
     UnalignedAddress,
     UnalignedBusSize,
+    UnalignedEndAddress,
+    NullOrNegAddressRange,
     AlreadyMapped,
     NullBusSize,
     AddressOverlaps(Mapping)
@@ -89,38 +91,13 @@ impl MappedMemory {
     /// Map an auxiliary component from a specific address.
     /// The end address will be determined through the component's [`Bus::size`] method.
     pub fn map(&mut self, addr: u32, aux_id: usize) -> Result<MappingRange, MappingError> {
-        let aux_size = self.aux.get(aux_id).ok_or(MappingError::UnknownComponent)?.size;
+        self.internal_map(addr, None, aux_id)
+    }
 
-        if addr % 4 != 0 {
-            return Err(MappingError::UnalignedAddress);
-        }
-
-        if aux_size == 0 {
-            return Err(MappingError::NullBusSize);
-        }
-
-        if aux_size % 4 != 0 {
-            return Err(MappingError::UnalignedBusSize);
-        }
-
-        if self.mappings.iter().find(|mapping| mapping.aux_id == aux_id).is_some() {
-            return Err(MappingError::AlreadyMapped);
-        }
-
-        // Check if a component is already mapped on this address range
-        match self.mappings.iter().find(|mapping| mapping.addr <= addr + aux_size - 1 && addr <= mapping.addr + mapping.size - 1) {
-            Some(mapping) => {
-                Err(MappingError::AddressOverlaps(mapping.clone()))
-            },
-
-            None => {
-                self.mappings.push(Mapping { addr, size: aux_size, aux_id });
-                Ok(MappingRange {
-                    start_addr: addr,
-                    end_addr: addr + aux_size - 1
-                })
-            }
-        }
+    /// Map an auxiliary component to a specific address range
+    /// NOTE: The address range cannot be higher than the component's [`Bus::size`] value.
+    pub fn map_abs(&mut self, addr: u32, addr_end: u32, aux_id: usize) -> Result<MappingRange, MappingError> {
+        self.internal_map(addr, Some(addr_end), aux_id)
     }
 
     /// Map a list of components contiguously
@@ -196,6 +173,51 @@ impl MappedMemory {
             self.aux[mapping.aux_id].bus.lock().unwrap().write(addr - mapping.addr, word);
         } else if cfg!(debug_assertions) {
             eprintln!("Warning: tried to read non-mapped memory at address {:#010X}", addr);
+        }
+    }
+
+    /// (Internal) map an auxiliary component to the memory
+    fn internal_map(&mut self, addr: u32, addr_end: Option<u32>, aux_id: usize) -> Result<MappingRange, MappingError> {
+        let aux_size = self.aux.get(aux_id).ok_or(MappingError::UnknownComponent)?.size;
+        let addr_end = addr_end.unwrap_or(addr + aux_size - 4);
+
+        if addr % 4 != 0 {
+            return Err(MappingError::UnalignedAddress);
+        }
+
+        if addr_end % 4 != 0 {
+            return Err(MappingError::UnalignedEndAddress);
+        }
+
+        if addr == addr_end + 4 || addr > addr_end {
+            return Err(MappingError::NullOrNegAddressRange);
+        }
+
+        if aux_size == 0 {
+            return Err(MappingError::NullBusSize);
+        }
+
+        if aux_size % 4 != 0 {
+            return Err(MappingError::UnalignedBusSize);
+        }
+
+        if self.mappings.iter().find(|mapping| mapping.aux_id == aux_id).is_some() {
+            return Err(MappingError::AlreadyMapped);
+        }
+
+        // Check if a component is already mapped on this address range
+        match self.mappings.iter().find(|mapping| mapping.addr <= addr_end && addr <= mapping.addr + mapping.size - 1) {
+            Some(mapping) => {
+                Err(MappingError::AddressOverlaps(mapping.clone()))
+            },
+
+            None => {
+                self.mappings.push(Mapping { addr, size: aux_size, aux_id });
+                Ok(MappingRange {
+                    start_addr: addr,
+                    end_addr: addr + aux_size - 1
+                })
+            }
         }
     }
 }
