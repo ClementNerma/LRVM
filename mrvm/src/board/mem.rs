@@ -185,20 +185,20 @@ impl MappedMemory {
             return Err(MappingError::UnalignedAddress);
         }
 
-        if addr_end % 4 != 0 {
-            return Err(MappingError::UnalignedEndAddress);
-        }
-
-        if addr == addr_end + 4 || addr > addr_end {
-            return Err(MappingError::NullOrNegAddressRange);
-        }
-
         if aux_size == 0 {
             return Err(MappingError::NullBusSize);
         }
 
         if aux_size % 4 != 0 {
             return Err(MappingError::UnalignedBusSize);
+        }
+
+        if addr_end % 4 != 0 {
+            return Err(MappingError::UnalignedEndAddress);
+        }
+
+        if addr == addr_end + 4 || addr > addr_end {
+            return Err(MappingError::NullOrNegAddressRange);
         }
 
         if self.mappings.iter().find(|mapping| mapping.aux_id == aux_id).is_some() {
