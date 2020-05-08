@@ -87,7 +87,7 @@ impl Bus for BootROM {
         } else if addr < self.size {
             0
         } else {
-            if self.panic_on_invalid && cfg!(debug_assertions) {
+            if self.panic_on_invalid {
                 panic!("Error: attempted to read outside the BootROM");
             } else {
                 eprintln!("Warning: attempted to read outside the BootROM");
@@ -97,7 +97,7 @@ impl Bus for BootROM {
     }
 
     fn write(&mut self, _addr: u32, _word: u32) {
-        if self.panic_on_invalid && cfg!(debug_assertions) {
+        if self.panic_on_invalid {
             panic!("Error: attempted to write the BootROM");
         } else {
             eprintln!("Warning: attempted to write the BootROM");
