@@ -469,7 +469,7 @@ There are a few _alias instructions_, which are strict aliases of existing instr
   Decrease a registry
   Alias of: `SUB reg, 1`
 
-- `AJMP [reg_addr | 2-bytes]` (Absolute JuMP)
+- `JMPA [reg_addr | 2-bytes]` (JuMP Absolute)
   Go to the provided address
   ALias of: `CPY cp, [reg_addr | 2-bytes]`
 
