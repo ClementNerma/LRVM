@@ -467,7 +467,7 @@ impl CPU {
                     // Maximum signed value divided / moduled by -1 (overflowing multiplication)
                     (_, true, std::i32::MIN, -1) => match (mode & 0b00000011) >> 2 {
                         // Forbid
-                        0b00 => return Err(self.exception(0x10, None)),
+                        0b00 => return Err(self.exception(0x0A, None)),
                         // Result in the minimum signed value
                         0b01 => (0x80000000, true, true),
                         // Result in zero
