@@ -57,9 +57,9 @@ impl AuxHwException {
         }
     }
 
-    /// Encode the exception with its (eventual) associated data
-    pub fn encode(&self) -> u16 {
-        let associated = match self {
+    /// Get the exception's eventual associated data
+    pub fn associated_data(&self) -> Option<u8> {
+        match self {
             Self::UnknownOperation(op) => Some(*op),
             Self::UnsupportedOperation => None,
 
@@ -68,9 +68,12 @@ impl AuxHwException {
 
             Self::GenericPhysicalWriteError => None,
             Self::MemoryNotWritable => None,
-        };
+        }
+    }
 
-        (self.code() as u16) << 8 + associated.unwrap_or(0) as u16
+    // Encode the exception with its eventual associated data
+    pub fn encode(&self) -> u16 {
+        (self.code() as u16) << 8 + self.associated_data().unwrap_or(0) as u16
     }
 }
 
