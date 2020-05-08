@@ -76,6 +76,8 @@ pub struct AuxMappingStatus {
 impl MappedMemory {
     /// Create a new mapped memory from a list of auxiliary components' [`Bus`] interface
     pub fn new(aux_list: Vec<Arc<Mutex<Box<dyn Bus>>>>) -> Self {
+        assert!(aux_list.len() <= std::u32::MAX as usize, "Cannot connect more than 2^32 components!");
+
         Self {
             aux: aux_list.into_iter().map(|shared_bus| {
                 let bus = shared_bus.lock().unwrap();

@@ -27,6 +27,8 @@ impl MotherBoard {
             aux.push(Arc::clone(&component));
         }
 
+        assert!(aux.len() <= std::u32::MAX as usize, "Cannot connect more than 2^32 components!");
+
         // Instanciate the memory
         let mem = Arc::new(Mutex::new(MappedMemory::new(aux.clone())));
 
