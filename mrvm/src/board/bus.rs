@@ -11,11 +11,11 @@ pub trait Bus {
 
     /// Answer a READ request from the bus.
     /// The provided address is guaranteed to be aligned (multiple of 4) and strictly lower than the provided size.
-    fn read(&mut self, addr: u32) -> u32; // Guaranteed to be aligned (multiple of 4)
+    fn read(&mut self, addr: u32) -> u32;
 
     /// Answer a WRITE request from the bus.
     /// The provided address is guaranteed to be aligned (multiple of 4) and strictly lower than the provided size.
-    fn write(&mut self, addr: u32, word: u32); // Guaranteed to be aligned (multiple of 4)
+    fn write(&mut self, addr: u32, word: u32);
 
     /// Handle a RESET signal sent by the motherboard.
     /// All volatile data from the component must be reset.
