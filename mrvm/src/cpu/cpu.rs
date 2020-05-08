@@ -548,8 +548,8 @@ impl CPU {
     fn exception(&mut self, code: u8, associated: Option<u16>) -> Ex {
         // Assign the Exception Type `et` register.
         self.regs.et =
-            (if self.sv_mode() { 1 << 31 } else { 0 }) +
-            (u32::from(code) << 23) +
+            (if self.sv_mode() { 1 << 24 } else { 0 }) +
+            (u32::from(code) << 16) +
             u32::from(associated.unwrap_or(0));
 
         // Jump to the Exception Vector address
