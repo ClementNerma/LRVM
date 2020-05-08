@@ -224,11 +224,40 @@
 
     reset -> ((0x1F << 3) + 0b000)[7:0] @ 0x00 @ 0x00 @ 0x00
 
-    ; # Aliases
+    ; Aliases
     zro  {reg: reg} -> ((0x0A << 3) + 0b110)[7:0] @ reg[7:0] @ reg[7:0] @ 0x00
     not  {reg: reg} -> ((0x0A << 3) + 0b110)[7:0] @ reg[7:0] @ reg[7:0] @ 0x00
     inc  {reg: reg} -> ((0x03 << 3) + 0b100)[7:0] @ reg[7:0] @ 0x00 @ 0x01
     sub  {reg: reg} -> ((0x04 << 3) + 0b100)[7:0] @ reg[7:0] @ 0x00 @ 0x01
+
+    ifor    {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x01
+    ifor    {reg_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x01
+    ifor    {lit_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x01
+    ifor    {lit_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x01
+    ifand   {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x02
+    ifand   {reg_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x02
+    ifand   {lit_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x02
+    ifand   {lit_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x02
+    ifxor   {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x03
+    ifxor   {reg_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x03
+    ifxor   {lit_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x03
+    ifxor   {lit_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x03
+    ifnor   {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x04
+    ifnor   {reg_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x04
+    ifnor   {lit_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x04
+    ifnor   {lit_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x04
+    ifnand  {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x05
+    ifnand  {reg_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x05
+    ifnand  {lit_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x05
+    ifnand  {lit_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x05
+    ifleft  {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x06
+    ifleft  {reg_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x06
+    ifleft  {lit_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x06
+    ifleft  {lit_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x06
+    ifright {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x07
+    ifright {reg_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x07
+    ifright {lit_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x07
+    ifright {lit_flag_a: reg}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x07
     
     jmpa {reg_addr: reg} -> ((0x01 << 3) + 0b110)[7:0] @ 0x16 @ reg_addr[7:0] @ 0x00
     jmpa {lit_addr: u16} -> ((0x01 << 3) + 0b100)[7:0] @ 0x16 @ lit_addr[15:8] @ lit_addr[7:0]
