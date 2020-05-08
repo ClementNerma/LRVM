@@ -35,7 +35,7 @@ pub struct Mapping {
 #[derive(Debug)]
 pub enum MappingError {
     UnknownComponent,
-    UnalignedAddress,
+    UnalignedStartAddress,
     UnalignedBusSize,
     UnalignedEndAddress,
     NullOrNegAddressRange,
@@ -56,8 +56,8 @@ pub struct MappingRange {
 /// Status of a continguous mapping
 #[derive(Debug)]
 pub struct ContiguousMappingStatus {
-    /// Range of the mapping in case of success, or ID of the faulty component if the mapping failed
-    pub mapping: Result<MappingRange, usize>,
+    /// Range of the mapping in case of success, or ID of the faulty components if the mapping failed
+    pub mapping: Result<MappingRange, Vec<usize>>,
     /// List of auxiliary components mapping (succeeded or failed)
     pub aux_mapping: Vec<AuxMappingStatus>
 }
@@ -103,7 +103,7 @@ impl MappedMemory {
     /// Map a list of components contiguously
     pub fn map_contiguous(&mut self, addr: u32, aux_ids: impl AsRef<[usize]>) -> ContiguousMappingStatus {
         let mut aux_mapping = vec![];
-        let mut failed = 0;
+        let mut failed = vec![];
         let mut last_addr = addr;
         let mut max_addr = addr;
         
@@ -120,7 +120,7 @@ impl MappedMemory {
                     last_addr = end_addr + 1;
                 },
 
-                Err(_) => failed += 1
+                Err(_) => failed.push(*aux_id)
             }
 
             aux_mapping.push(AuxMappingStatus {
@@ -131,7 +131,7 @@ impl MappedMemory {
         }
 
         ContiguousMappingStatus {
-            mapping: if failed == 0 { Ok(MappingRange { start_addr: addr, end_addr: max_addr }) } else { Err(failed) },
+            mapping: if failed.len() == 0 { Ok(MappingRange { start_addr: addr, end_addr: max_addr }) } else { Err(failed) },
             aux_mapping
         }
     }
@@ -182,7 +182,7 @@ impl MappedMemory {
         let addr_end = addr_end.unwrap_or(addr + aux_size - 4);
 
         if addr % 4 != 0 {
-            return Err(MappingError::UnalignedAddress);
+            return Err(MappingError::UnalignedStartAddress);
         }
 
         if aux_size == 0 {
