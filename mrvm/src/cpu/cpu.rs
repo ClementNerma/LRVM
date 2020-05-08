@@ -209,36 +209,37 @@ impl CPU {
                     Err(self.exception(0xAA, Some(itr_code as u16)))
                 },
 
-                // IF
+                // IF, IFN
                 0x11 | 0x12 => {
                     let flag: u32 = args!(REG_OR_LIT_1).into();
 
                     if (self.regs.af & (1 << flag) == 1) ^ (opcode == 0x11) {
-                        self.regs.pc = self.regs.pc.wrapping_add(8);
-                        self._cycle_changed_pc = true;
+                        self.regs.pc = self.regs.pc.wrapping_add(4);
                     }
 
                     Ok(())
                 },
 
-                // IFAND, IFOR, IFNOR, IFLFT
-                0x13..=0x16 => {
-                    let (flag_a, flag_b) = args!(REG_OR_LIT_1, REG_OR_LIT_1);
+                // IF2
+                0x13 => {
+                    let (flag_a, flag_b, cond) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
                     let (flag_a, flag_b) = (self.regs.af & (1 << flag_a) == 0, self.regs.af & (1 << flag_b) == 0);
 
-                    let cond = match opcode {
-                        0x13 => flag_a && flag_b,
-                        0x14 => flag_a || flag_b,
-                        0x15 => !flag_a && !flag_b,
-                        0x16 => flag_a && !flag_b,
-                        _ => unreachable!()
+                    let result = match cond {
+                        0x01 => flag_a && flag_b,
+                        0x02 => flag_a || flag_b,
+                        0x03 => flag_a ^ flag_b,
+                        0x04 => !flag_a && !flag_b,
+                        0x05 => !(flag_a && flag_b),
+                        0x06 => flag_a && !flag_b,
+                        0x07 => flag_b && !flag_a,
+                        _ => return Err(self.exception(0x0F, Some(cond as u16)))
                     };
 
-                    if !cond {
-                        self.regs.pc = self.regs.pc.wrapping_add(8);
+                    if !result {
+                        self.regs.pc = self.regs.pc.wrapping_add(4);
                     }
-
-                    self._cycle_changed_pc = true;
+                    
                     Ok(())
                 },
 

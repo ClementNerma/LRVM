@@ -98,6 +98,7 @@ An _exception_ occurs either when an fatal error occurs, or when an interruption
 | `0x0C` | Unknown component ID in `HWD` instruction                            | Faulty ID (weakest 16 bits)        |
 | `0x0D` | Invalid hardware information code in `HWD` instruction               | Faulty code                        |
 | `0x0E` | Component is not mapped                                             | Faulty ID (weakest 16 bits)        |
+| `0x0F` | Invalid condition mode provided in `IF2` instruction                 | Faulty code                        |
 | `0x10` | Hardware exception                                                   | Exception's code & associated data |
 | `0xAA` | An interruption occurred                                             | Interruption code                  |
 
@@ -191,6 +192,13 @@ They cannot be re-declared manually.
 | `DIV_MBO_MIN`    | `0x01` | Make div/mod of the minimum value by -1 result in the minimum value                                |
 | `DIV_MBO_ZRO`    | `0x02` | Make div/mod of the minimum value by -1 result in zero                                             |
 | `DIV_MBO_MAX`    | `0x03` | Make div/mod of the minimum value by -1 result in the maximum value                                |
+| `IF2_OR`         | `0x01` | Checks if at least one of the two flags is set                                                     |
+| `IF2_AND`        | `0x02` | Checks if both flags are set                                                                       |
+| `IF2_XOR`        | `0x03` | Checks if exactly one of the two flags is set                                                      |
+| `IF2_NOR`        | `0x04` | Checks if none of the two flags is set                                                             |
+| `IF2_NAND`       | `0x05` | Checks if up to one of the two flags is set                                                        |
+| `IF2_LEFT`       | `0x06` | Checks if only the first flag is set                                                               |
+| `IF2_RIGHT`      | `0x07` | Checks if only the second flag is set                                                              |
 | `HWD_COUNT`      | `0x00` | Get the number of auxiliary components                                                             |
 | `HWD_UID_UPPER`  | `0x01` | Get the component's unique identifier's 32 strongest bits                                          |
 | `HWD_UID_LOWER`  | `0x02` | Get the component's unique identifier's 32 weakest bits                                            |
@@ -374,30 +382,27 @@ The control flow instructions allow to control the program's flow by changing th
 The conditional instructions allow to instruction following them only if a condition is met.
 Under the hood, they simply jump four bytes forward if the condition is not met, and nothing otherwise.
 
-- `IF [reg_flag | 1-flag]` (IF) | opcode: `0x11`  
+- `IF [reg_flag]` (IF) | opcode: `0x11`  
   Run the next instruction only if the specified flag is set  
-  e.g. `IFF 0x06` will require the zero flag (ZF) to be set  
   **Affects** `pc`
 
-- `IFN [reg_flag | 1-flag]` (IF Not) | opcode: `0x12`  
+- `IFN [reg_flag]` (IF Not) | opcode: `0x12`  
   Run the next instruction only if the specified flag is _not_ set  
-  e.g. `IFF 0x06` will require the zero flag (ZF) to _not_ be set  
   **Affects** `pc`
 
-- `IFAND [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF AND) | opcode: `0x13`  
-  Run the next instruction only if the two specified flags are set  
-  **Affects** `pc`
+- `IF2 [reg_flag_a], [reg_flag_b], [reg_cond | 1-byte]` (IF) | opcode: `0x13`
+  Run the next instruction only if the specified condition is met
 
-- `IFOR [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF OR) | opcode: `0x14`  
-  Run the next instruction only if at least one the specified flags is set  
-  **Affects** `pc`
+  `0x01` at least one of the two flags is set (OR)  
+  `0x02` both flags are set (AND)  
+  `0x03` exactly one of the two flags is set (XOR)  
+  `0x04` none of the two flags is set (NOR)  
+  `0x05` up to one of the two flags is set (NAND)  
+  `0x06` only the first flag is set  
+  `0x07` only the second flag is set
 
-- `IFNOR [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF Not OR) | opcode: `0x15`  
-  Run the next instruction only if none of the specified flags is set  
-  **Affects** `pc`
+  Providing an invalid code will raise an `0x0F` exception.
 
-- `IFLFT [reg_flag | 1-flag], [reg_flag | 1-flag]` (If LeFT) | opcode: `0x16`  
-  Run the next instruction only if the first specified flag is set and the second is not  
   **Affects** `pc`
 
 #### Memory read/write instructions
@@ -457,22 +462,43 @@ These instructions allow to control how the processor behave or to get informati
 
 There are a few _alias instructions_, which are strict aliases of existing instructions which pre-use some common parameters/conditions:
 
-- `ZRO reg` (ZeRO)
-  Zeroes a registry
+- `ZRO reg` (ZeRO)  
+  Zeroes a registry  
   Alias of: `XOR reg, reg`
 
-- `INC reg` (INCrement)
-  Increase a registry
+- `INC reg` (INCrement)  
+  Increase a registry  
   Alias of: `ADD reg, 1`
 
-- `DEC reg` (DECrement)
-  Decrease a registry
+- `DEC reg` (DECrement)  
+  Decrease a registry  
   Alias of: `SUB reg, 1`
+
+- `IFOR [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF OR)  
+  Alias of: `IF2 flag_a, flag_b, IF2_OR`
+
+- `IFAND [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF AND)  
+  Alias of: `IF2 flag_a, flag_b, IF2_AND`
+
+- `IFXOR [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF XOR)  
+  Alias of: `IF2 flag_a, flag_b, IF2_XOR`
+
+- `IFNOR [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF NOR)  
+  Alias of: `IF2 flag_a, flag_b, IF2_NOR`
+
+- `IFNAND [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF NAND)  
+  Alias of: `IF2 flag_a, flag_b, IF2_NAND`
+
+- `IFLEFT [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF LEFT)  
+  Alias of: `IF2 flag_a, flag_b, IF2_LEFT`
+
+- `IFRIGHT [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF RIGHT)  
+  Alias of: `IF2 flag_a, flag_b, IF2_RIGHT`
 
 - `JMPA [reg_addr | 2-bytes]` (JuMP Absolute)
   Go to the provided address  
   ALias of: `CPY cp, [reg_addr | 2-bytes]`
 
 - `RET` (RETurn)
-  Pop the stack in `pc`
+  Pop the stack in `pc`  
   Alias of: `POP <pc>`

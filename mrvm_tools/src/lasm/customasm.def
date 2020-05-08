@@ -91,6 +91,17 @@
         HWD_MAP_END    = 0xA2
     }
 
+    #tokendef if2_mode
+    {
+        IF2_OR    = 0x01
+        IF2_AND   = 0x02
+        IF2_XOR   = 0x03
+        IF2_NOR   = 0x04
+        IF2_NAND  = 0x05
+        IF2_LEFT  = 0x06
+        IF2_RIGHT = 0x07
+    }
+
     cpy  {reg_dest: reg}, {reg_val: reg} -> ((0x01 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_val[7:0] @ 0x00
     cpy  {reg_dest: reg}, {lit_val: u16} -> ((0x01 << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_val[15:8] @ lit_val[7:0]
     
@@ -148,26 +159,14 @@
     ifn  {reg_flag: reg}    -> ((0x12 << 3) + 0b100)[7:0] @ reg_flag[7:0] @ 0x00 @ 0x00
     ifn  {lit_flag: arflag} -> ((0x12 << 3) + 0b000)[7:0] @ lit_flag[7:0] @ 0x00 @ 0x00
 
-    ifand {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
-    ifand {reg_flag_a: reg}, {lit_flag_b: arflag} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
-    ifand {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
-    ifand {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
-
-    ifor {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x14 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
-    ifor {reg_flag_a: reg}, {lit_flag_b: arflag} -> ((0x14 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
-    ifor {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x14 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
-    ifor {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x14 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
-
-    ifnor {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x15 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
-    ifnor {reg_flag_a: reg}, {lit_flag_b: arflag} -> ((0x15 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
-    ifnor {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x15 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
-    ifnor {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x15 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
-
-    iflft {reg_flag_a: reg}, {reg_flag_b: reg} -> ((0x16 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
-    iflft {reg_flag_a: reg}, {lit_flag_b: arflag} -> ((0x16 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
-    iflft {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x16 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
-    iflft {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x16 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
-
+    if2 {reg_flag_a: reg}, {reg_flag_b: reg}, {reg_cond: reg} -> ((0x13 << 3) + 0b111)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ reg_cond[7:0]
+    if2 {reg_flag_a: reg}, {reg_flag_b: reg}, {lit_cond:  u8} -> ((0x13 << 3) + 0b110)[7:0] @ reg_flag_a[7:0] @ reg_flag_b[7:0] @ lit_cond[7:0]
+    if2 {reg_flag_a: reg}, {lit_flag_b: reg}, {reg_cond: reg} -> ((0x13 << 3) + 0b101)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ reg_cond[7:0]
+    if2 {reg_flag_a: reg}, {lit_flag_b: reg}, {lit_cond:  u8} -> ((0x13 << 3) + 0b100)[7:0] @ reg_flag_a[7:0] @ lit_flag_b[7:0] @ lit_cond[7:0]
+    if2 {lit_flag_a: reg}, {reg_flag_b: reg}, {reg_cond: reg} -> ((0x13 << 3) + 0b011)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ reg_cond[7:0]
+    if2 {lit_flag_a: reg}, {reg_flag_b: reg}, {lit_cond:  u8} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ lit_cond[7:0]
+    if2 {lit_flag_a: reg}, {lit_flag_b: reg}, {reg_cond: reg} -> ((0x13 << 3) + 0b001)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ reg_cond[7:0]
+    if2 {lit_flag_a: reg}, {lit_flag_b: reg}, {lit_cond:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ lit_cond[7:0]
 
     lea {reg_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x17 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
     lea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x17 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]

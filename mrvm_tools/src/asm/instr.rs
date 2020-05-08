@@ -21,10 +21,7 @@ pub enum Instr {
     ITR(RegOrLit1),
     IF(RegOrLit1),
     IFN(RegOrLit1),
-    IFAND(RegOrLit1, RegOrLit1),
-    IFOR(RegOrLit1, RegOrLit1),
-    IFNOR(RegOrLit1, RegOrLit1),
-    IFLFT(RegOrLit1, RegOrLit1),
+    IF2(RegOrLit1, RegOrLit1, RegOrLit1),
     LEA(RegOrLit1, RegOrLit1, RegOrLit1),
     WEA(RegOrLit1, RegOrLit1, RegOrLit1),
     PUSH(RegOrLit2),
@@ -91,10 +88,7 @@ impl Instr {
             0x10 => Ok(Self::ITR(arg_reg_or_lit_1(1)?)),
             0x11 => Ok(Self::IF(arg_reg_or_lit_1(1)?)),
             0x12 => Ok(Self::IFN(arg_reg_or_lit_1(1)?)),
-            0x13 => Ok(Self::IFAND(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
-            0x14 => Ok(Self::IFOR(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
-            0x15 => Ok(Self::IFNOR(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
-            0x16 => Ok(Self::IFLFT(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
+            0x13 => Ok(Self::IF2(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x17 => Ok(Self::LEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x18 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x19 => Ok(Self::PUSH(arg_reg_or_lit_2(1)?)),
@@ -243,28 +237,10 @@ impl Instr {
                 0x12
             }
 
-            Self::IFAND(a, b) => {
-                doo!(r a.is_reg(), b.is_reg());
-                doo!(roc a, b);
+            Self::IF2(a, b, c) => {
+                doo!(r a.is_reg(), b.is_reg(), c.is_reg());
+                doo!(roc a, b, c);
                 0x13
-            }
-
-            Self::IFOR(a, b) => {
-                doo!(r a.is_reg(), b.is_reg());
-                doo!(roc a, b);
-                0x14
-            }
-
-            Self::IFNOR(a, b) => {
-                doo!(r a.is_reg(), b.is_reg());
-                doo!(roc a, b);
-                0x15
-            }
-
-            Self::IFLFT(a, b) => {
-                doo!(r a.is_reg(), b.is_reg());
-                doo!(roc a, b);
-                0x16
             }
 
             Self::LEA(a, b, c) => {
