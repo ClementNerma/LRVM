@@ -22,7 +22,9 @@ pub enum Instr {
     IF(RegOrLit1),
     IFN(RegOrLit1),
     IF2(RegOrLit1, RegOrLit1, RegOrLit1),
+    LSA(Reg, RegOrLit1, RegOrLit1),
     LEA(RegOrLit1, RegOrLit1, RegOrLit1),
+    WSA(RegOrLit1, RegOrLit1, RegOrLit1),
     WEA(RegOrLit1, RegOrLit1, RegOrLit1),
     PUSH(RegOrLit2),
     POP(Reg),
@@ -89,8 +91,10 @@ impl Instr {
             0x11 => Ok(Self::IF(arg_reg_or_lit_1(1)?)),
             0x12 => Ok(Self::IFN(arg_reg_or_lit_1(1)?)),
             0x13 => Ok(Self::IF2(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x17 => Ok(Self::LEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x18 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x14 => Ok(Self::LSA(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x15 => Ok(Self::LEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x16 => Ok(Self::WSA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x17 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x19 => Ok(Self::PUSH(arg_reg_or_lit_2(1)?)),
             0x1A => Ok(Self::POP(arg_reg(1)?)),
             0x1B => Ok(Self::CALL(arg_reg_or_lit_2(1)?)),
@@ -243,16 +247,29 @@ impl Instr {
                 0x13
             }
 
+            Self::LSA(a, b, c) => {
+                doo!(r true, b.is_reg(), c.is_reg());
+                doo!(er a);
+                doo!(roc b, c);
+                0x14
+            }
+
             Self::LEA(a, b, c) => {
                 doo!(r a.is_reg(), b.is_reg(), c.is_reg());
                 doo!(roc a, b, c);
-                0x17
+                0x15
+            }
+
+            Self::WSA(a, b, c) => {
+                doo!(r a.is_reg(), b.is_reg(), c.is_reg());
+                doo!(roc a, b, c);
+                0x16
             }
 
             Self::WEA(a, b, c) => {
                 doo!(r a.is_reg(), b.is_reg(), c.is_reg());
                 doo!(roc a, b, c);
-                0x18
+                0x17
             }
 
             Self::PUSH(a) => {

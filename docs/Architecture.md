@@ -409,13 +409,22 @@ Under the hood, they simply jump four bytes forward if the condition is not met,
 
 The memory instructions allow to manipulate the memory:
 
-- `LEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Load Effective Address) | opcode: `0x17`  
+- `LSA reg_dest, [reg_addr | 1-byte], [reg_add | 1-byte]` (Load Simple Address) | opcode: `0x14`  
+  Read the word at address (`addr` + `add`) in `reg_dest`  
+  The address must be aligned or an exception will be raised  
+  **Affects** `reg_dest`
+
+- `LEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Load Effective Address) | opcode: `0x15`  
   Read the word at address (`addr` + `add` \* `mul`) in `avr`  
   As the `avr` is used for atomic instructions, its value is expected to be moved to another register to operate on  
   The address must be aligned or an exception will be raised
   **Affects** `avr`
 
-- `WEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Write Effective Address) | opcode: `0x18`  
+- `WSA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_val | 1-byte]` (Write Simple Address) | opcode: `0x16`  
+  Write the provided value to address at (`addr` + `add`)  
+  The address must be aligned or an exception will be raised
+
+- `WEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Write Effective Address) | opcode: `0x17`  
   Write the value of `avr` to address at (`addr` + `add` \* `mul`)  
   The address must be aligned or an exception will be raised
 

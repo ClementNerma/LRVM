@@ -243,16 +243,32 @@ impl CPU {
                     Ok(())
                 },
 
+                // LSA
+                0x14 => {
+                    let (reg_dest, v_addr, add) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
+
+                    let word = self.mem_read(v_addr + add)?;
+
+                    self.write_reg(reg_dest, word)
+                },
+
                 // LEA
-                0x17 => {
+                0x15 => {
                     let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
                     self.regs.avr = self.mem_read(v_addr + add * mul)?;
                     Ok(())
                 },
 
+                // WSA
+                0x16 => {
+                    let (v_addr, add, val) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
+
+                    self.mem_write(v_addr + add, val)
+                },
+
                 // WEA
-                0x18 => {
+                0x17 => {
                     let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
                     self.mem_write(v_addr + add * mul, self.regs.avr)
