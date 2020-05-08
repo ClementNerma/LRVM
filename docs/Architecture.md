@@ -488,6 +488,12 @@ There are a few _alias instructions_, which are strict aliases of existing instr
   Decrease a registry  
   Alias of: `SUB reg, 1`
 
+- `IFEQ` (IF EQual)
+  Alias of: `IF ZF`
+
+- `IFNQ` (IF Not eQual)
+  Alias of: `IFN ZF`
+
 - `IFOR [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF OR)  
   Alias of: `IF2 flag_a, flag_b, IF2_OR`
 
