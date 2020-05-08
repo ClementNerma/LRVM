@@ -95,6 +95,11 @@ impl MappedMemory {
         }
     }
 
+    /// Count the number of connected auxiliary components
+    pub fn count(&self) -> u32 {
+        self.aux.len() as u32
+    }
+
     /// Map an auxiliary component from a specific address.
     /// The end address will be determined through the component's [`Bus::size`] method.
     pub fn map(&mut self, addr: u32, aux_id: usize) -> Result<MappingRange, MappingError> {
