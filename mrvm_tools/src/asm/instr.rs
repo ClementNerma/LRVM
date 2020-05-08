@@ -25,12 +25,12 @@ pub enum Instr {
     IFOR(RegOrLit1, RegOrLit1),
     IFNOR(RegOrLit1, RegOrLit1),
     IFLFT(RegOrLit1, RegOrLit1),
-    LDA(Reg, RegOrLit2),
     LEA(RegOrLit1, RegOrLit1, RegOrLit1),
     WEA(RegOrLit1, RegOrLit1, RegOrLit1),
     PUSH(RegOrLit2),
     POP(Reg),
     CALL(RegOrLit2),
+    HWD(Reg, RegOrLit1, RegOrLit1),
     CYCLES(Reg),
     HALT(),
     RESET(),
@@ -95,12 +95,12 @@ impl Instr {
             0x14 => Ok(Self::IFOR(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
             0x15 => Ok(Self::IFNOR(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
             0x16 => Ok(Self::IFLFT(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
-            0x17 => Ok(Self::LDA(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x18 => Ok(Self::LEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x19 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(1)?)),
-            0x1A => Ok(Self::PUSH(arg_reg_or_lit_2(1)?)),
-            0x1B => Ok(Self::POP(arg_reg(1)?)),
-            0x1C => Ok(Self::CALL(arg_reg_or_lit_2(1)?)),
+            0x17 => Ok(Self::LEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x18 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(1)?)),
+            0x19 => Ok(Self::PUSH(arg_reg_or_lit_2(1)?)),
+            0x1A => Ok(Self::POP(arg_reg(1)?)),
+            0x1B => Ok(Self::CALL(arg_reg_or_lit_2(1)?)),
+            0x1C => Ok(Self::HWD(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x1D => Ok(Self::CYCLES(arg_reg(1)?)),
             0x1E => Ok(Self::HALT()),
             0x1F => Ok(Self::RESET()),
@@ -267,40 +267,40 @@ impl Instr {
                 0x16
             }
 
-            Self::LDA(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
-                0x17
-            }
-
             Self::LEA(a, b, c) => {
                 doo!(r a.is_reg(), b.is_reg(), c.is_reg());
                 doo!(roc a, b, c);
-                0x18
+                0x17
             }
 
             Self::WEA(a, b, c) => {
                 doo!(r a.is_reg(), b.is_reg(), c.is_reg());
                 doo!(roc a, b, c);
-                0x19
+                0x18
             }
 
             Self::PUSH(a) => {
                 doo!(r a.is_reg());
                 doo!(roc a);
-                0x1A
+                0x19
             }
 
             Self::POP(a) => {
                 doo!(r true);
                 doo!(er a);
-                0x1B
+                0x1A
             }
 
             Self::CALL(a) => {
                 doo!(r a.is_reg());
                 doo!(roc a);
+                0x1B
+            }
+
+            Self::HWD(a, b, c) => {
+                doo!(r true, b.is_reg(), c.is_reg());
+                doo!(er a);
+                doo!(roc b, c);
                 0x1C
             }
 

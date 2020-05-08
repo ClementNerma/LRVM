@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::sync::{Arc, Mutex};
 use crate::board::MappedMemory;
 use crate::mmu::MMU;
@@ -9,6 +10,8 @@ pub struct CPU {
     pub regs: Registers,
     /// MMU (available from the outside of the crate)
     pub mmu: MMU,
+    /// Memory
+    mem: Arc<Mutex<MappedMemory>>,
     /// Current cycle count (goes back to 0 after reaching maximum)
     cycles: u32,
     /// Is the CPU halted?
@@ -22,7 +25,8 @@ impl CPU {
     pub fn new(mem: Arc<Mutex<MappedMemory>>) -> Self {
         Self {
             regs: Registers::new(),
-            mmu: MMU::new(mem),
+            mmu: MMU::new(Arc::clone(&mem)),
+            mem,
             cycles: 0,
             halted: true,
             _cycle_changed_pc: false
@@ -238,16 +242,8 @@ impl CPU {
                     Ok(())
                 },
 
-                // LDA
-                0x17 => {
-                    let (reg_dest, v_addr) = args!(REG, REG_OR_LIT_2);
-
-                    let word = self.mem_read(v_addr)?;
-                    self.write_reg(reg_dest, word)
-                },
-
                 // LEA
-                0x18 => {
+                0x17 => {
                     let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
                     self.regs.avr = self.mem_read(v_addr + add * mul)?;
@@ -255,14 +251,14 @@ impl CPU {
                 },
 
                 // WEA
-                0x19 => {
+                0x18 => {
                     let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
                     self.mem_write(v_addr + add * mul, self.regs.avr)
                 },
 
                 // PUSH
-                0x1A => {
+                0x19 => {
                     let word = args!(REG_OR_LIT_2);
 
                     let v_addr = if self.sv_mode() {
@@ -277,7 +273,7 @@ impl CPU {
                 },
 
                 // POP
-                0x1B => {
+                0x1A => {
                     let reg_dest = args!(REG);
 
                     let word = if self.sv_mode() {
@@ -294,7 +290,7 @@ impl CPU {
                 },
 
                 // CALL
-                0x1C => {
+                0x1B => {
                     let v_addr = args!(REG_OR_LIT_2);
 
                     let sp_v_addr = if self.sv_mode() {
@@ -307,6 +303,25 @@ impl CPU {
 
                     self.regs.pc = v_addr;
                     self.mem_write(sp_v_addr, self.regs.pc.wrapping_add(4))
+                },
+                
+                // HWD
+                0x1C => {
+                    let (reg_dest, aux_id, hw_info) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
+
+                    if aux_id == 0 && hw_info == 0 {
+                        return self.write_reg(reg_dest, {
+                            let mem = self.mem.lock().unwrap();
+                            mem.count()
+                        });
+                    }
+
+                    let aux_id = usize::try_from(aux_id)
+                        .map_err(|_| self.exception(0x0B, Some(aux_id as u16)))?;
+                    
+                    let hw_data = self.get_hw_info(hw_info, aux_id)?;
+
+                    self.write_reg(reg_dest, hw_data)
                 },
 
                 // CYCLES
@@ -604,6 +619,77 @@ impl CPU {
         self.mmu.exec(&self.regs, v_addr, &mut ex)
             .map_err(|()| self.exception(0x07, Some(v_addr as u16)))
             .and_then(|word| { if ex != 0 { Err(self.exception(0x10, Some(ex))) } else { Ok(word) } })
+    }
+
+    /// Get informations about an auxiliary comopnent, after retrieving its name and raw metadata
+    fn get_hw_info(&mut self, hw_info: u32, aux_id: usize) -> Result<u32, Ex> {
+        // Get the auxiliary component's name and metadata (if it exists) as well as its optional mapping
+        let (aux_opt, mapping_opt) = {
+            let mem = self.mem.lock().unwrap();
+            
+            let aux_opt = mem.name_of(aux_id).map(|s| s.clone())
+                .and_then(|name| mem.metadata_of(aux_id)
+                .map(|md| (name, md)));
+
+            let mapping = mem.get_mapping(aux_id).map(|m| m.clone());
+
+            (aux_opt, mapping)
+        };
+
+        // Ensure the component exists
+        let (aux_name, aux_metadata) = aux_opt.ok_or_else(||
+            self.exception(0x0B, Some(aux_id as u16))
+        )?;
+
+        let aux_name = aux_name.bytes();
+
+        // Return the value to write depending on the hardware information code
+        let data = match hw_info {
+            // UID's 32 strongest bits
+            0x01 => aux_metadata[0],
+
+            // UID's 32 weakest bits
+            0x02 => aux_metadata[1],
+
+            // Name's length, in bytes
+            0x10 => aux_name.count() as u32,
+
+            // Name's nth byte
+            0x11..=0x18 => {
+                let mut name_bytes = aux_name.skip(((hw_info - 0x11) * 4) as usize);
+                u32::from_be_bytes([
+                    name_bytes.next().unwrap_or(0),
+                    name_bytes.next().unwrap_or(0),
+                    name_bytes.next().unwrap_or(0),
+                    name_bytes.next().unwrap_or(0),
+                ])
+            },
+
+            // Component's size
+            0x20 => aux_metadata[2],
+            // Category
+            0x21 => aux_metadata[3],
+            // Type
+            0x22 => aux_metadata[4],
+            // Model
+            0x23 => aux_metadata[5],
+            // Additional data's 32 strongest bits
+            0x24 => aux_metadata[6],
+            // Additional data's 32 weakest bits
+            0x25 => aux_metadata[7],
+
+            // Check if the component is mapped in memory
+            0xA0 => if mapping_opt.is_some() { 0x00000001 } else { 0x00000000 },
+            // Mapping's start address
+            0xA1 => mapping_opt.ok_or_else(|| self.exception(0x0D, Some(aux_id as u16)))?.addr,
+            // Mapping's end address
+            0xA2 => mapping_opt.ok_or_else(|| self.exception(0x0D, Some(aux_id as u16)))?.end_addr(),
+
+            // Invalid information code
+            _ => return Err(self.exception(0x0C, Some(hw_info as u16)))
+        };
+
+        Ok(data)
     }
 }
 

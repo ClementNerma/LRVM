@@ -66,6 +66,31 @@
         DIV_MBO_MAX = 0b11
     }
 
+    #tokendef hw_info
+    {
+        HWD_COUNT      = 0x00
+        HWD_UID_UPPER  = 0x01
+        HWD_UID_LOWER  = 0x02
+        HWD_NAME_LEN   = 0x10
+        HWD_NAME_W1    = 0x11
+        HWD_NAME_W2    = 0x12
+        HWD_NAME_W3    = 0x13
+        HWD_NAME_W4    = 0x14
+        HWD_NAME_W5    = 0x15
+        HWD_NAME_W6    = 0x16
+        HWD_NAME_W7    = 0x17
+        HWD_NAME_W8    = 0x18
+        HWD_SIZE       = 0x20
+        HWD_CAT        = 0x21
+        HWD_TYPE       = 0x22
+        HWD_MODEL      = 0x23
+        HWD_DATA_UPPER = 0x24
+        HWD_DATA_LOWER = 0x25
+        HWD_IS_MAPPED  = 0xA0
+        HWD_MAP_START  = 0xA1
+        HWD_MAP_END    = 0xA2
+    }
+
     cpy  {reg_dest: reg}, {reg_val: reg} -> ((0x01 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_val[7:0] @ 0x00
     cpy  {reg_dest: reg}, {lit_val: u16} -> ((0x01 << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_val[15:8] @ lit_val[7:0]
     
@@ -143,8 +168,15 @@
     iflft {lit_flag_a: arflag}, {reg_flag_b: reg} -> ((0x16 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x00
     iflft {lit_flag_a: arflag}, {lit_flag_b: arflag} -> ((0x16 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x00
 
-    lda {reg_dest: reg}, {reg_addr: reg} -> ((0x17 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_addr[7:0] @ 0x00
-    lda {reg_dest: reg}, {lit_addr: u16} -> ((0x17 << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_addr[15:8] @ lit_addr[7:0]
+
+    lea {reg_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x17 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
+    lea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x17 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
+    lea {reg_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x17 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
+    lea {reg_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x17 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+    lea {lit_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x17 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
+    lea {lit_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x17 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
+    lea {lit_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x17 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
+    lea {lit_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x17 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
 
     lea {reg_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x18 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
     lea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x18 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
@@ -155,22 +187,18 @@
     lea {lit_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x18 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
     lea {lit_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x18 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
 
-    lea {reg_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x19 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
-    lea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x19 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
-    lea {reg_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x19 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
-    lea {reg_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x19 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
-    lea {lit_addr: reg}, {reg_add: reg}, {reg_mul: reg} -> ((0x19 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
-    lea {lit_addr: reg}, {reg_add: reg}, {lit_mul:  u8} -> ((0x19 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
-    lea {lit_addr: reg}, {lit_add: reg}, {reg_mul: reg} -> ((0x19 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
-    lea {lit_addr: reg}, {lit_add: reg}, {lit_mul:  u8} -> ((0x19 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+    push {reg_value: reg} -> ((0x19 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    push {lit_value: u16} -> ((0x19 << 3) + 0b000)[7:0] @ reg_addr[15:8] @ reg_addr[7:0] @ 0x00
 
-    push {reg_value: reg} -> ((0x1A << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
-    push {lit_value: u16} -> ((0x1A << 3) + 0b000)[7:0] @ reg_addr[15:8] @ reg_addr[7:0] @ 0x00
+    pop  {reg_dest: reg} -> ((0x1A << 3) + 0b100)[7:0] @ reg_dest[7:0] @ 0x00 @ 0x00
 
-    pop  {reg_dest: reg} -> ((0x1B << 3) + 0b100)[7:0] @ reg_dest[7:0] @ 0x00 @ 0x00
-    
-    call {reg_addr: reg} -> ((0x1C << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
-    call {lit_addr: u16} -> ((0x1C << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
+    hwd {reg_dest: reg}, {reg_id: reg}, {reg_hw_info: reg}    -> ((0x1C << 3) + 0b111)[7:0] @ reg_dest[7:0] @ reg_id[7:0] @ reg_hw_info[7:0]
+    hwd {reg_dest: reg}, {reg_id: reg}, {lit_hw_info: hw_info} -> ((0x1C << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_id[7:0] @ lit_hw_info[7:0]
+    hwd {reg_dest: reg}, {lit_id: reg}, {reg_hw_info: reg}    -> ((0x1C << 3) + 0b101)[7:0] @ reg_dest[7:0] @ lit_id[7:0] @ reg_hw_info[7:0]
+    hwd {reg_dest: reg}, {lit_id: reg}, {lit_hw_info: hw_info} -> ((0x1C << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_id[7:0] @ lit_hw_info[7:0]
+
+    call {reg_addr: reg} -> ((0x1B << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    call {lit_addr: u16} -> ((0x1B << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
 
     cycles {reg_dest: reg} -> ((0x1D << 3) + 0b100)[7:0] @ reg_dest[7:0] @ 0x00 @ 0x00
 
