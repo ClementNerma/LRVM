@@ -5,6 +5,7 @@
 
 pub mod asm;
 pub mod lasm;
+pub mod bytes;
 
 #[cfg(test)]
 mod tests;
