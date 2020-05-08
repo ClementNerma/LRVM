@@ -96,7 +96,7 @@ impl Instr {
             0x15 => Ok(Self::IFNOR(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
             0x16 => Ok(Self::IFLFT(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?)),
             0x17 => Ok(Self::LEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x18 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(1)?)),
+            0x18 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x19 => Ok(Self::PUSH(arg_reg_or_lit_2(1)?)),
             0x1A => Ok(Self::POP(arg_reg(1)?)),
             0x1B => Ok(Self::CALL(arg_reg_or_lit_2(1)?)),
