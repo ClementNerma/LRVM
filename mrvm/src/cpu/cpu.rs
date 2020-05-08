@@ -111,7 +111,7 @@ impl CPU {
             match opcode {
                 // <Unknown instruction>
                 0x00 => {
-                    Err(self.exception(0x01, Some(opcode)))
+                    Err(self.exception(0x01, Some(opcode.into())))
                 },
 
                 // CPY
@@ -194,7 +194,7 @@ impl CPU {
                         self.regs.smt = 0;
                         Ok(())
                     } else {
-                        Err(self.exception(0x08, Some(opcode)))
+                        Err(self.exception(0x08, Some(opcode.into())))
                     }
                 },
 
@@ -202,7 +202,7 @@ impl CPU {
                 0x10 => {
                     let itr_code = args!(REG_OR_LIT_1);
 
-                    Err(self.exception(0xAA, Some(itr_code as u8)))
+                    Err(self.exception(0xAA, Some(itr_code as u16)))
                 },
 
                 // IF
@@ -357,7 +357,7 @@ impl CPU {
     /// Raises an exception if the specified register is only readable in supervisor mode and userland mode is active.
     fn read_reg(&mut self, code: u8) -> Result<u32, Ex> {
         if code >= 0x18 && !self.sv_mode() {
-            return Err(self.exception(0x03, Some(code)));
+            return Err(self.exception(0x03, Some(code.into())));
         }
 
         let ucode = usize::from(code);
@@ -378,7 +378,7 @@ impl CPU {
             0x1D => Ok(self.regs.mtt),
             0x1E => Ok(self.regs.pda),
             0x1F => Ok(self.regs.smt),
-            _ => Err(self.exception(0x02, Some(code)))
+            _ => Err(self.exception(0x02, Some(code.into())))
         }
     }
 
@@ -389,11 +389,11 @@ impl CPU {
         let ucode = usize::from(code);
 
         if code >= 0x17 && !self.sv_mode() {
-            return Err(self.exception(0x04, Some(code)));
+            return Err(self.exception(0x04, Some(code.into())));
         }
 
         if code == 0x17 || code == 0x1A || code == 0x1B {
-            return Err(self.exception(0x04, Some(code)));
+            return Err(self.exception(0x04, Some(code.into())));
         }
 
         // If we change PC, indicate it has been changed to the CPU won't jump 4 bytes ahead.
@@ -417,7 +417,7 @@ impl CPU {
             0x1D => self.regs.mtt = word,
             0x1E => self.regs.pda = word,
             0x1F => self.regs.smt = word,
-            _ => return Err(self.exception(0x02, Some(code)))
+            _ => return Err(self.exception(0x02, Some(code.into())))
         }
         
         Ok(())
@@ -545,12 +545,11 @@ impl CPU {
 
     /// Raise an exception with the provided `code` and `associated` data.
     /// Returns the related exception object.
-    fn exception(&mut self, code: u8, associated: Option<u8>) -> Ex {
+    fn exception(&mut self, code: u8, associated: Option<u16>) -> Ex {
         // Assign the Exception Type `et` register.
         self.regs.et =
             (if self.sv_mode() { 1 << 31 } else { 0 }) +
             (u32::from(code) << 23) +
-            ((self.cycles % 256) << 15) +
             u32::from(associated.unwrap_or(0));
 
         // Jump to the Exception Vector address
@@ -568,7 +567,7 @@ impl CPU {
     /// Ensure an address is aligned, or raise an exception otherwise.
     fn ensure_aligned(&mut self, v_addr: u32) -> Result<u32, Ex> {
         if v_addr % 4 != 0 {
-            Err(self.exception(0x05, Some((v_addr % 4) as u8)))
+            Err(self.exception(0x05, Some((v_addr % 4) as u16)))
         } else {
             Ok(v_addr)
         }
@@ -605,5 +604,5 @@ pub struct Ex {
     /// Exception's code
     pub code: u8,
     /// Exception's associated data (not all exceptions have some)
-    pub associated: Option<u8>
+    pub associated: Option<u16>
 }
