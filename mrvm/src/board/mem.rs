@@ -22,7 +22,6 @@ pub struct MemAuxComponent {
 }
 
 /// A single component mapping.
-/// End address can be computed as `mapping.addr + mapping.size - 1`
 #[derive(Debug, Clone)]
 pub struct Mapping {
     /// Mapped component's ID
@@ -31,6 +30,13 @@ pub struct Mapping {
     pub addr: u32,
     /// Mapping length
     pub size: u32
+}
+
+impl Mapping {
+    /// Get the end address of the mapping
+    pub fn end_addr(&self) -> u32 {
+        self.addr + self.size - 1
+    }
 }
 
 /// Error that occurred during mapping
@@ -173,7 +179,7 @@ impl MappedMemory {
     pub fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
         assert!(addr % 4 == 0, "Memory does not support reading from unaligned addresses");
         
-        if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.addr + mapping.size - 1) {
+        if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.end_addr()) {
             self.aux[mapping.aux_id].bus.lock().unwrap().read(addr - mapping.addr, ex)
         } else {
             if cfg!(debug_assertions) {
@@ -191,7 +197,7 @@ impl MappedMemory {
     pub fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
         assert!(addr % 4 == 0, "Memory does not support writing to unaligned addresses");
         
-        if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.addr + mapping.size - 1) {
+        if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.end_addr()) {
             self.aux[mapping.aux_id].bus.lock().unwrap().write(addr - mapping.addr, word, ex);
         } else if cfg!(debug_assertions) {
             eprintln!("Warning: tried to read non-mapped memory at address {:#010X}", addr);
@@ -233,7 +239,7 @@ impl MappedMemory {
         }
 
         // Check if a component is already mapped on this address range
-        match self.mappings.iter().find(|mapping| mapping.addr <= addr_end && addr <= mapping.addr + mapping.size - 1) {
+        match self.mappings.iter().find(|mapping| mapping.addr <= addr_end && addr <= mapping.end_addr()) {
             Some(mapping) => {
                 Err(MappingError::AddressOverlaps(mapping.clone()))
             },
