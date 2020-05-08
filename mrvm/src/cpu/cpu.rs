@@ -198,7 +198,7 @@ impl CPU {
                         self.regs.smt = 0;
                         Ok(())
                     } else {
-                        Err(self.exception(0x08, Some(opcode.into())))
+                        Err(self.exception(0x09, Some(opcode.into())))
                     }
                 },
 
@@ -317,7 +317,7 @@ impl CPU {
                     }
 
                     let aux_id = usize::try_from(aux_id)
-                        .map_err(|_| self.exception(0x0B, Some(aux_id as u16)))?;
+                        .map_err(|_| self.exception(0x0C, Some(aux_id as u16)))?;
                     
                     let hw_data = self.get_hw_info(hw_info, aux_id)?;
 
@@ -469,7 +469,7 @@ impl CPU {
                     // Division / modulus by zero
                     (_, _, _, 0) => match (mode & 0b00001100) >> 2 {
                         // Forbid
-                        0b00 => return Err(self.exception(0x09, None)),
+                        0b00 => return Err(self.exception(0x0A, None)),
                         // Result in the minimum signed value
                         0b01 => (0x80000000, true, true),
                         // Result in zero
@@ -482,7 +482,7 @@ impl CPU {
                     // Maximum signed value divided / moduled by -1 (overflowing multiplication)
                     (_, true, std::i32::MIN, -1) => match (mode & 0b00000011) >> 2 {
                         // Forbid
-                        0b00 => return Err(self.exception(0x0A, None)),
+                        0b00 => return Err(self.exception(0x0B, None)),
                         // Result in the minimum signed value
                         0b01 => (0x80000000, true, true),
                         // Result in zero
@@ -617,7 +617,7 @@ impl CPU {
         let mut ex = 0;
 
         self.mmu.exec(&self.regs, v_addr, &mut ex)
-            .map_err(|()| self.exception(0x07, Some(v_addr as u16)))
+            .map_err(|()| self.exception(0x08, Some(v_addr as u16)))
             .and_then(|word| { if ex != 0 { Err(self.exception(0x10, Some(ex))) } else { Ok(word) } })
     }
 
@@ -638,7 +638,7 @@ impl CPU {
 
         // Ensure the component exists
         let (aux_name, aux_metadata) = aux_opt.ok_or_else(||
-            self.exception(0x0B, Some(aux_id as u16))
+            self.exception(0x0C, Some(aux_id as u16))
         )?;
 
         let aux_name = aux_name.bytes();
@@ -681,12 +681,12 @@ impl CPU {
             // Check if the component is mapped in memory
             0xA0 => if mapping_opt.is_some() { 0x00000001 } else { 0x00000000 },
             // Mapping's start address
-            0xA1 => mapping_opt.ok_or_else(|| self.exception(0x0D, Some(aux_id as u16)))?.addr,
+            0xA1 => mapping_opt.ok_or_else(|| self.exception(0x0E, Some(aux_id as u16)))?.addr,
             // Mapping's end address
-            0xA2 => mapping_opt.ok_or_else(|| self.exception(0x0D, Some(aux_id as u16)))?.end_addr(),
+            0xA2 => mapping_opt.ok_or_else(|| self.exception(0x0E, Some(aux_id as u16)))?.end_addr(),
 
             // Invalid information code
-            _ => return Err(self.exception(0x0C, Some(hw_info as u16)))
+            _ => return Err(self.exception(0x0D, Some(hw_info as u16)))
         };
 
         Ok(data)
