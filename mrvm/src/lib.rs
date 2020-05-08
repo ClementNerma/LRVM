@@ -8,6 +8,7 @@
 pub mod board;
 pub mod cpu;
 pub mod mmu;
+pub mod utils;
 
 #[cfg(test)]
 mod tests;

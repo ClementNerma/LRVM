@@ -4,6 +4,7 @@
 use std::convert::TryInto;
 use std::str::{from_utf8, Utf8Error};
 use mrvm::board::Bus;
+use mrvm::utils::words_to_bytes;
 
 /// The buffered display works with a buffer and a handler. When it receives a write request, it writes it into the buffer unless the
 /// write address is on its last word ; in this case, in interprets the word as:
@@ -71,12 +72,12 @@ impl Bus for BufferedDisplay {
         else if addr == self.words {
             match word {
                 0xAA => {
-                    let bytes = self.buffer.iter().map(|word| word.to_be_bytes().to_vec()).flatten().collect::<Vec<_>>();
+                    let bytes = words_to_bytes(&self.buffer);
                     (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.clone())))
                 },
 
                 0xBB => {
-                    let bytes = self.buffer.iter().map(|word| word.to_be_bytes().to_vec()).flatten().collect::<Vec<_>>();
+                    let bytes = words_to_bytes(&self.buffer);
                     (self.handler)(Ok(&String::from_utf8_lossy(&bytes)))
                 },
 

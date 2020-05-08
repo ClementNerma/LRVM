@@ -1,8 +1,9 @@
 //! MRVM uses an assembly language called LASM (Lightweight Assembly).
 //! This module allows to assemble LASM source code through the [CustomAsm](https://github.com/hlorenzi/customasm) library.
 
-use crate::asm::{Program, InstrDecodingError};
 use customasm::{FileServerMock, AssemblerState, RcReport};
+use mrvm::utils::bytes_to_words;
+use crate::asm::{Program, InstrDecodingError};
 
 static CUSTOMASM_HEADER: &'static str = include_str!("customasm.def");
 
@@ -40,30 +41,6 @@ pub fn assemble(source: &str) -> Result<Vec<u8>, String> {
 /// Returns an error message in case of error.
 pub fn assemble_words(source: &str) -> Result<Vec<u32>, String> {
     assemble(source).map(|bytes| bytes_to_words(bytes))
-}
-
-/// Convert a list of bytes to a list of words
-pub fn bytes_to_words(bytes: impl AsRef<[u8]>) -> Vec<u32> {
-    let bytes = bytes.as_ref();
-
-    let rem = bytes.len() % 4;
-    let mut words = Vec::with_capacity(bytes.len() / 4 + if rem == 0 { 1 } else { 0 });
-    let mut word = 0;
-
-    for (i, byte) in bytes.iter().enumerate() {
-        word += u32::from(*byte) << ((3 - (i % 4)) * 8);
-
-        if i % 4 == 3 {
-            words.push(word);
-            word = 0;
-        }
-    }
-
-    if rem != 0 {
-        words.push(word << ((4 - rem) * 8));
-    }
-
-    words
 }
 
 /// Convert a LASM source code to a strongly-typed program
