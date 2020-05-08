@@ -14,7 +14,7 @@ fn volatile_mem() {
         Box::new(VolatileMem::new(0x1000).unwrap())
     ]);
 
-    run_until_halt(&mut vm.cpu(), None);
+    run_until_halt(&mut vm.cpu());
 
     let (word_a, word_b, word_c) = vm.map(|mut mem|
         (mem.read(0x1000), mem.read(0x1008), mem.read(0x1010))

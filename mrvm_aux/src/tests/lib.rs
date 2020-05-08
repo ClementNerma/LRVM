@@ -33,7 +33,7 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
     motherboard
 }
 
-pub fn run_until_halt(cpu: &mut CPU, cycles_limit: Option<u32>) -> u32 {
+pub fn run_until_halt_limit(cpu: &mut CPU, cycles_limit: Option<u32>) -> u32 {
     while !cpu.halted() && cycles_limit.map(|limit| cpu.cycles() < limit).unwrap_or(true) {
         let was_at = cpu.regs.pc;
 
@@ -50,4 +50,8 @@ pub fn run_until_halt(cpu: &mut CPU, cycles_limit: Option<u32>) -> u32 {
     }
 
     cpu.cycles()
+}
+
+pub fn run_until_halt(cpu: &mut CPU) -> u32 {
+    run_until_halt_limit(cpu, None)
 }

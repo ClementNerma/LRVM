@@ -33,7 +33,7 @@ fn sync_keyboard() {
         })).unwrap())
     ]);
 
-    run_until_halt(vm.cpu(), None);
+    run_until_halt(vm.cpu());
 
     assert!(*received_req.lock().unwrap(), "No keyboard request was triggered");
 

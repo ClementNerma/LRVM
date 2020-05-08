@@ -61,7 +61,7 @@ fn buffered_display() {
         })).unwrap())
     ]);
 
-    run_until_halt(vm.cpu(), None);
+    run_until_halt(vm.cpu());
 
     assert!(*received_msg.lock().unwrap(), "No message received by buffered display");
 }

@@ -15,7 +15,7 @@ fn bootrom() {
 
     let cpu = &mut vm.cpu();
 
-    run_until_halt(cpu, None);
+    run_until_halt(cpu);
 
     assert_eq!(cpu.cycles(), 2, "CPU was expected to run {} cycles, {} cycles run instead", 2, cpu.cycles());
     assert_eq!(cpu.regs.a[0], 0xABCD, "Registry a0 was expected to contain 0x0000ABCD, contains {:#010X} instead", cpu.regs.a[0]);
