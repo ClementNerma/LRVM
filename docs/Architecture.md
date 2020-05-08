@@ -258,13 +258,13 @@ The [`HWD` instruction](#hardware-access-instructions) allows to get information
 
 The assignment instructions allow to modify all are part of a register:
 
-- `CPY reg_dest, [reg_value | 2-bytes]` (CoPY) | opcode: `0x01`
+- `CPY reg_dest, [reg_value | 2-bytes]` (CoPY) | opcode: `0x01`  
   Copy the provided value into `reg_dest`
   If a value is provided, this zeroes the register's upper bits and assigns the value to its lower bits
   **Affects** `reg_dest`
 
-- `EX reg_a, reg_b` (EXchange) | opcode: `0x02`
-  Swap the value stored in `reg_a` with one to `reg_b`
+- `EX reg_a, reg_b` (EXchange) | opcode: `0x02`  
+  Swap the value stored in `reg_a` with one to `reg_b`  
   Equivalent to: `CPY <tmp>, reg_a` + `CPY reg_a, reg_b` + `CPY reg_b, <tmp>`
   **Affects** `reg_a`, `reg_b`
 
@@ -275,43 +275,43 @@ All operations use two's complement representation for calculus, which means it 
 
 Below is the list of arithmetic instructions:
 
-- `ADD reg, [reg_val | 2-bytes]` (ADD) | opcode: `0x03`
+- `ADD reg, [reg_val | 2-bytes]` (ADD) | opcode: `0x03`  
   Add the provided value to `reg` and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `SUB reg, [reg_val | 2-bytes]` (SUBstract) | opcode: `0x04`
+- `SUB reg, [reg_val | 2-bytes]` (SUBstract) | opcode: `0x04`  
   Subtract the provided value to `reg` and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `MUL reg, [reg_val | 2-bytes]` (MULtiply by) | opcode: `0x05`
+- `MUL reg, [reg_val | 2-bytes]` (MULtiply by) | opcode: `0x05`  
   Multiply `reg` by the provided value and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `DIV reg, [reg_val | 1-byte], [reg_mode | 1-mode]` (DIVide by) | opcode: `0x06`
+- `DIV reg, [reg_val | 1-byte], [reg_mode | 1-mode]` (DIVide by) | opcode: `0x06`  
   Divide `reg` by the provided value and put the result in `reg`
 
-  **MODE**
-  By default, this instruction computes an unsigned division.
+  **MODE**  
+  By default, this instruction computes an unsigned division.  
   By default, this instruction raises an exception if the right operand is zero or if the left operand is -2^32 and the right operand is -1.
 
-  Considering bit 0 of the mode as its strongest bit:
+  Considering bit 0 of the mode as its strongest bit:  
   If bit 3 is set, this instruction will perform a signed division instead of an unsigned one
 
-  If bit 4-5 are equal to `01`, this instruction will accept division by zero and make the result equal to -2^32
-  If bit 4-5 are equal to `10`, this instruction will accept division by zero and make the result equal to 0
+  If bit 4-5 are equal to `01`, this instruction will accept division by zero and make the result equal to -2^32  
+  If bit 4-5 are equal to `10`, this instruction will accept division by zero and make the result equal to 0  
   If bit 4-5 are equal to `11`, this instruction will accept division by zero and make the result equal to 2^32-1
 
-  If bit 6-7 are equal to `01`, this instruction will accept divisions of -2^32 by -1 and make the result equal to -2^32
-  If bit 6-7 are equal to `10`, this instruction will accept divisions of -2^32 by -1 and make the result equal to 0
+  If bit 6-7 are equal to `01`, this instruction will accept divisions of -2^32 by -1 and make the result equal to -2^32  
+  If bit 6-7 are equal to `10`, this instruction will accept divisions of -2^32 by -1 and make the result equal to 0  
   If bit 6-7 are equal to `11`, this instruction will accept divisions of -2^32 by -1 and make the result equal to 2^32
 
   When a division by zero or -2^32 by -1 happens and is accepted by the mode, both carry and overflow flags are set.
 
   **Affects** `reg`, `af`
 
-- `MOD reg, [reg_val | 1-byte], [reg_mode | 1-mode]` (MODulus) | opcode: `0x07`
-  Compute the modulus of `reg` by the provided value and put the result in `reg`
-  As computations are integer-based, this is equal to the remainder of `reg` by the provided value
+- `MOD reg, [reg_val | 1-byte], [reg_mode | 1-mode]` (MODulus) | opcode: `0x07`  
+  Compute the modulus of `reg` by the provided value and put the result in `reg`  
+  As computations are integer-based, this is equal to the remainder of `reg` by the provided value  
   The provided mode is interpreted the same way as for the `DIV` instruction
   **Affects** `reg`, `af`
 
@@ -319,23 +319,23 @@ Below is the list of arithmetic instructions:
 
 The bitwise instructions allow to perform bit-by-bit instructions.
 
-- `AND reg, [reg_val | 2-bytes]` (AND) | opcode: `0x08`
+- `AND reg, [reg_val | 2-bytes]` (AND) | opcode: `0x08`  
   Perform a bit-by-bit AND operation between `reg` and the provided value, and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `BOR reg, [reg_val | 2-bytes]` (Bit-by-bit OR) | opcode: `0x09`
+- `BOR reg, [reg_val | 2-bytes]` (Bit-by-bit OR) | opcode: `0x09`  
   Perform a bit-by-bit OR operation between `reg` and the provided value, and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `XOR reg, [reg_val | 2-bytes]` (EXclusive OR) | opcode: `0x0A`
+- `XOR reg, [reg_val | 2-bytes]` (EXclusive OR) | opcode: `0x0A`  
   Perform a bit-by-bit XOR operation between `reg` and the provided value, and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `LSH reg, [reg_val | 1-byte]` (Left SHift) | opcode: `0x0B`
+- `LSH reg, [reg_val | 1-byte]` (Left SHift) | opcode: `0x0B`  
   Perform a left shift operation of the provided number of bits on `reg`, and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `RSH reg, [reg_val | 1-byte]` (Right SHift) | opcode: `0x0C`
+- `RSH reg, [reg_val | 1-byte]` (Right SHift) | opcode: `0x0C`  
   Perform a right shift operation of the provided number of bits on `reg`, and put the result in `reg`
   **Affects** `reg`, `af`
 
@@ -343,30 +343,30 @@ The bitwise instructions allow to perform bit-by-bit instructions.
 
 The logical instructions are:
 
-- `CMP reg, [reg_val | 2-bytes]` (CoMPare) | opcode: `0x0D`
-  Compare the value of `reg` to the provided value
-  Concretely, this operation does the same as `SUB` but stores the result nowhere - though it still sets the arithmetic flags
-  This means that, if for instance the 'zero' flag is set, `reg_val` and the provided value are equal.
+- `CMP reg, [reg_val | 2-bytes]` (CoMPare) | opcode: `0x0D`  
+  Compare the value of `reg` to the provided value  
+  Concretely, this operation does the same as `SUB` but stores the result nowhere - though it still sets the arithmetic flags  
+  This means that, if for instance the 'zero' flag is set, `reg_val` and the provided value are equal.  
   **Affects** `af`
 
 #### Control flow instructions
 
 The control flow instructions allow to control the program's flow by changing the address of the next instruction:
 
-- `JMP [reg_jump | 2-bytes]` (JuMP) | opcode: `0x0E`
-  Jump by as many bytes as specified
-  The number of bytes is interpreted using two's complement representation
+- `JMP [reg_jump | 2-bytes]` (JuMP) | opcode: `0x0E`  
+  Jump by as many bytes as specified  
+  The number of bytes is interpreted using two's complement representation  
   **Affects** `pc`
 
-- `LSM [reg_addr | 2-bytes]` (Leave Supervisor Mode) {H} | opcode: `0x0F`
-  Jump at the provided address and disable the supervisor mode just after
+- `LSM [reg_addr | 2-bytes]` (Leave Supervisor Mode) {H} | opcode: `0x0F`  
+  Jump at the provided address and disable the supervisor mode just after  
   Jumping by assigning to `pc` and then disabling manually the supervisor mode would result in a page fault when the MMU is enabled,
-  as the second assignment instruction's address could not be read due to userland privileges.
+  as the second assignment instruction's address could not be read due to userland privileges.  
   **Affects** `pc`, `smt`
 
-- `ITR [reg_code | 1-byte]` (InTeRruption) | opcode: `0x10`
-  Raise an interruption with the provided code (exception with code `0xAA`)
-  See the in-depth explanations on exceptions to see what this instruction actually does
+- `ITR [reg_code | 1-byte]` (InTeRruption) | opcode: `0x10`  
+  Raise an interruption with the provided code (exception with code `0xAA`)  
+  See the in-depth explanations on exceptions to see what this instruction actually does  
   **Affects** `pc`, `et`, `era`, `smt`
 
 #### Conditional instructions
@@ -374,83 +374,83 @@ The control flow instructions allow to control the program's flow by changing th
 The conditional instructions allow to instruction following them only if a condition is met.
 Under the hood, they simply jump four bytes forward if the condition is not met, and nothing otherwise.
 
-- `IF [reg_flag | 1-flag]` (IF) | opcode: `0x11`
-  Run the next instruction only if the specified flag is set
-  e.g. `IFF 0x06` will require the zero flag (ZF) to be set
+- `IF [reg_flag | 1-flag]` (IF) | opcode: `0x11`  
+  Run the next instruction only if the specified flag is set  
+  e.g. `IFF 0x06` will require the zero flag (ZF) to be set  
   **Affects** `pc`
 
-- `IFN [reg_flag | 1-flag]` (IF Not) | opcode: `0x12`
-  Run the next instruction only if the specified flag is _not_ set
-  e.g. `IFF 0x06` will require the zero flag (ZF) to _not_ be set
+- `IFN [reg_flag | 1-flag]` (IF Not) | opcode: `0x12`  
+  Run the next instruction only if the specified flag is _not_ set  
+  e.g. `IFF 0x06` will require the zero flag (ZF) to _not_ be set  
   **Affects** `pc`
 
-- `IFAND [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF AND) | opcode: `0x13`
-  Run the next instruction only if the two specified flags are set
+- `IFAND [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF AND) | opcode: `0x13`  
+  Run the next instruction only if the two specified flags are set  
   **Affects** `pc`
 
-- `IFOR [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF OR) | opcode: `0x14`
-  Run the next instruction only if at least one the specified flags is set
+- `IFOR [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF OR) | opcode: `0x14`  
+  Run the next instruction only if at least one the specified flags is set  
   **Affects** `pc`
 
-- `IFNOR [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF Not OR) | opcode: `0x15`
-  Run the next instruction only if none of the specified flags is set
+- `IFNOR [reg_flag | 1-flag], [reg_flag | 1-flag]` (IF Not OR) | opcode: `0x15`  
+  Run the next instruction only if none of the specified flags is set  
   **Affects** `pc`
 
-- `IFLFT [reg_flag | 1-flag], [reg_flag | 1-flag]` (If LeFT) | opcode: `0x16`
-  Run the next instruction only if the first specified flag is set and the second is not
+- `IFLFT [reg_flag | 1-flag], [reg_flag | 1-flag]` (If LeFT) | opcode: `0x16`  
+  Run the next instruction only if the first specified flag is set and the second is not  
   **Affects** `pc`
 
 #### Memory read/write instructions
 
 The memory instructions allow to manipulate the memory:
 
-- `LEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Load Effective Address) | opcode: `0x17`
-  Read the word at address (`addr` + `add` \* `mul`) in `avr`
-  As the `avr` is used for atomic instructions, its value is expected to be moved to another register to operate on
+- `LEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Load Effective Address) | opcode: `0x17`  
+  Read the word at address (`addr` + `add` \* `mul`) in `avr`  
+  As the `avr` is used for atomic instructions, its value is expected to be moved to another register to operate on  
   The address must be aligned or an exception will be raised
   **Affects** `avr`
 
-- `WEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Write Effective Address) | opcode: `0x18`
-  Write the value of `avr` to address at (`addr` + `add` \* `mul`)
+- `WEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Write Effective Address) | opcode: `0x18`  
+  Write the value of `avr` to address at (`addr` + `add` \* `mul`)  
   The address must be aligned or an exception will be raised
 
-- `PUSH [reg_value | 2-bytes]` (PUSH) | opcode: `0x19`
-  Decreases the current mode's stack pointer by 4, then write the provided value to the address it now points to
-  Equivalent to: `ADD [s|u]sp, [s|u]sp, 4` + `LDB [s|u]sp, <value>`
+- `PUSH [reg_value | 2-bytes]` (PUSH) | opcode: `0x19`  
+  Decreases the current mode's stack pointer by 4, then write the provided value to the address it now points to  
+  Equivalent to: `ADD [s|u]sp, [s|u]sp, 4` + `LDB [s|u]sp, <value>`  
   **Affects** `ssp` OR `usp`
 
-- `POP reg_dest` (POP) | opcode: `0x1A`
-  Read the word at the address stored at the current mode's stack pointer, then decreases it
-  Equivalent to: `LDA reg_dest, [s|u]sp` + `SUB [s|u]sp, [s|u]sp, 4`
+- `POP reg_dest` (POP) | opcode: `0x1A`  
+  Read the word at the address stored at the current mode's stack pointer, then decreases it  
+  Equivalent to: `LDA reg_dest, [s|u]sp` + `SUB [s|u]sp, [s|u]sp, 4`  
   **Affects** `reg_dest`, `ssp` or `usp`
 
-- `CALL [reg_addr | 2-bytes]` (CALL) | opcode: `0x1B`
-  Push the current address + 4 to the stack and jump to the provided address
+- `CALL [reg_addr | 2-bytes]` (CALL) | opcode: `0x1B`  
+  Push the current address + 4 to the stack and jump to the provided address  
   **Affects** `pc`, `ssp` or `usp`
 
 #### Hardware access instructions
 
-- `HWD reg_dest, [reg_id | 1-byte], [reg_hw_info | 1-byte]` (HardWare Data) | opcode: `0x1C`
-  Read a hardware information from a component.
-  The provided hardware identifier is the component's index, first component mounted to the motherboard getting ID 0.
-  To get the number of connected components, provide ID `0` and info number `0`.
-  The `hw_info` indicates which information must be retrieved, see [hardware informations](#reading-hardware-informations).
-  Providing an invalid component ID will result in an `0x0C` exception, and an invalid information code will result in an `0x0D` exception.
-  Asking for mapping informations on an unmapped component will result in an `0x0E` exception.
+- `HWD reg_dest, [reg_id | 1-byte], [reg_hw_info | 1-byte]` (HardWare Data) | opcode: `0x1C`  
+  Read a hardware information from a component.  
+  The provided hardware identifier is the component's index, first component mounted to the motherboard getting ID 0.  
+  To get the number of connected components, provide ID `0` and info number `0`.  
+  The `hw_info` indicates which information must be retrieved, see [hardware informations](#reading-hardware-informations).  
+  Providing an invalid component ID will result in an `0x0C` exception, and an invalid information code will result in an `0x0D` exception.  
+  Asking for mapping informations on an unmapped component will result in an `0x0E` exception.  
   **Affects** `reg_dest`
 
 #### Processor control instructions
 
 These instructions allow to control how the processor behave or to get informations about it:
 
-- `CYCLES reg_dest` (CYCLES) {H} | opcode: `0x1D`
-  Copy the number of cycles performed since the CPU awoken in the provided registry
+- `CYCLES reg_dest` (CYCLES) {H} | opcode: `0x1D`  
+  Copy the number of cycles performed since the CPU awoken in the provided registry  
   **Affects** `reg_dest`
 
-- `HALT` (HALT) {H} | opcode: `0x1E`
+- `HALT` (HALT) {H} | opcode: `0x1E`  
   Halt the processor
 
-- `RESET` (RESET) {H} | opcode: `0x1F`
+- `RESET` (RESET) {H} | opcode: `0x1F`  
   Reset the processor
 
 #### Alias instructions
@@ -470,7 +470,7 @@ There are a few _alias instructions_, which are strict aliases of existing instr
   Alias of: `SUB reg, 1`
 
 - `JMPA [reg_addr | 2-bytes]` (JuMP Absolute)
-  Go to the provided address
+  Go to the provided address  
   ALias of: `CPY cp, [reg_addr | 2-bytes]`
 
 - `RET` (RETurn)
