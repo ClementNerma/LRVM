@@ -210,13 +210,13 @@
 
     pop  {reg_dest: reg} -> ((0x1A << 3) + 0b100)[7:0] @ reg_dest[7:0] @ 0x00 @ 0x00
 
+    call {reg_addr: reg} -> ((0x1B << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    call {lit_addr: u16} -> ((0x1B << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
+
     hwd {reg_dest: reg}, {reg_id: reg}, {reg_hw_info:     reg} -> ((0x1C << 3) + 0b111)[7:0] @ reg_dest[7:0] @ reg_id[7:0] @ reg_hw_info[7:0]
     hwd {reg_dest: reg}, {reg_id: reg}, {lit_hw_info: hw_info} -> ((0x1C << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_id[7:0] @ lit_hw_info[7:0]
     hwd {reg_dest: reg}, {lit_id:  u8}, {reg_hw_info:     reg} -> ((0x1C << 3) + 0b101)[7:0] @ reg_dest[7:0] @ lit_id[7:0] @ reg_hw_info[7:0]
     hwd {reg_dest: reg}, {lit_id:  u8}, {lit_hw_info: hw_info} -> ((0x1C << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_id[7:0] @ lit_hw_info[7:0]
-
-    call {reg_addr: reg} -> ((0x1B << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
-    call {lit_addr: u16} -> ((0x1B << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
 
     cycles {reg_dest: reg} -> ((0x1D << 3) + 0b100)[7:0] @ reg_dest[7:0] @ 0x00 @ 0x00
 
