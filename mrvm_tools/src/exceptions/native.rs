@@ -16,7 +16,7 @@ pub enum NativeException {
     UnknownHardwareInformationCode,
     ComponentNotMapped,
     HardwareException,
-    Interruption
+    Interruption(u8)
 }
 
 impl NativeException {
@@ -50,7 +50,7 @@ impl NativeException {
             0x0D => Self::UnknownHardwareInformationCode,
             0x0E => Self::ComponentNotMapped,
             0x10 => Self::HardwareException,
-            0xAA => Self::Interruption,
+            0xAA => Self::Interruption(data as u8),
 
             _ => return Err(())
         };
@@ -76,7 +76,7 @@ impl NativeException {
             Self::UnknownHardwareInformationCode => 0x0D,
             Self::ComponentNotMapped => 0x0E,
             Self::HardwareException => 0x10,
-            Self::Interruption => 0xAA,
+            Self::Interruption(_) => 0xAA,
         }
     }
 
@@ -98,7 +98,7 @@ impl NativeException {
             Self::UnknownHardwareInformationCode => None,
             Self::ComponentNotMapped => None,
             Self::HardwareException => None,
-            Self::Interruption => None,
+            Self::Interruption(code) => Some((*code).into()),
         }
     }
 
