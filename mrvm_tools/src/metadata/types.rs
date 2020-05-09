@@ -7,6 +7,14 @@ pub enum DisplayType {
 }
 
 impl DisplayType {
+    pub fn decode(code: u32) -> Result<Self, ()> {
+        match code {
+            0x00000001 => Ok(Self::Buffered),
+
+            _ => Err(())
+        }
+    }
+
     pub fn code(&self) -> u32 {
         match self {
             Self::Buffered => 0x00000001
@@ -35,6 +43,14 @@ pub enum KeyboardType {
 }
 
 impl KeyboardType {
+    pub fn decode(code: u32) -> Result<Self, ()> {
+        match code {
+            0x00000001 => Ok(Self::ReadlineSynchronous),
+
+            _ => Err(())
+        }
+    }
+
     pub fn code(&self) -> u32 {
         match self {
             Self::ReadlineSynchronous => 0x00000001
@@ -63,6 +79,14 @@ pub enum MemoryType {
 }
 
 impl MemoryType {
+    pub fn decode(code: u32) -> Result<Self, ()> {
+        match code {
+            0x00000001 => Ok(Self::Volatile),
+
+            _ => Err(())
+        }
+    }
+
     pub fn code(&self) -> u32 {
         match self {
             Self::Volatile => 0x00000001
@@ -93,6 +117,16 @@ pub enum StorageType {
 }
 
 impl StorageType {
+    pub fn decode(code: u32) -> Result<Self, ()> {
+        match code {
+            0x00000001 => Ok(Self::Readonly),
+            0x00000011 => Ok(Self::Flash),
+            0x00000021 => Ok(Self::Persistent),
+
+            _ => Err(())
+        }
+    }
+
     pub fn code(&self) -> u32 {
         match self {
             Self::Readonly => 0x00000001,

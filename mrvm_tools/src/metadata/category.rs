@@ -9,6 +9,20 @@ pub enum DeviceCategory {
 }
 
 impl DeviceCategory {
+    pub fn decode(&self, code: u64) -> Result<Self, ()> {
+        let cat = (code >> 32) as u32;
+        let typ = (code & 0xFFFFFFFF) as u32;
+
+        match cat {
+            0x00001000 => Ok(Self::Display(DisplayType::decode(typ)?)),
+            0x00002000 => Ok(Self::Keyboard(KeyboardType::decode(typ)?)),
+            0x00005000 => Ok(Self::Memory(MemoryType::decode(typ)?)),
+            0x0000A000 => Ok(Self::Storage(StorageType::decode(typ)?)),
+
+            _ => Err(())
+        }
+    }
+
     pub fn category_code(&self) -> u32 {
         match self {
             Self::Display(_) => 0x00001000,
