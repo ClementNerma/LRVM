@@ -289,11 +289,13 @@ impl CPU {
                     let word = args!(REG_OR_LIT_2);
 
                     let v_addr = if self.sv_mode() {
+                        let word = self.mem_read(self.regs.ssp)?;
                         self.regs.ssp = self.regs.ssp.wrapping_sub(4);
-                        self.mem_read(self.regs.ssp)?
+                        word
                     } else {
+                        let word = self.mem_read(self.regs.usp)?;
                         self.regs.usp = self.regs.usp.wrapping_sub(4);
-                        self.mem_read(self.regs.usp)?
+                        word
                     };
 
                     self.mem_write(v_addr, word)
@@ -304,13 +306,11 @@ impl CPU {
                     let reg_dest = args!(REG);
 
                     let word = if self.sv_mode() {
-                        let word = self.mem_read(self.regs.ssp)?;
                         self.regs.ssp = self.regs.ssp.wrapping_add(4);
-                        word
+                        self.mem_read(self.regs.ssp)?
                     } else {
-                        let word = self.mem_read(self.regs.usp)?;
                         self.regs.usp = self.regs.usp.wrapping_add(4);
-                        word
+                        self.mem_read(self.regs.usp)?
                     };
 
                     self.write_reg(reg_dest, word)
@@ -321,11 +321,13 @@ impl CPU {
                     let v_addr = args!(REG_OR_LIT_2);
 
                     let sp_v_addr = if self.sv_mode() {
+                        let word = self.mem_read(self.regs.ssp)?;
                         self.regs.ssp = self.regs.ssp.wrapping_sub(4);
-                        self.mem_read(self.regs.ssp)?
+                        word
                     } else {
+                        let word = self.mem_read(self.regs.usp)?;
                         self.regs.usp = self.regs.usp.wrapping_sub(4);
-                        self.mem_read(self.regs.usp)?
+                        word
                     };
 
                     self.regs.pc = v_addr;

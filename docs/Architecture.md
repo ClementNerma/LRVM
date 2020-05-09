@@ -434,12 +434,12 @@ The memory instructions allow to manipulate the memory:
   **Affects** `reg_swap`
 
 - `PUSH [reg_value | 2-bytes]` (PUSH) | opcode: `0x19`  
-  Decreases the current mode's stack pointer by 4, then write the provided value to the address it now points to  
+  Write the provided value to the address pointed by the current mode's stack pointer, then decreases it by 4  
   Equivalent to: `ADD [s|u]sp, [s|u]sp, 4` + `LDB [s|u]sp, <value>`  
   **Affects** `ssp` OR `usp`
 
 - `POP reg_dest` (POP) | opcode: `0x1A`  
-  Read the word at the address stored at the current mode's stack pointer, then decreases it  
+  Increase the current mode's stack pointer, then read the value pointed by the new address  
   Equivalent to: `LDA reg_dest, [s|u]sp` + `SUB [s|u]sp, [s|u]sp, 4`  
   **Affects** `reg_dest`, `ssp` or `usp`
 
