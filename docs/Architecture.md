@@ -435,16 +435,17 @@ The memory instructions allow to manipulate the memory:
 
 - `PUSH [reg_value | 2-bytes]` (PUSH) | opcode: `0x19`  
   Write the provided value to the address pointed by the current mode's stack pointer, then decreases it by 4  
-  Equivalent to: `ADD [s|u]sp, [s|u]sp, 4` + `LDB [s|u]sp, <value>`  
+  If the memory cannot be written, the stack pointer register is left unchanged.  
   **Affects** `ssp` OR `usp`
 
 - `POP reg_dest` (POP) | opcode: `0x1A`  
   Increase the current mode's stack pointer, then read the value pointed by the new address  
-  Equivalent to: `LDA reg_dest, [s|u]sp` + `SUB [s|u]sp, [s|u]sp, 4`  
+  If the memory cannot be read, the stack pointer register is left unchanged.  
   **Affects** `reg_dest`, `ssp` or `usp`
 
 - `CALL [reg_addr | 2-bytes]` (CALL) | opcode: `0x1B`  
   Push the current address + 4 to the stack and jump to the provided address  
+  If the memory cannot be written, the stack pointer register is left unchanged.  
   **Affects** `pc`, `ssp` or `usp`
 
 #### Hardware access instructions
@@ -521,4 +522,5 @@ There are a few _alias instructions_, which are strict aliases of existing instr
 
 - `RET` (RETurn)
   Pop the stack in `pc`  
+  If the memory cannot be read, the stack pointer register is left unchanged.  
   Alias of: `POP <pc>`

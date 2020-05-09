@@ -294,50 +294,54 @@ impl CPU {
                 0x19 => {
                     let word = args!(REG_OR_LIT_2);
 
-                    let v_addr = if self.sv_mode() {
-                        let word = self.mem_read(self.regs.ssp)?;
-                        self.regs.ssp = self.regs.ssp.wrapping_sub(4);
-                        word
-                    } else {
-                        let word = self.mem_read(self.regs.usp)?;
-                        self.regs.usp = self.regs.usp.wrapping_sub(4);
-                        word
-                    };
+                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp };
 
-                    self.mem_write(v_addr, word)
+                    self.mem_write(stack_v_addr, word)?;
+                    
+                    if self.sv_mode() {
+                        self.regs.ssp = self.regs.ssp.wrapping_sub(4);
+                    } else {
+                        self.regs.usp = self.regs.usp.wrapping_sub(4);
+                    }
+
+                    Ok(())
                 },
 
                 // POP
                 0x1A => {
                     let reg_dest = args!(REG);
 
-                    let word = if self.sv_mode() {
-                        self.regs.ssp = self.regs.ssp.wrapping_add(4);
-                        self.mem_read(self.regs.ssp)?
+                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_add(4);
+
+                    let word = self.mem_read(stack_v_addr)?;
+
+                    if self.sv_mode() {
+                        self.regs.ssp = stack_v_addr;
                     } else {
-                        self.regs.usp = self.regs.usp.wrapping_add(4);
-                        self.mem_read(self.regs.usp)?
-                    };
+                        self.regs.usp = stack_v_addr;
+                    }
 
                     self.write_reg(reg_dest, word)
                 },
 
                 // CALL
                 0x1B => {
-                    let v_addr = args!(REG_OR_LIT_2);
+                    let jmp_v_addr = args!(REG_OR_LIT_2);
 
-                    let sp_v_addr = if self.sv_mode() {
-                        let word = self.mem_read(self.regs.ssp)?;
+                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp };
+
+                    self.mem_write(stack_v_addr, self.regs.pc.wrapping_add(4))?;
+                    
+                    if self.sv_mode() {
                         self.regs.ssp = self.regs.ssp.wrapping_sub(4);
-                        word
                     } else {
-                        let word = self.mem_read(self.regs.usp)?;
                         self.regs.usp = self.regs.usp.wrapping_sub(4);
-                        word
-                    };
+                    }
 
-                    self.regs.pc = v_addr;
-                    self.mem_write(sp_v_addr, self.regs.pc.wrapping_add(4))
+                    self.regs.pc = jmp_v_addr;
+                    self._cycle_changed_pc = true;
+
+                    Ok(())
                 },
                 
                 // HWD
