@@ -1,4 +1,5 @@
 use std::convert::TryFrom;
+use std::fmt;
 use super::{RegOrLit1, RegOrLit2};
 
 /// CPU register
@@ -217,5 +218,11 @@ impl TryFrom<u8> for Reg {
 impl Into<u8> for Reg {
     fn into(self) -> u8 {
         self.code()
+    }
+}
+
+impl fmt::Display for Reg {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.name())
     }
 }
