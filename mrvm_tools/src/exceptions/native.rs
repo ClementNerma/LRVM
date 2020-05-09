@@ -12,10 +12,10 @@ pub enum NativeException {
     SupervisorReservedInstruction(u8),
     DivisionOrModByZero,
     ForbiddenOverflowDivOrMod,
-    UnknownComponentID,
-    UnknownHardwareInformationCode,
-    ComponentNotMapped,
-    HardwareException,
+    UnknownComponentID(u16),
+    UnknownHardwareInformationCode(u8),
+    ComponentNotMapped(u16),
+    HardwareException { code: u8, data: u8 },
     Interruption(u8)
 }
 
@@ -46,10 +46,10 @@ impl NativeException {
             0x09 => Self::SupervisorReservedInstruction(data as u8),
             0x0A => Self::DivisionOrModByZero,
             0x0B => Self::ForbiddenOverflowDivOrMod,
-            0x0C => Self::UnknownComponentID,
-            0x0D => Self::UnknownHardwareInformationCode,
-            0x0E => Self::ComponentNotMapped,
-            0x10 => Self::HardwareException,
+            0x0C => Self::UnknownComponentID(data),
+            0x0D => Self::UnknownHardwareInformationCode(data as u8),
+            0x0E => Self::ComponentNotMapped(data),
+            0x10 => Self::HardwareException { code: (data >> 8) as u8, data: (data & 0xFF) as u8 },
             0xAA => Self::Interruption(data as u8),
 
             _ => return Err(())
@@ -72,10 +72,10 @@ impl NativeException {
             Self::SupervisorReservedInstruction(_) => 0x09,
             Self::DivisionOrModByZero => 0x0A,
             Self::ForbiddenOverflowDivOrMod => 0x0B,
-            Self::UnknownComponentID => 0x0C,
-            Self::UnknownHardwareInformationCode => 0x0D,
-            Self::ComponentNotMapped => 0x0E,
-            Self::HardwareException => 0x10,
+            Self::UnknownComponentID(_) => 0x0C,
+            Self::UnknownHardwareInformationCode(_) => 0x0D,
+            Self::ComponentNotMapped(_) => 0x0E,
+            Self::HardwareException { code: _, data: _ } => 0x10,
             Self::Interruption(_) => 0xAA,
         }
     }
@@ -94,10 +94,10 @@ impl NativeException {
             Self::SupervisorReservedInstruction(opcode) => Some((*opcode).into()),
             Self::DivisionOrModByZero => None,
             Self::ForbiddenOverflowDivOrMod => None,
-            Self::UnknownComponentID => None,
-            Self::UnknownHardwareInformationCode => None,
-            Self::ComponentNotMapped => None,
-            Self::HardwareException => None,
+            Self::UnknownComponentID(id_lower) => Some(*id_lower),
+            Self::UnknownHardwareInformationCode(code) => Some((*code).into()),
+            Self::ComponentNotMapped(id_lower) => Some(*id_lower),
+            Self::HardwareException { code, data } => Some((*code as u16) << 8 + *data),
             Self::Interruption(code) => Some((*code).into()),
         }
     }
