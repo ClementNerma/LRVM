@@ -23,19 +23,25 @@ pub struct CPU {
 impl CPU {
     /// Create a new CPU using an existing mapped memory (must be the same one the motherboard this CPU will be connected to uses).
     pub fn new(mem: Arc<Mutex<MappedMemory>>) -> Self {
-        Self {
+        let mut cpu = Self {
             regs: Registers::new(),
             mmu: MMU::new(Arc::clone(&mem)),
             mem,
             cycles: 0,
             halted: true,
             _cycle_changed_pc: false
-        }
+        };
+
+        // Enable supervisor mode by default
+        cpu.regs.smt = 1;
+
+        cpu
     }
 
     /// Hanldle a RESET signal from the motherboard
     pub fn reset(&mut self) {
         self.regs.reset();
+        self.regs.smt = 1;
         self.cycles = 0;
         self.halted = false;
         self._cycle_changed_pc = true;
