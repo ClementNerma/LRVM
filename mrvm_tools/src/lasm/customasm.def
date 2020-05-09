@@ -114,7 +114,7 @@
     sub  {reg_obj: reg}, {lit_val: u16} -> ((0x04 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
     
     mul  {reg_obj: reg}, {reg_val: reg} -> ((0x05 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
-    mul  {reg_obj: reg}, {lit_val: u16} -> ((0x05 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0] @ 0x00
+    mul  {reg_obj: reg}, {lit_val: u16} -> ((0x05 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
     
     div  {reg_obj: reg}, {reg_val: reg}, {reg_mode: reg}      -> ((0x06 << 3) + 0b111)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ reg_mode[7:0]
     div  {reg_obj: reg}, {lit_val:  u8}, {reg_mode: reg}      -> ((0x06 << 3) + 0b101)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ reg_mode[7:0]
