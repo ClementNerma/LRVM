@@ -74,7 +74,7 @@ impl AuxHwException {
 
     // Encode the exception with its eventual associated data
     pub fn encode(&self) -> u16 {
-        (self.code() as u16) << 8 + self.associated_data().unwrap_or(0) as u16
+        ((self.code() as u16) << 8) + self.associated_data().unwrap_or(0) as u16
     }
 }
 

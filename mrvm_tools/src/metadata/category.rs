@@ -10,7 +10,7 @@ pub enum DeviceCategory {
 }
 
 impl DeviceCategory {
-    pub fn decode(&self, code: u64) -> Result<Self, ()> {
+    pub fn decode(code: u64) -> Result<Self, ()> {
         let cat = (code >> 32) as u32;
         let typ = (code & 0xFFFFFFFF) as u32;
 
@@ -43,7 +43,7 @@ impl DeviceCategory {
     }
 
     pub fn encode(&self) -> u64 {
-        (self.category_code() as u64) << 32 + self.type_code() as u64
+        ((self.category_code() as u64) << 32) + self.type_code() as u64
     }
 }
 

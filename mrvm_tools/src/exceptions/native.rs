@@ -100,14 +100,14 @@ impl NativeException {
             Self::UnknownComponentID(id_lower) => Some(*id_lower),
             Self::UnknownHardwareInformationCode(code) => Some((*code).into()),
             Self::ComponentNotMapped(id_lower) => Some(*id_lower),
-            Self::HardwareException { code, data } => Some((*code as u16) << 8 + *data),
+            Self::HardwareException { code, data } => Some(((*code as u16) << 8) + *data as u16),
             Self::Interruption(code) => Some((*code).into()),
         }
     }
 
     /// Encode the exception on 24-bits
     pub fn encode(&self) -> u32 {
-        (self.code() as u32) << 16 + self.associated_data().unwrap_or(0)
+        ((self.code() as u32) << 16) + self.associated_data().unwrap_or(0) as u32
     }
 
     /// Encode the exception with supervisor informations on 32-bits.
@@ -134,7 +134,7 @@ impl fmt::Display for NativeException {
             Self::UnknownComponentID(id_lower) => format!("Unknown component ID (weakest bits are {:#006X})", id_lower),
             Self::UnknownHardwareInformationCode(code) => format!("Unknown hardware information code {:#004X}", code),
             Self::ComponentNotMapped(id_lower) => format!("Component with ID {:#004X} is not mapped", id_lower),
-            Self::HardwareException { code, data } => match AuxHwException::decode((*code as u16) << 8 + data) {
+            Self::HardwareException { code, data } => match AuxHwException::decode(((*code as u16) << 8) + *data as u16) {
                 Ok(ex) => format!("Hardware exception occurred: {}", ex),
                 Err(_) => "Unknown hardware exception occurred".to_owned()
             },
