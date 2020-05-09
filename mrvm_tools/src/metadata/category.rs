@@ -1,3 +1,4 @@
+use std::fmt;
 use super::types::*;
 
 #[derive(Copy, Clone, Debug)]
@@ -43,5 +44,16 @@ impl DeviceCategory {
 
     pub fn encode(&self) -> u64 {
         (self.category_code() as u64) << 32 + self.type_code() as u64
+    }
+}
+
+impl fmt::Display for DeviceCategory {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::Display(d) => format!("Display:{}", d),
+            Self::Keyboard(k) => format!("Keyboard:{}", k),
+            Self::Memory(m) => format!("Memory:{}", m),
+            Self::Storage(s) => format!("Storage:{}", s),
+        })
     }
 }

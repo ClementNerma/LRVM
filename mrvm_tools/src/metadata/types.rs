@@ -1,3 +1,4 @@
+use std::fmt;
 use super::DeviceCategory;
 
 #[non_exhaustive]
@@ -33,6 +34,14 @@ impl DisplayType {
 impl Into<DeviceCategory> for DisplayType {
     fn into(self) -> DeviceCategory {
         self.wrap()
+    }
+}
+
+impl fmt::Display for DisplayType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::Buffered => "Buffered"
+        })
     }
 }
 
@@ -72,6 +81,14 @@ impl Into<DeviceCategory> for KeyboardType {
     }
 }
 
+impl fmt::Display for KeyboardType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::ReadlineSynchronous => "Readline synchronous"
+        })
+    }
+}
+
 #[non_exhaustive]
 #[derive(Copy, Clone, Debug)]
 pub enum MemoryType {
@@ -105,6 +122,14 @@ impl MemoryType {
 impl Into<DeviceCategory> for MemoryType {
     fn into(self) -> DeviceCategory {
         self.wrap()
+    }
+}
+
+impl fmt::Display for MemoryType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::Volatile => "Volatile"
+        })
     }
 }
 
@@ -147,5 +172,15 @@ impl StorageType {
 impl Into<DeviceCategory> for StorageType {
     fn into(self) -> DeviceCategory {
         self.wrap()
+    }
+}
+
+impl fmt::Display for StorageType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::Readonly => "Readonly",
+            Self::Flash => "Flash",
+            Self::Persistent => "Persistent"
+        })
     }
 }
