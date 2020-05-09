@@ -1,3 +1,4 @@
+use std::fmt;
 
 /// Strongly-typed hardware exception
 pub enum AuxHwException {
@@ -80,5 +81,20 @@ impl AuxHwException {
 impl Into<u16> for AuxHwException {
     fn into(self) -> u16 {
         self.encode()
+    }
+}
+
+impl fmt::Display for AuxHwException {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::UnknownOperation(op) => format!("Unknown operation {:#004X}", op),
+            Self::UnsupportedOperation => "Unsupported operation".to_owned(),
+
+            Self::GenericPhysicalReadError => "Generic physical read error".to_owned(),
+            Self::MemoryNotReadable => "This memory address is not readable".to_owned(),
+
+            Self::GenericPhysicalWriteError => "Generic physical write error".to_owned(),
+            Self::MemoryNotWritable => "This memory address is not writable".to_owned()
+        })
     }
 }
