@@ -1,7 +1,7 @@
 use mrvm_tools::asm::{Program, Instr, ExtInstr};
 use crate::storage::BootROM;
 use crate::memory::VolatileMem;
-use crate::tests::lib::{prepare_vm, run_until_halt};
+use mrvm_tools::debug::{prepare_vm, run_until_halt};
 
 #[test]
 fn volatile_mem() {

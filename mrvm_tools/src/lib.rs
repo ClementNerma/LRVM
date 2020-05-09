@@ -8,6 +8,7 @@ pub mod lasm;
 pub mod bytes;
 pub mod metadata;
 pub mod exceptions;
+pub mod debug;
 
 #[cfg(test)]
 mod tests;

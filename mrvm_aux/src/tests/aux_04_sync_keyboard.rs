@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use mrvm_tools::asm::{Program, Instr, ExtInstr, Reg};
 use crate::storage::BootROM;
 use crate::keyboard::SyncKeyboard;
-use crate::tests::lib::{prepare_vm, run_until_halt};
+use mrvm_tools::debug::{prepare_vm, run_until_halt};
 
 static PLACEHOLDER_KEYB_INPUT: &'static str = "Placeholder keyboard input";
 

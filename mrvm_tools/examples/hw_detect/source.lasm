@@ -1,0 +1,87 @@
+
+main:
+    ; Count number of connected components
+    cpy ac0, 0x1000
+    hwd a1, 0, 0
+    cpy a0, 0
+    call .extract_metadata
+    add a0, 1
+    cmp a0, a1
+    ifeq
+    halt
+    jmp -20
+
+; Extract the metadata of the component specified in a0
+; Data structure in memory (76 bytes):
+; <uid (8)><name (32)><size (4)><category (4)><type (4)><model (4)><data (8)><is mapped (4)><map start addr (4)><map end addr (4)>
+extract_metadata:
+    cpy ac0, a0
+    mul ac0, 109
+
+    ; UID
+    hwd rr0, a0, 0x01
+    hwd rr1, a0, 0x02
+
+    wsa ac0, 0x00, rr0
+    wsa ac0, 0x04, rr1
+
+    ; Name
+    hwd rr0, a0, 0x11
+    hwd rr1, a0, 0x12
+    hwd rr2, a0, 0x13
+    hwd rr3, a0, 0x14
+    hwd rr4, a0, 0x15
+    hwd rr5, a0, 0x16
+    hwd rr6, a0, 0x17
+    hwd rr7, a0, 0x18
+
+    wsa ac0, 0x08, rr0
+    wsa ac0, 0x0C, rr1
+    wsa ac0, 0x10, rr2
+    wsa ac0, 0x14, rr3
+    wsa ac0, 0x18, rr4
+    wsa ac0, 0x1C, rr5
+    wsa ac0, 0x20, rr6
+    wsa ac0, 0x24, rr7
+
+    ; Size
+    hwd rr0, a0, 0x20
+
+    wsa ac0, 0x28, rr0
+
+    ; Category
+    hwd rr0, a0, 0x21
+
+    wsa ac0, 0x2C, rr0
+
+    ; Type
+    hwd rr0, a0, 0x22
+
+    wsa ac0, 0x30, rr0
+
+    ; Model
+    hwd rr0, a0, 0x23
+
+    wsa ac0, 0x34, rr0
+
+    ; Additional data
+    hwd rr0, a0, 0x24
+    hwd rr1, a0, 0x25
+
+    wsa ac0, 0x38, rr0
+    wsa ac0, 0x3C, rr1
+
+    ; Mapping
+    hwd rr0, a0, 0xA0
+    cmp rr0, 1
+    ifnq
+    jmp 0x18
+
+    hwd rr0, a0, 0xA1
+    hwd rr1, a0, 0xA2
+
+    wsa ac0, 0x40, 1
+    wsa ac0, 0x44, rr0
+    wsa ac0, 0x48, rr1
+
+    ret

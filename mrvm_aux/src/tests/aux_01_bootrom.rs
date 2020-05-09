@@ -1,7 +1,7 @@
 use mrvm::board::MotherBoard;
 use mrvm_tools::asm::{Program, Instr, Reg};
 use crate::storage::BootROM;
-use crate::tests::lib::{prepare_vm, run_until_halt, run_until_halt_or_ex};
+use mrvm_tools::debug::{prepare_vm, run_until_halt, run_until_halt_or_ex};
 
 fn prepare(instr: Instr) -> MotherBoard {
     let prog = Program::from(vec![
@@ -20,7 +20,7 @@ fn bootrom_read() {
 
     let cpu = &mut vm.cpu();
 
-    let cycles = run_until_halt(cpu).0;
+    let cycles = run_until_halt(cpu);
 
     assert_eq!(cycles, 2, "CPU was expected to run {} cycles, {} cycles run instead", 2, cpu.cycles());
     assert_eq!(cpu.regs.a[0], 0xABCD, "Registry a0 was expected to contain 0x0000ABCD, contains {:#010X} instead", cpu.regs.a[0]);
