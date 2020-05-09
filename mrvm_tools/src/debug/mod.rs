@@ -7,8 +7,6 @@ use mrvm::cpu::CPU;
 /// In case of success, the component's name as well as its start and mapping address are displayed.
 /// In case of fail, the reason is displayed with the component's name and the program panics.
 pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
-    print!("\n");
-
     let aux_count = components.len();
 
     let mut motherboard = MotherBoard::new(components);
