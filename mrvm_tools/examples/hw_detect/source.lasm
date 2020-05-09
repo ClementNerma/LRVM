@@ -1,0 +1,134 @@
+;
+; This program detects all components connected to the motherboard (even if they are not memory in memory).
+; It then writes informations about them in a dedicated RAM component.
+;
+; The exact format is the same for each component:
+; 
+; * uid (8 bytes)
+; * name (32 bytes)
+; * size (4 bytes)
+; * category (4 bytes)
+; * type (4 bytes)
+; * model (4 bytes)
+; * data (8 bytes)
+; * is mapped (4 bytes)
+; * map start addr (4 bytes)
+; * map end addr (4 bytes)
+;
+; For a total of 76 bytes per component.
+;
+;
+; List of registers:
+;  * ac0  : Address to write the current component's informations to
+;  * a0   : ID of the current component to get informations from
+;  * a1   : Number of components connected to the motherboard
+
+main:
+    ; Count number of connected components
+    ; The RAM we will write the metadata on starts at address 0x1000
+    cpy ac0, 0x1000
+    hwd a1, 0, HWD_COUNT
+    cpy a0, 0
+
+    wsa ac0, 0, a1
+    add ac0, 4
+
+    ; Halt if there is no component
+    cmp a1, 0
+    ifeq
+    halt
+
+    ; Prepare the stack
+    ; The stack RAM starts at address 0x2000, but as the stack goes down each time, we need to use the end address
+    cpy ssp, 0x2020
+    sub ssp, 0x4
+
+.loop:
+    ; Extract metadata of the current component
+    call extract_infos
+
+    ; Indicate we want to get informations about the next component
+    add a0, 1
+
+    ; If we reached the total number of components...
+    cmp a0, a1
+    ifeq
+    ; We simply halt the processor (equivalent of a program exit here)
+    halt
+
+    ; Else, we loop to extract informations about the next component
+    jmpa .loop
+
+; Write the informations of the component specified in `a0`
+; All routine registers (rr0 to rr7) are rewritten by this routine.
+extract_infos:
+    ; UID
+    hwd rr0, a0, HWD_UID_UPPER
+    hwd rr1, a0, HWD_UID_LOWER
+
+    wsa ac0, 0x00, rr0
+    wsa ac0, 0x04, rr1
+
+    ; Name
+    hwd rr0, a0, HWD_NAME_W1
+    hwd rr1, a0, HWD_NAME_W2
+    hwd rr2, a0, HWD_NAME_W3
+    hwd rr3, a0, HWD_NAME_W4
+    hwd rr4, a0, HWD_NAME_W5
+    hwd rr5, a0, HWD_NAME_W6
+    hwd rr6, a0, HWD_NAME_W7
+    hwd rr7, a0, HWD_NAME_W8
+
+    wsa ac0, 0x08, rr0
+    wsa ac0, 0x0C, rr1
+    wsa ac0, 0x10, rr2
+    wsa ac0, 0x14, rr3
+    wsa ac0, 0x18, rr4
+    wsa ac0, 0x1C, rr5
+    wsa ac0, 0x20, rr6
+    wsa ac0, 0x24, rr7
+
+    ; Size
+    hwd rr0, a0, HWD_SIZE
+
+    wsa ac0, 0x28, rr0
+
+    ; Category
+    hwd rr0, a0, HWD_CAT
+
+    wsa ac0, 0x2C, rr0
+
+    ; Type
+    hwd rr0, a0, HWD_TYPE
+
+    wsa ac0, 0x30, rr0
+
+    ; Model
+    hwd rr0, a0, HWD_MODEL
+
+    wsa ac0, 0x34, rr0
+
+    ; Additional data
+    hwd rr0, a0, HWD_DATA_UPPER
+    hwd rr1, a0, HWD_DATA_LOWER
+
+    wsa ac0, 0x38, rr0
+    wsa ac0, 0x3C, rr1
+
+    ; Mapping
+    hwd rr0, a0, HWD_IS_MAPPED
+    cmp rr0, 1
+    ifnq
+    jmp 0x18
+
+    hwd rr0, a0, HWD_MAP_START
+    hwd rr1, a0, HWD_MAP_END
+
+    wsa ac0, 0x40, 1
+    wsa ac0, 0x44, rr0
+    wsa ac0, 0x48, rr1
+
+    ; Shift memory address
+    add ac0, 0x4C
+
+    ret
