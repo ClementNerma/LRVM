@@ -30,8 +30,15 @@ impl AuxHwException {
         let code = (code >> 8) as u8;
         let data = (code & 0xFF) as u8;
 
+        Self::decode_parts(code, Some(data))
+    }
+
+    /// Decode an auxiliary component's exception from its code and data
+    pub fn decode_parts(code: u8, data: Option<u8>) -> Result<Self, ()> {
+        let data_or_err = data.ok_or(());
+
         match code {
-            0x10 => Ok(Self::UnknownOperation(data)),
+            0x10 => Ok(Self::UnknownOperation(data_or_err?)),
             0x11 => Ok(Self::UnsupportedOperation),
             
             0x20 => Ok(Self::GenericPhysicalReadError),
