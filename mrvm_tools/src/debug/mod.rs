@@ -1,5 +1,16 @@
 use mrvm::board::{MotherBoard, Bus, MappingRange, ContiguousMappingStatus};
-use mrvm::cpu::CPU;
+use mrvm::cpu::{CPU, Ex};
+
+/// State of the VM when exited
+#[derive(Debug, Clone)]
+pub struct StoppedState {
+    /// Cycles count when the VM stopped
+    pub cycles: u32,
+    /// The address the VM was stopped at
+    pub addr: u32,
+    /// If the VM was stopped due to an exception, contains the faulty exception
+    pub ex: Option<Ex>
+}
 
 /// Prepare a motherboard from a list of components.
 /// The mapping status of all components is displayed.
@@ -42,8 +53,8 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
 /// Run a virtual machine until the CPU halt, eventually encounters an exception or reaches a given number of cycles.
 /// The first member of the returned tuple is the cycle number when the function stopped running the VM, and the second one
 /// indicates if the VM was stopped due to an exception (only if `halt_on_ex` is set).
-pub fn run_until_halt_ex_limit(cpu: &mut CPU, halt_on_ex: bool, cycles_limit: Option<u32>) -> (u32, bool) {
-    let mut had_ex = false;
+pub fn run_until_halt_ex_limit(cpu: &mut CPU, halt_on_ex: bool, cycles_limit: Option<u32>) -> StoppedState {
+    let mut stop_ex = None;
 
     while !cpu.halted() && cycles_limit.map(|limit| cpu.cycles() < limit).unwrap_or(true) {
         let was_at = cpu.regs.pc;
@@ -59,29 +70,31 @@ pub fn run_until_halt_ex_limit(cpu: &mut CPU, halt_on_ex: bool, cycles_limit: Op
                     ex.associated.unwrap_or(0)
                 );
 
-                if halt_on_ex { had_ex = true; break }
+                if halt_on_ex {
+                    stop_ex = Some(ex);
+                    break ;
+                }
             },
         };
     }
 
-    (cpu.cycles(), had_ex)
+    StoppedState { cycles: cpu.cycles(), addr: cpu.regs.pc, ex: stop_ex }
 }
 
 /// Run a virtual machine until the CPU halts.
 /// The returned value is the cycle number when the function stopped running the VM.
-pub fn run_until_halt(cpu: &mut CPU) -> u32 {
-    run_until_halt_ex_limit(cpu, false, None).0
+pub fn run_until_halt(cpu: &mut CPU) -> StoppedState {
+    run_until_halt_ex_limit(cpu, false, None)
 }
 
 /// Run a virtual machine until the CPU halt or encounters an exception.
 /// The Ok() variant of the returned value is the cycle number when the function stopped running the VM.
-/// The Err() variant indicates the VM was stopped due to an exception and provides the value of the Exception Type register.
-pub fn run_until_halt_or_ex(cpu: &mut CPU) -> Result<u32, u32> {
-    let res = run_until_halt_ex_limit(cpu, true, None);
-    
-    if res.1 {
-        Err(cpu.regs.et)
-    } else {
-        Ok(res.0)
+/// The Err() variant indicates the VM was stopped due to an exception and provides the faulty address as well as the exception.
+pub fn run_until_halt_or_ex(cpu: &mut CPU) -> Result<u32, (u32, Ex)> {
+    let status = run_until_halt_ex_limit(cpu, true, None);
+
+    match status.ex {
+        None => Ok(status.addr),
+        Some(ex) => Err((status.addr, ex))
     }
 }
