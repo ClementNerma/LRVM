@@ -75,7 +75,6 @@ dependencies = [
 name = "hw_detect"
 version = "0.1.0"
 dependencies = [
- "mrvm",
  "mrvm_aux",
  "mrvm_tools",
  "rand",
@@ -113,7 +112,6 @@ version = "0.1.0"
 dependencies = [
  "customasm",
  "mrvm",
- "mrvm_aux",
 ]
 
 [[package]]

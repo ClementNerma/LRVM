@@ -7,6 +7,3 @@ edition = "2018"
 [dependencies]
 mrvm = { path = "../mrvm" }
 customasm = { git = "https://github.com/hlorenzi/customasm.git" }
-
-[dev-dependencies]
-mrvm_aux = { path = "../mrvm_aux" }
