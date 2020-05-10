@@ -59,7 +59,7 @@ impl CPU {
         self.cycles = self.cycles.wrapping_add(1);
 
         // Get the instruction to run
-        let instr = self.exec_mem(self.regs.pc)?.to_be_bytes();
+        let instr = self.mem_exec(self.regs.pc)?.to_be_bytes();
 
         // Get its opcode (5 first bits of the first byte)
         let opcode = instr[0] >> 3;
@@ -651,7 +651,7 @@ impl CPU {
 
     /// Execute (read) an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept executing this address in the current mode.
-    fn exec_mem(&mut self, v_addr: u32) -> Result<u32, Ex> {
+    fn mem_exec(&mut self, v_addr: u32) -> Result<u32, Ex> {
         let v_addr = self.ensure_aligned(v_addr)?;
         let mut ex = 0;
 
