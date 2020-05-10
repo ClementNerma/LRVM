@@ -21,6 +21,10 @@ It is split into several crates:
 An arbitrary number of components can be connected to the virtual motherboard and accessed through memory mapping (MMIO).
 Many components are available in the [`mrvm_aux`](mrvm_aux/) crate.
 
+## Tutorial
+
+A step-by-step tutorial explaining how to set up a VM and running it with debugging tools can be found in the [documentation](docs/Tutorial.md).
+
 ## Specifications
 
 The virtual machine's specifications (registers, computation, ISA, etc.) are available [here](docs/).

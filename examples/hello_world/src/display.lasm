@@ -1,0 +1,27 @@
+
+main:
+    cpy ac0, message
+    cpy ac1, 0x2000
+    cpy ac2, 0x2100 - 0x04
+
+.copy_byte:
+    lsa a0, ac0, 0
+    cmp a0, 0
+
+    ifeq
+    jmpa .display
+
+    wsa ac1, 0, a0
+
+    add ac0, 4
+    add ac1, 4
+
+    jmpa .copy_byte
+
+.display:
+    wsa ac2, 0, 0xAA
+    halt
+
+message:
+    #str "Hello, world!"
+    #d32 0
