@@ -65,4 +65,9 @@ impl MotherBoard {
             aux.lock().unwrap().reset();
         }
     }
+
+    /// Get the number of connected components
+    pub fn count(&self) -> usize {
+        self.aux.len()
+    }
 }
