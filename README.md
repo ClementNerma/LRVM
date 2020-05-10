@@ -41,3 +41,7 @@ main:
 ```
 
 This program adds `1` to the `a0` register until it reaches `10`, then it halts the processor.
+
+## Examples
+
+Examples can be found in the [`mrvm_tools/examples/`](mrvm_tools/examples/) directory.
