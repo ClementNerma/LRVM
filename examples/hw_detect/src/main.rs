@@ -9,8 +9,6 @@ use mrvm_tools::exceptions::AuxHwException;
 use mrvm_tools::debug::{exec_vm, RunConfig};
 
 fn main() {
-    let mut rng = rand::thread_rng();
-
     println!("> Assembling LASM code...");
 
     // Compile the source code
@@ -18,6 +16,8 @@ fn main() {
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     println!("> Setting up and booting the VM...");
+
+    let mut rng = rand::thread_rng();
 
     let mut motherboard = exec_vm(vec![
         // BootROM containing the program's machine code
