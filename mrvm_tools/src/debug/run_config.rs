@@ -70,6 +70,7 @@ impl RunConfig {
     /// Enable all display informations.
     pub fn be_verbose(mut self) -> Self {
         self.print_cycles = true;
+        self.print_exceptions = true;
         self.print_finish = true;
         self
     }
