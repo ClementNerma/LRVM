@@ -737,6 +737,26 @@ fn main() {
 }
 ```
 
+We can even use the `exec_vm` function from the `mrvm_tools::debug` module as we don't do anything between the `prepare_vm` and the `run_vm` calls:
+
+```rust
+// ...
+
+fn main() {
+    let program = assemble_words(include_str!("display.lasm")).unwrap();
+
+    let mut rng = rand::thread_rng();
+
+    exec_vm(vec![
+        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
+        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BufferedDisplay::new(0x100, Box::new(
+            |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
+        ), rng.gen()).unwrap())
+    ], &RunConfig::ex_halt());
+}
+```
+
 Compared to our previous code:
 
 ```rust
