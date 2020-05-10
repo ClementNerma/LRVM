@@ -17,15 +17,16 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
 
         for result in aux_mapping {
             println!(
-                "=> Component {:04} '{:32}': {} {}",
+                "=> Component {:04} '{:32}': {} {} (UID: 0x{})",
                 result.aux_id,
                 result.aux_name,
                 if result.aux_mapping.is_ok() { "✓" } else { "✗" },
                 match result.aux_mapping {
                     Ok(MappingRange { start_addr, end_addr }) =>
-                        format!("{:#010X} -> {:#010X}", start_addr, end_addr),
+                    format!("{:#010X} -> {:#010X}", start_addr, end_addr),
                     Err(err) => format!("{:?}", err),
-                }
+                },
+                result.aux_hw_id.to_be_bytes().iter().map(|byte| format!("{:002X}", byte)).collect::<Vec<String>>().join(" "),
             );
         }
 
