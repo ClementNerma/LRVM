@@ -21,7 +21,7 @@ fn prepare() -> MotherBoard {
     let mut motherboard = prepare_vm(vec![
         // BootROM containing the program's machine code
         Box::new(BootROM::new(program, 0x1000)),
-        // RAM that will contain the detected components' metadata
+        // RAM that will contain informations about each detected components
         Box::new(RAM::new(0x1000)),
         // RAM that will be used for the stack
         Box::new(RAM::new(0x20))
@@ -48,13 +48,18 @@ fn prepare() -> MotherBoard {
 fn main() {
     let mut motherboard = prepare();
 
+    // We read the memory from inside this handler as the mapped memory object cannot be moved out of the motherboard instance.
     motherboard.map(|mut mem| {
+        // Address of the data RAM
         let ram_addr = 0x1000;
         
+        // This function reads an address in the memory and handles exceptions.
+        // If an exception occurrs, it tries to decode it to show a human-readable error instead of an exception code.
         let mut read = move |addr: u32| {
             let mut ex = 0;
             let word = mem.read(addr, &mut ex);
-            
+
+            // Handle exceptions
             if ex != 0 {
                 match AuxHwException::decode(ex) {
                     Ok(ex) => panic!("Unexpected exception occurred while reading memory address {:#010X}:\n{}", addr, ex),
@@ -65,8 +70,11 @@ fn main() {
             word
         };
 
+        // The first word in the data RAM contains the number of components
+        // See the source LASM file in this directory to know the exact memory structure of the data RAM
         let components = read(ram_addr);
 
+        // Decode informations on each component
         for aux_id in 0..components {
             let aux_addr = ram_addr + 0x4 + (aux_id * 76);
 
