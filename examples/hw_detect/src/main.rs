@@ -1,15 +1,18 @@
-mod components;
 
+use rand::Rng;
 use mrvm::board::MotherBoard;
+use mrvm_aux::storage::BootROM;
+use mrvm_aux::memory::VolatileMem;
 use mrvm_tools::lasm::assemble_words;
 use mrvm_tools::bytes::words_to_bytes;
 use mrvm_tools::metadata::DeviceCategory;
 use mrvm_tools::exceptions::{NativeException, AuxHwException};
 use mrvm_tools::debug::{prepare_vm, run_until_halt_or_ex};
-use self::components::{BootROM, RAM};
 
 /// Prepare the VM
 fn prepare() -> MotherBoard {
+    let mut rng = rand::thread_rng();
+
     println!("> (1/3) Assembling source program...");
 
     // Compile the source code
@@ -20,11 +23,11 @@ fn prepare() -> MotherBoard {
 
     let mut motherboard = prepare_vm(vec![
         // BootROM containing the program's machine code
-        Box::new(BootROM::new(program, 0x1000)),
+        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
         // RAM that will contain informations about each detected components
-        Box::new(RAM::new(0x1000)),
+        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
         // RAM that will be used for the stack
-        Box::new(RAM::new(0x20))
+        Box::new(VolatileMem::new(0x20, rng.gen()).unwrap())
     ]);
 
     let cpu = motherboard.cpu();

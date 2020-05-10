@@ -2,5 +2,6 @@
 members = [
     "mrvm",
     "mrvm_aux",
-    "mrvm_tools"
+    "mrvm_tools",
+    "examples/hw_detect"
 ]
