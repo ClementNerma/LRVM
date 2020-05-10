@@ -49,3 +49,17 @@ This program adds `1` to the `a0` register until it reaches `10`, then it halts 
 ## Examples
 
 Examples can be found in the [`examples/`](examples/) directory.
+
+## Testing
+
+As some examples depends on other, and Cargo does not provide a way to prevent tests from running concurrently, you should not use a simple `cargo test` on MRVM's crates but instead:
+
+```shell
+cargo test -- --test-threads=1
+```
+
+And if you want the output of each test:
+
+```shell
+cargo test -- --test-threads=1 --nocapture
+```
