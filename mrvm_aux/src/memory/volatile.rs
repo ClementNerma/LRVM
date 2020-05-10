@@ -24,7 +24,7 @@ impl VolatileMem {
         } else {
             Ok(Self {
                 storage: vec![0; size.try_into().map_err(|_| "Volatile memory size cannot exceed your CPU architecture's supported size")?],
-                size,
+                size: size / 4,
                 hw_id
             })
         }
@@ -37,7 +37,7 @@ impl VolatileMem {
 
         Ok(Self {
             storage,
-            size,
+            size: size / 4,
             hw_id
         })
     }
