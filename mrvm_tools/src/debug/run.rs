@@ -40,7 +40,7 @@ pub fn run_vm(cpu: &mut CPU, config: &RunConfig) -> StoppedState {
         was_at = cpu.regs.pc;
 
         if config.print_cycles {
-            println!("[mrvm] Running cycle {:010X} at address {:#010X}", cpu.cycles(), cpu.regs.pc);
+            println!("[mrvm] Running cycle {:#010X} at address {:#010X}", cpu.cycles(), cpu.regs.pc);
         }
 
         // Run the next instruction
