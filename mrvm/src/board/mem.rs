@@ -17,6 +17,8 @@ pub struct MemAuxComponent {
     name: String,
     /// Auxiliary component's metadata
     metadata: [u32; 8],
+    /// Auxiliary component's unique identifier
+    hw_id: u64,
     /// Auxiliary component's size
     size: u32
 }
@@ -26,6 +28,8 @@ pub struct MemAuxComponent {
 pub struct Mapping {
     /// Mapped component's ID
     pub aux_id: usize,
+    /// Mapped component's hardware identifier
+    pub aux_hw_id: u64,
     /// Mapping start address
     pub addr: u32,
     /// Mapping length
@@ -75,6 +79,8 @@ pub struct ContiguousMappingStatus {
 pub struct AuxMappingStatus {
     /// Auxiliary component's ID
     pub aux_id: usize,
+    /// Auxiliary component's hardware identifier
+    pub aux_hw_id: u64,
     /// Auxiliary component's generic name
     pub aux_name: String,
     /// Mapping result
@@ -92,12 +98,13 @@ impl MappedMemory {
 
                 let name = bus.name().chars().take(32).collect::<String>();
                 let metadata = bus.metadata();
+                let hw_id = ((metadata[0] as u64) << 32) + metadata[1] as u64;
                 let size = metadata[2];
 
                 std::mem::drop(bus);
 
                 assert!(name.len() <= 32, "Auxiliary component's name must not exceed 32 bytes!");
-                MemAuxComponent { bus: shared_bus, name, metadata, size }
+                MemAuxComponent { bus: shared_bus, name, metadata, hw_id, size }
             }).collect(),
 
             mappings: vec![]
@@ -146,6 +153,7 @@ impl MappedMemory {
 
             aux_mapping.push(AuxMappingStatus {
                 aux_id: *aux_id,
+                aux_hw_id: self.hw_id_of(*aux_id).unwrap(),
                 aux_name: self.name_of(*aux_id).unwrap().clone(),
                 aux_mapping: result
             });
@@ -165,6 +173,11 @@ impl MappedMemory {
     /// Get the metadata of an axuiliary component from its ID
     pub fn metadata_of(&self, aux_id: usize) -> Option<[u32; 8]> {
         self.aux.get(aux_id).map(|aux| aux.metadata)
+    }
+
+    /// Get the unique identifier of an auxiliary component from its ID
+    pub fn hw_id_of(&self, aux_id: usize) -> Option<u64> {
+        self.aux.get(aux_id).map(|aux| aux.hw_id)
     }
 
     /// Get the size of an auxiliary component from its ID
@@ -211,18 +224,18 @@ impl MappedMemory {
 
     /// (Internal) map an auxiliary component to the memory
     fn internal_map(&mut self, addr: u32, addr_end: Option<u32>, aux_id: usize) -> Result<MappingRange, MappingError> {
-        let aux_size = self.aux.get(aux_id).ok_or(MappingError::UnknownComponent)?.size;
-        let addr_end = addr_end.unwrap_or(addr + aux_size - 4);
+        let aux = self.aux.get(aux_id).ok_or(MappingError::UnknownComponent)?;
+        let addr_end = addr_end.unwrap_or(addr + aux.size - 4);
 
         if addr % 4 != 0 {
             return Err(MappingError::UnalignedStartAddress);
         }
 
-        if aux_size == 0 {
+        if aux.size == 0 {
             return Err(MappingError::NullBusSize);
         }
 
-        if aux_size % 4 != 0 {
+        if aux.size % 4 != 0 {
             return Err(MappingError::UnalignedBusSize);
         }
 
@@ -245,10 +258,10 @@ impl MappedMemory {
             },
 
             None => {
-                self.mappings.push(Mapping { addr, size: aux_size, aux_id });
+                self.mappings.push(Mapping { aux_id, aux_hw_id: aux.hw_id, addr, size: aux.size });
                 Ok(MappingRange {
                     start_addr: addr,
-                    end_addr: addr + aux_size - 1
+                    end_addr: addr + aux.size - 1
                 })
             }
         }
