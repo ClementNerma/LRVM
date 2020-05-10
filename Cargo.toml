@@ -3,6 +3,7 @@ members = [
     "mrvm",
     "mrvm_aux",
     "mrvm_tools",
+    "examples/minimal",
     "examples/hello_world",
     "examples/hw_detect"
 ]
