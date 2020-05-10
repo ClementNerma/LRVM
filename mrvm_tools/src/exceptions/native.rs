@@ -35,30 +35,35 @@ impl NativeException {
         let bytes = ex.to_be_bytes();
         
         let code = bytes[1];
-        let data = u16::from_be_bytes([ bytes[2], bytes[3] ]);
+        let associated = u16::from_be_bytes([ bytes[2], bytes[3] ]);
 
-        let ex = match code {
-            0x01 => Self::UnknownOpCode(data as u8),
-            0x02 => Self::UnknownRegister(data as u8),
-            0x03 => Self::ReadProtectedRegister(data as u8),
-            0x04 => Self::WriteProtectedRegister(data as u8),
-            0x05 => Self::UnalignedMemoryAddress { unalignment: data as u8 },
-            0x06 => Self::MMURefusedRead(data),
-            0x07 => Self::MMURefusedWrite(data),
-            0x08 => Self::MMURefusedExec(data),
-            0x09 => Self::SupervisorReservedInstruction(data as u8),
-            0x0A => Self::DivisionOrModByZero,
-            0x0B => Self::ForbiddenOverflowDivOrMod,
-            0x0C => Self::UnknownComponentID(data),
-            0x0D => Self::UnknownHardwareInformationCode(data as u8),
-            0x0E => Self::ComponentNotMapped(data),
-            0x10 => Self::HardwareException { code: (data >> 8) as u8, data: (data & 0xFF) as u8 },
-            0xAA => Self::Interruption(data as u8),
+        Ok((Self::decode_parts(code, Some(associated))?, bytes[0] != 0))
+    }
+
+    /// Decode a split exception
+    pub fn decode_parts(code: u8, associated: Option<u16>) -> Result<Self, ()> {
+        let data_or_err = associated.ok_or(());
+
+        match code {
+            0x01 => Ok(Self::UnknownOpCode(data_or_err? as u8)),
+            0x02 => Ok(Self::UnknownRegister(data_or_err? as u8)),
+            0x03 => Ok(Self::ReadProtectedRegister(data_or_err? as u8)),
+            0x04 => Ok(Self::WriteProtectedRegister(data_or_err? as u8)),
+            0x05 => Ok(Self::UnalignedMemoryAddress { unalignment: data_or_err? as u8 }),
+            0x06 => Ok(Self::MMURefusedRead(data_or_err?)),
+            0x07 => Ok(Self::MMURefusedWrite(data_or_err?)),
+            0x08 => Ok(Self::MMURefusedExec(data_or_err?)),
+            0x09 => Ok(Self::SupervisorReservedInstruction(data_or_err? as u8)),
+            0x0A => Ok(Self::DivisionOrModByZero),
+            0x0B => Ok(Self::ForbiddenOverflowDivOrMod),
+            0x0C => Ok(Self::UnknownComponentID(data_or_err?)),
+            0x0D => Ok(Self::UnknownHardwareInformationCode(data_or_err? as u8)),
+            0x0E => Ok(Self::ComponentNotMapped(data_or_err?)),
+            0x10 => Ok(Self::HardwareException { code: (data_or_err? >> 8) as u8, data: (data_or_err? & 0xFF) as u8 }),
+            0xAA => Ok(Self::Interruption(data_or_err? as u8)),
 
             _ => return Err(())
-        };
-
-        Ok((ex, bytes[0] != 0))
+        }
     }
 
     /// Get the exception's code
