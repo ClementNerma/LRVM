@@ -18,7 +18,7 @@ pub enum NativeException {
     UnknownComponentID(u16),
     UnknownHardwareInformationCode(u8),
     ComponentNotMapped(u16),
-    HardwareException { code: u8, data: u8 },
+    HardwareException(AuxHwException),
     Interruption(u8)
 }
 
@@ -59,7 +59,7 @@ impl NativeException {
             0x0C => Ok(Self::UnknownComponentID(data_or_err?)),
             0x0D => Ok(Self::UnknownHardwareInformationCode(data_or_err? as u8)),
             0x0E => Ok(Self::ComponentNotMapped(data_or_err?)),
-            0x10 => Ok(Self::HardwareException { code: (data_or_err? >> 8) as u8, data: (data_or_err? & 0xFF) as u8 }),
+            0x10 => Ok(Self::HardwareException(AuxHwException::decode(data_or_err?)?)),
             0xAA => Ok(Self::Interruption(data_or_err? as u8)),
 
             _ => return Err(())
@@ -83,7 +83,7 @@ impl NativeException {
             Self::UnknownComponentID(_) => 0x0C,
             Self::UnknownHardwareInformationCode(_) => 0x0D,
             Self::ComponentNotMapped(_) => 0x0E,
-            Self::HardwareException { code: _, data: _ } => 0x10,
+            Self::HardwareException(_) => 0x10,
             Self::Interruption(_) => 0xAA,
         }
     }
@@ -105,7 +105,7 @@ impl NativeException {
             Self::UnknownComponentID(id_lower) => Some(*id_lower),
             Self::UnknownHardwareInformationCode(code) => Some((*code).into()),
             Self::ComponentNotMapped(id_lower) => Some(*id_lower),
-            Self::HardwareException { code, data } => Some(((*code as u16) << 8) + *data as u16),
+            Self::HardwareException(hw_ex) => Some(hw_ex.encode()),
             Self::Interruption(code) => Some((*code).into()),
         }
     }
@@ -139,10 +139,7 @@ impl fmt::Display for NativeException {
             Self::UnknownComponentID(id_lower) => format!("Unknown component ID (weakest bits are {:#006X})", id_lower),
             Self::UnknownHardwareInformationCode(code) => format!("Unknown hardware information code {:#004X}", code),
             Self::ComponentNotMapped(id_lower) => format!("Component with ID {:#004X} is not mapped", id_lower),
-            Self::HardwareException { code, data } => match AuxHwException::decode(((*code as u16) << 8) + *data as u16) {
-                Ok(ex) => format!("Hardware exception occurred: {}", ex),
-                Err(_) => "Unknown hardware exception occurred".to_owned()
-            },
+            Self::HardwareException(hw_ex) => format!("Hardware exception occurred: {}", hw_ex),
             Self::Interruption(code) => format!("Interruption (code {:#004X})", code),
         })
     }
