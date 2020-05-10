@@ -34,7 +34,7 @@ pub fn run_vm(cpu: &mut CPU, config: &RunConfig) -> StoppedState {
 
     while !cpu.halted() && config.cycles_limit.map(|limit| cpu.cycles() < limit).unwrap_or(true) {
         // Get the mode now, as it will be turned into supervisor mode automatically if an exception occurs
-        let was_sv = (cpu.regs.et >> 24) != 0;
+        let was_sv = cpu.regs.smt != 0;
 
         // Update the current instruction address
         was_at = cpu.regs.pc;
