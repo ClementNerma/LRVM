@@ -1,46 +1,32 @@
 
 use rand::Rng;
-use mrvm::board::MotherBoard;
 use mrvm_aux::storage::BootROM;
 use mrvm_aux::memory::VolatileMem;
 use mrvm_tools::lasm::assemble_words;
 use mrvm_tools::bytes::words_to_bytes;
 use mrvm_tools::metadata::DeviceCategory;
 use mrvm_tools::exceptions::AuxHwException;
-use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
+use mrvm_tools::debug::{exec_vm, RunConfig};
 
-/// Prepare the VM
-fn prepare() -> MotherBoard {
+fn main() {
     let mut rng = rand::thread_rng();
 
-    println!("> (1/3) Assembling source program...");
+    println!("> Assembling LASM code...");
 
     // Compile the source code
     let program = assemble_words(include_str!("source.lasm"))
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
-    println!("> (2/3) Preparing motherboard...");
+    println!("> Setting up and booting the VM...");
 
-    let mut motherboard = prepare_vm(vec![
+    let mut motherboard = exec_vm(vec![
         // BootROM containing the program's machine code
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
         // RAM that will contain informations about each detected components
         Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
         // RAM that will be used for the stack
         Box::new(VolatileMem::new(0x20, rng.gen()).unwrap())
-    ]);
-
-    let cpu = motherboard.cpu();
-
-    println!("> (3/3) Starting the virtual machine...");
-
-    run_vm(cpu, &RunConfig::new().with_halt_on_exception(true));
-
-    motherboard
-}
-
-fn main() {
-    let mut motherboard = prepare();
+    ], &RunConfig::halt_on_ex()).0;
 
     // We read the memory from inside this handler as the mapped memory object cannot be moved out of the motherboard instance.
     motherboard.map(|mut mem| {
