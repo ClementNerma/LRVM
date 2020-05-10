@@ -93,7 +93,7 @@ pub fn prettify_ex_with_mode(ex: &ExWithMode) -> String {
 
 /// Prettify a stop state
 pub fn prettify_stop(state: &StoppedState) -> String {
-    let mut output = format!("CPU halted at address {:#010X} after {:#010X} cycles", state.addr, state.cycles);
+    let mut output = format!("Cycle {:#010X}: CPU halted at address {:#010X}", state.cycles, state.addr);
 
     if let Some(ex) = &state.ex {
         output.push_str(&format!(
