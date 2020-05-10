@@ -14,7 +14,7 @@ impl RunConfig {
         Self::default()
     }
 
-    pub fn ex_halt() -> Self {
+    pub fn halt_on_ex() -> Self {
         Self::new().with_halt_on_exception(true)
     }
 

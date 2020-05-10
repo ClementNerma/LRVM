@@ -30,7 +30,7 @@ fn bootrom_read() {
 #[test]
 fn bootrom_write() {
     let mut vm = prepare(Instr::WEA(0u8.into(), 0u8.into(), 0u8.into()));
-    let ex = run_vm(&mut vm.cpu(), &RunConfig::ex_halt()).ex.expect("No exception occurred while writing BootROM");
+    let ex = run_vm(&mut vm.cpu(), &RunConfig::halt_on_ex()).ex.expect("No exception occurred while writing BootROM");
 
     match NativeException::decode_parts(ex.code, ex.associated) {
         Ok(NativeException::HardwareException(AuxHwException::MemoryNotWritable)) => {},

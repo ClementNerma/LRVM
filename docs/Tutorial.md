@@ -662,7 +662,7 @@ use mrvm_tools::debug::{run_vm, RunConfig};
 
 fn main() {
   // ...
-  run_vm(motherboard.cpu(), &RunConfig::ex_halt());
+  run_vm(motherboard.cpu(), &RunConfig::halt_on_ex());
   // ...
 ```
 
@@ -709,7 +709,7 @@ fn main() {
 
     println!("> Running the program...");
 
-    run_vm(motherboard.cpu(), &RunConfig::ex_halt());
+    run_vm(motherboard.cpu(), &RunConfig::halt_on_ex());
 
     println!("> CPU halted.");
 }
@@ -733,7 +733,7 @@ fn main() {
         ), rng.gen()).unwrap())
     ]);
 
-    run_vm(motherboard.cpu(), &RunConfig::ex_halt());
+    run_vm(motherboard.cpu(), &RunConfig::halt_on_ex());
 }
 ```
 
@@ -753,7 +753,7 @@ fn main() {
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
         ), rng.gen()).unwrap())
-    ], &RunConfig::ex_halt());
+    ], &RunConfig::halt_on_ex());
 }
 ```
 
