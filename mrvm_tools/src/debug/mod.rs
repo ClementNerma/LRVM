@@ -17,7 +17,7 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
 
         for result in aux_mapping {
             println!(
-                "=> Component {:04} '{:32}': {} {} (UID: 0x{})",
+                "=> Component {:04} '{:32}': {} {} (HW ID: 0x{})",
                 result.aux_id,
                 result.aux_name,
                 if result.aux_mapping.is_ok() { "✓" } else { "✗" },
