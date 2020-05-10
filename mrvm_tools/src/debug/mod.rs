@@ -1,5 +1,5 @@
 use mrvm::board::{MotherBoard, Bus, MappingRange, ContiguousMappingStatus};
-use mrvm::cpu::{CPU, Ex};
+use mrvm::cpu::CPU;
 
 /// State of the VM when exited
 #[derive(Debug, Clone)]
@@ -9,7 +9,18 @@ pub struct StoppedState {
     /// The address the VM was stopped at
     pub addr: u32,
     /// If the VM was stopped due to an exception, contains the faulty exception
-    pub ex: Option<Ex>
+    pub ex: Option<ExWithMode>
+}
+
+/// Native exception, with mode
+#[derive(Debug, Clone)]
+pub struct ExWithMode {
+    // Did the exception occurred in supervisor mode?
+    pub sv_mode: bool,
+    /// Exception's code
+    pub code: u8,
+    /// Exception's eventual associated data
+    pub associated: Option<u16>
 }
 
 /// Prepare a motherboard from a list of components.
@@ -71,7 +82,11 @@ pub fn run_until_halt_ex_limit(cpu: &mut CPU, halt_on_ex: bool, cycles_limit: Op
                 );
 
                 if halt_on_ex {
-                    stop_ex = Some(ex);
+                    stop_ex = Some(ExWithMode {
+                        sv_mode: (cpu.regs.et >> 24) != 0,
+                        code: ex.code,
+                        associated: ex.associated
+                    });
                     break ;
                 }
             },
@@ -90,7 +105,7 @@ pub fn run_until_halt(cpu: &mut CPU) -> StoppedState {
 /// Run a virtual machine until the CPU halt or encounters an exception.
 /// The Ok() variant of the returned value is the cycle number when the function stopped running the VM.
 /// The Err() variant indicates the VM was stopped due to an exception and provides the faulty address as well as the exception.
-pub fn run_until_halt_or_ex(cpu: &mut CPU) -> Result<u32, (u32, Ex)> {
+pub fn run_until_halt_or_ex(cpu: &mut CPU) -> Result<u32, (u32, ExWithMode)> {
     let status = run_until_halt_ex_limit(cpu, true, None);
 
     match status.ex {
