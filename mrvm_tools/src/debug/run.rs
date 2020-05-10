@@ -40,7 +40,7 @@ pub fn run_vm(cpu: &mut CPU, config: &RunConfig) -> StoppedState {
         was_at = cpu.regs.pc;
 
         if config.print_cycles {
-            println!("Running cycle {:010X} at address {:#010X}", cpu.cycles(), cpu.regs.pc);
+            println!("[mrvm] Running cycle {:010X} at address {:#010X}", cpu.cycles(), cpu.regs.pc);
         }
 
         // Run the next instruction
@@ -65,7 +65,7 @@ pub fn run_vm(cpu: &mut CPU, config: &RunConfig) -> StoppedState {
                     break ;
                 } else if config.print_exceptions {
                     println!(
-                        "At address {:#010X} - Exception occurred: {}",
+                        "[mrvm] At address {:#010X} - Exception occurred: {}",
                         was_at,
                         prettify_ex_with_mode(&ex)
                     );
@@ -77,7 +77,7 @@ pub fn run_vm(cpu: &mut CPU, config: &RunConfig) -> StoppedState {
     let state = StoppedState { cycles: cpu.cycles(), addr: was_at, ex: stop_ex };
 
     if config.print_finish {
-        println!("{}", prettify_stop(&state));
+        println!("[mrvm] {}", prettify_stop(&state));
     }
 
     state

@@ -669,13 +669,13 @@ fn main() {
 If the VM halts normally, we will get a message like:
 
 ```
-Cycle 0x00000025: CPU halted at address 0x00000030
+[mrvm] Cycle 0x00000025: CPU halted at address 0x00000030
 ```
 
 But if one happens (let's say we replace the `halt` instruction by a `#d32 0x00`, which gives an invalid opcode of `0x00`), we'll get something like:
 
 ```
-Cycle 0x00000025: CPU halted at address 0x00000030 because of exception in supervisor mode: Unknown opcode 0x00
+[mrvm] Cycle 0x00000025: CPU halted at address 0x00000030 because of exception in supervisor mode: Unknown opcode 0x00
 ```
 
 Which is a lot more readable than the old debug message we had in our previous version.
