@@ -737,6 +737,7 @@ impl CPU {
 enum Op { Add, Sub, Mul, Div { mode: u8 }, Mod { mode: u8 }, And, Bor, Xor, Lsh, Rsh }
 
 /// Occurred exception
+#[derive(Copy, Clone, Debug)]
 pub struct Ex {
     /// Exception's code
     pub code: u8,
