@@ -1,7 +1,7 @@
 use mrvm_tools::asm::{Program, Instr, ExtInstr};
 use crate::storage::BootROM;
 use crate::memory::VolatileMem;
-use mrvm_tools::debug::{prepare_vm, run_until_halt};
+use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
 
 #[test]
 fn volatile_mem() {
@@ -14,7 +14,7 @@ fn volatile_mem() {
         Box::new(VolatileMem::new(0x1000, 0x1).unwrap())
     ]);
 
-    run_until_halt(&mut vm.cpu());
+    run_vm(&mut vm.cpu(), &RunConfig::new());
 
     let (mut err_a, mut err_b, mut err_c) = (0, 0, 0);
 

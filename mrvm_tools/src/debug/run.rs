@@ -30,7 +30,7 @@ pub fn run_vm(cpu: &mut CPU, config: &RunConfig) -> StoppedState {
     let mut stop_ex = None;
 
     // Address the CPU was at when the VM was stopped
-    let mut was_at = self.regs.pc;
+    let mut was_at = cpu.regs.pc;
 
     while !cpu.halted() && config.cycles_limit.map(|limit| cpu.cycles() < limit).unwrap_or(true) {
         // Get the mode now, as it will be turned into supervisor mode automatically if an exception occurs

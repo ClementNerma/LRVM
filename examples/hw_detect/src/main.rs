@@ -6,8 +6,8 @@ use mrvm_aux::memory::VolatileMem;
 use mrvm_tools::lasm::assemble_words;
 use mrvm_tools::bytes::words_to_bytes;
 use mrvm_tools::metadata::DeviceCategory;
-use mrvm_tools::exceptions::{NativeException, AuxHwException};
-use mrvm_tools::debug::{prepare_vm, run_until_halt_or_ex};
+use mrvm_tools::exceptions::AuxHwException;
+use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
 
 /// Prepare the VM
 fn prepare() -> MotherBoard {
@@ -34,16 +34,7 @@ fn prepare() -> MotherBoard {
 
     println!("> (3/3) Starting the virtual machine...");
 
-    if let Err(ex) = run_until_halt_or_ex(cpu) {
-        match NativeException::decode_with_mode(ex) {
-            Ok((ex, was_sv)) => panic!(
-                "Unexpected exception occurred (in {} mode) while running demo program:\n{}",
-                if was_sv { "supervisor" } else { "userland" },
-                ex
-            ),
-            Err(_) => panic!("Unexpected UNKNOWN exception occurred while running demo program ({:#006X})", ex)
-        }
-    }
+    run_vm(cpu, &RunConfig::new().with_halt_on_exception(true));
 
     motherboard
 }
@@ -64,10 +55,10 @@ fn main() {
 
             // Handle exceptions
             if ex != 0 {
-                match AuxHwException::decode(ex) {
-                    Ok(ex) => panic!("Unexpected exception occurred while reading memory address {:#010X}:\n{}", addr, ex),
-                    Err(_) => panic!("Unexpected UNKNOWN exception occurred while reading memory address {:#010X} ({:#006X})", addr, ex)
-                }
+                println!("Exception occurred while manually reading memory address {:#010X}: {}", addr, match AuxHwException::decode(ex) {
+                    Ok(ex) => format!("{}", ex),
+                    Err(()) => "<unknown exception>".to_owned()
+                });
             }
 
             word

@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use mrvm_tools::asm::{Program, Instr, ExtInstr, Reg};
 use crate::storage::BootROM;
 use crate::keyboard::SyncKeyboard;
-use mrvm_tools::debug::{prepare_vm, run_until_halt};
+use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
 
 static PLACEHOLDER_KEYB_INPUT: &'static str = "Placeholder keyboard input";
 
@@ -33,7 +33,7 @@ fn sync_keyboard() {
         }), 0x1).unwrap())
     ]);
 
-    run_until_halt(vm.cpu());
+    run_vm(vm.cpu(), &RunConfig::new());
 
     assert!(*received_req.lock().unwrap(), "No keyboard request was triggered");
 

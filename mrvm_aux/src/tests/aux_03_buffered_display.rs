@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use mrvm_tools::asm::{Program, Instr, ExtInstr, Reg};
 use crate::storage::BootROM;
 use crate::display::BufferedDisplay;
-use mrvm_tools::debug::{prepare_vm, run_until_halt};
+use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
 
 fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Result<Program, ()> {
     let mut instr = ExtInstr::SetReg(Reg::ac0, display_addr).to_instr();
@@ -61,7 +61,7 @@ fn buffered_display() {
         }), 0x1).unwrap())
     ]);
 
-    run_until_halt(vm.cpu());
+    run_vm(vm.cpu(), &RunConfig::new());
 
     assert!(*received_msg.lock().unwrap(), "No message received by buffered display");
 }
