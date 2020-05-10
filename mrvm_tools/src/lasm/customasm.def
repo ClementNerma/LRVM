@@ -1,7 +1,7 @@
 #cpudef
 {
     #bits 8
-    #labelalign 8
+    #labelalign 4
 
     #tokendef reg
     {
