@@ -5,7 +5,8 @@
 
 use std::sync::{Arc, Mutex};
 use crate::cpu::CPU;
-use super::{Bus, HardwareBridge, MappedMemory};
+use crate::mem::MappedMemory;
+use super::{Bus, HardwareBridge};
 
 /// Virtual motherboard
 pub struct MotherBoard {

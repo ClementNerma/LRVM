@@ -1,4 +1,5 @@
-use mrvm::board::{MotherBoard, Bus, ContiguousMappingStatus, MappingRange};
+use mrvm::board::{MotherBoard, Bus};
+use mrvm::mem::{ContiguousMappingStatus, MappingRange};
 
 /// Prepare a motherboard from a list of components.
 /// The mapping status of all components is displayed.

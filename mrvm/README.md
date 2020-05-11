@@ -5,7 +5,7 @@ The `mrvm` crate contains the core of MRVM: the motherboard and components emula
 It is split across several main types:
 
 - [`board::MotherBoard`](src/board/board.rs) is the virtual motherboard type
-- [`board::Mem`](src/board/mem.rs) is the virtual motherboard's mapped memory
+- [`mem::Mem`](src/mem/mem.rs) is the virtual motherboard's mapped memory
 - [`board::Bus`](src/board/bus.rs) is a trait components must implement in order to be connected to the motherboard
 - [`cpu::CPU`](src/cpu/cpu.rs) is the virtual CPU
 - [`cpu::Regs`](src/cpu/regs.rs) represent the registers of the virtual CPU

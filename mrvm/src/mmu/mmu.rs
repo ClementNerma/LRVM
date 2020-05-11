@@ -1,4 +1,4 @@
-use crate::board::MappedMemory;
+use crate::mem::MappedMemory;
 use crate::cpu::Registers;
 
 /// Memory Management Unit (MMU)

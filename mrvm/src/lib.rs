@@ -6,6 +6,7 @@
 #![deny(unused_must_use)]
 
 pub mod board;
+pub mod mem;
 pub mod cpu;
 pub mod mmu;
 

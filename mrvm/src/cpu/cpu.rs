@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
-use crate::board::{MappedMemory, HardwareBridge};
+use crate::board::HardwareBridge;
+use crate::mem::MappedMemory;
 use crate::mmu::{MMU, MemAction};
 use super::Registers;
 
