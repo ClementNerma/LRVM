@@ -570,16 +570,16 @@ There are a few _alias instructions_, which are strict aliases of existing instr
   Alias of: `IFN ZF`
 
 - `IFGT` (If GreaTer)  
-  Alias of: `IF2 ZF, OF, CMP_NOR`
+  Alias of: `IF2 ZF, CF, CMP_NOR`
 
 - `IFGE` (If Greater or Equal)  
-  Alias of: `IFN OF`
+  Alias of: `IFN CF`
 
 - `IFLS` (If LeSs)  
-  Alias of: `IF OF`
+  Alias of: `IF CF`
 
 - `IFLE` (If Less or Equal)  
-  Alias of: `IF2 ZF, OF, CMP_OR`
+  Alias of: `IF2 ZF, CF, CMP_OR`
 
 - `IFOR [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF OR)  
   Alias of: `IF2 flag_a, flag_b, CMP_OR`
