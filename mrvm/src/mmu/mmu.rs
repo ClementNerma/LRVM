@@ -26,9 +26,9 @@ impl MMU {
 
         // 1. Compute the additional shift for this type of action
         let action_shift = match action {
+            MemAction::Read  => 2,
+            MemAction::Write => 1,
             MemAction::Exec  => 0,
-            MemAction::Read  => 1,
-            MemAction::Write => 2
         };
 
         // 2. Compute the additional shift required for userland mode
