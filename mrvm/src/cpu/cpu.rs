@@ -296,14 +296,14 @@ impl CPU {
                 0x19 => {
                     let word = args!(REG_OR_LIT_2);
 
-                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp };
+                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
 
                     self.mem_write(stack_v_addr, word)?;
                     
                     if self.sv_mode() {
-                        self.regs.ssp = self.regs.ssp.wrapping_sub(4);
+                        self.regs.ssp = stack_v_addr;
                     } else {
-                        self.regs.usp = self.regs.usp.wrapping_sub(4);
+                        self.regs.usp = stack_v_addr;
                     }
 
                     Ok(())
@@ -313,15 +313,15 @@ impl CPU {
                 0x1A => {
                     let reg_dest = args!(REG);
 
-                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_add(4);
-
-                    let word = self.mem_read(stack_v_addr)?;
-
-                    if self.sv_mode() {
-                        self.regs.ssp = stack_v_addr;
+                    let word = if self.sv_mode() {
+                        let word = self.mem_read(self.regs.ssp)?;
+                        self.regs.ssp = self.regs.ssp.wrapping_add(4);
+                        word
                     } else {
-                        self.regs.usp = stack_v_addr;
-                    }
+                        let word = self.mem_read(self.regs.usp)?;
+                        self.regs.usp = self.regs.usp.wrapping_add(4);
+                        word
+                    };
 
                     self.write_reg(reg_dest, word)
                 },
@@ -330,14 +330,14 @@ impl CPU {
                 0x1B => {
                     let jmp_v_addr = args!(REG_OR_LIT_2);
 
-                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp };
+                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
 
-                    self.mem_write(stack_v_addr, self.regs.pc.wrapping_add(4))?;
+                    self.mem_write(stack_v_addr, self.regs.pc)?;
                     
                     if self.sv_mode() {
-                        self.regs.ssp = self.regs.ssp.wrapping_sub(4);
+                        self.regs.ssp = stack_v_addr;
                     } else {
-                        self.regs.usp = self.regs.usp.wrapping_sub(4);
+                        self.regs.usp = stack_v_addr;
                     }
 
                     self.regs.pc = jmp_v_addr;
@@ -569,7 +569,7 @@ impl CPU {
         self.regs.af = 0;
 
         let flags: [bool; 7] = [
-            // Zero
+            // Zero Flag
             result == 0,
             // Carry Flag
             has_carry,
@@ -585,7 +585,7 @@ impl CPU {
             (result >> 16) & 0xFFFF == 0
         ];
 
-        for (bit, flag) in flags.iter().enumerate() {
+        for (bit, flag) in flags.iter().rev().enumerate() {
             if *flag {
                 self.regs.af += 1 << bit;
             }
