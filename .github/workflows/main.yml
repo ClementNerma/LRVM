@@ -13,10 +13,18 @@ jobs:
         with:
           path: ~/.cargo/bin
           key: broken-md-links-tool
-      - name: Get "broken-md-links"  tool
+      - name: Get "broken-md-links" tool
         run: |
           if ! type broken-md-links > /dev/null; then
             cargo install --git https://github.com/ClementNerma/broken-md-links.git
           fi
       - name: Look for broken MD links
         run: broken-md-links ${GITHUB_WORKSPACE} --recursive
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Cargo tests
+        run: |
+          cargo test -- --test-threads=1 --nocapture
