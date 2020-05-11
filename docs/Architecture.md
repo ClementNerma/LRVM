@@ -126,6 +126,40 @@ It is the only component to have direct access to the memory.
 The MMU only allows to read and write whole words (32-bits values).
 It also only allows aligned addresses, which means each address must be a multiple of 4.
 
+### Physical address pages
+
+When the `mtt` (Memory Translation Toggler) register is set to a non-zero value, the MMU will translate all memory addresses using physical address pages. Their purpose is to translate a virtual address into a physical one that will be provided to the memory module.
+
+Now, let's see how the MMU translates addresses, which is important to understand how to structure the pages:
+
+The `pda` register (Page Directory Address) points to the virtual address pages index (abbreviated VPI). The strongest 10 bits of the virtual address is used to determine the entry to read (each entry being a word, so 32 bits). Each entry uses the following format (starting from strongest bit):
+
+- Bit 0: pass-through in supervisor mode
+- Bit 1: pass-through in userland mode
+- Bit 2: `READ` permission in supervisor mode
+- Bit 3: `WRITE` permission in supervisor mode
+- Bit 4: `EXEC` permission in supervisor mode
+- Bit 5: `READ` permission in userland mode
+- Bit 6: `WRITE` permission in userland mode
+- Bit 7: `EXEC` permission in userland mode
+- Bits 8-31: virtual address page (VAP)'s number
+
+If the pass-through bit is set for the current mode, the virtual address is returned as it is (so the steps below are not performed).
+
+When the CPU tries to access a memory address, it also tells the MMU what action it wants to perform (`READ`, `WRITE` or `EXEC`). If the permission is not set for the current mode (if the bit is equal to `0`), the instruction fails with an [exception](#exceptions).
+
+If the permission is set (if the bit is equal to `1`), the VAP's number is taken from the weakest 24 bits of the entry as shown above and its address is computed as the page's number multiplied by the size of a page (16 KB = 16 384 bytes).
+
+The VAP's entry number is computed as the bits 9 to 21 (0 being the strongest) of the address, so 12 bits in total which means 4096 possibilities. As an entry is made of 4 bytes, this leads us to the previous page size of 16 384 bytes = 16 KB.
+
+The VAP's entry's address is finally computed as the VAP's address plus the VAP's entry number multiplied by size of entries (1 word = 4 bytes = 32 bits).
+
+The said entry is then read from the memory and decoded using the same format as above, which means we have an additional layer of pass-through and permissions.
+
+If pass-through is disabled and the required permission is set, the entry's 24 weakest bits are used as the physical page number. The physical address is then computed as the physical page number multiplied by the size of a physical page (1024 bytes) plus the 10 weakest bits of the virtual address.
+
+As virtual pages can contain 4 096 entries (16 KB / 4 bytes per entry), and physical pages address 1 KB each, we can map up to 4 MB of memory per virtual page. And as the index can contain 1 024 entries, we can address up to 4 GB of memory, which is 2^32 bytes: the total of the addressable space of the VM.
+
 ## Memory-Mapped Input/Output
 
 The MMIO allows to map contiguous block of the memory to _bus_, which allow synchronous read and write operations.
