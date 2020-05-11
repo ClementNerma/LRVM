@@ -332,7 +332,7 @@ impl CPU {
 
                     let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
 
-                    self.mem_write(stack_v_addr, self.regs.pc)?;
+                    self.mem_write(stack_v_addr, self.regs.pc + 4)?;
                     
                     if self.sv_mode() {
                         self.regs.ssp = stack_v_addr;
