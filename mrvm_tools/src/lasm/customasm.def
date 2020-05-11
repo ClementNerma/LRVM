@@ -93,13 +93,13 @@
 
     #tokendef if2_mode
     {
-        IF2_OR    = 0x01
-        IF2_AND   = 0x02
-        IF2_XOR   = 0x03
-        IF2_NOR   = 0x04
-        IF2_NAND  = 0x05
-        IF2_LEFT  = 0x06
-        IF2_RIGHT = 0x07
+        CMP_OR    = 0x01
+        CMP_AND   = 0x02
+        CMP_XOR   = 0x03
+        CMP_NOR   = 0x04
+        CMP_NAND  = 0x05
+        CMP_LEFT  = 0x06
+        CMP_RIGHT = 0x07
     }
 
     cpy  {reg_dest: reg}, {reg_val: reg} -> ((0x01 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_val[7:0] @ 0x00

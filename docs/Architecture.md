@@ -214,32 +214,49 @@ Below is the detailed list of its instructions along with their description.
 A few constants are defined by the language, and can be used anywhere in the program.
 They cannot be re-declared manually.
 
+##### Flags
+
+| Name  | Value  | Description      |
+| ----- | ------ | ---------------- |
+| `ZF`  | `0x00` | Flag: Zero       |
+| `CF`  | `0x01` | Flag: Carry      |
+| `OF`  | `0x02` | Flag: Overflow   |
+| `SF`  | `0x03` | Flag: Sign       |
+| `PF`  | `0x04` | Flag: Parity     |
+| `ZUF` | `0x05` | Flag: Zero-Upper |
+| `ZLF` | `0x06` | Flag: Zero-Lower |
+
+#### Division modes
+
+| Name          | Value  | Description                                                         |
+| ------------- | ------ | ------------------------------------------------------------------- |
+| `DIV_USG`     | `0x00` | Perform an unsigned division/modulus                                |
+| `DIV_SIG`     | `0x10` | Perform a signed division/modulus                                   |
+| `DIV_ZRO_FRB` | `0x00` | Forbid div/mod by zero                                              |
+| `DIV_ZRO_MIN` | `0x04` | Make div/mod by zero result in the minimum value                    |
+| `DIV_ZRO_ZRO` | `0x08` | Make div/mod by zero result in zero                                 |
+| `DIV_ZRO_MAX` | `0x0C` | Make div/mod by zero result in the maximum value                    |
+| `DIV_MBO_FRB` | `0x00` | Forbid div/mod by zero                                              |
+| `DIV_MBO_MIN` | `0x01` | Make div/mod of the minimum value by -1 result in the minimum value |
+| `DIV_MBO_ZRO` | `0x02` | Make div/mod of the minimum value by -1 result in zero              |
+| `DIV_MBO_MAX` | `0x03` | Make div/mod of the minimum value by -1 result in the maximum value |
+
+#### `IF2` conditions
+
+| Name        | Value  | Description                                    |
+| ----------- | ------ | ---------------------------------------------- |
+| `CMP_OR`    | `0x01` | Checks if at least one of the two flags is set |
+| `CMP_AND`   | `0x02` | Checks if both flags are set                   |
+| `CMP_XOR`   | `0x03` | Checks if exactly one of the two flags is set  |
+| `CMP_NOR`   | `0x04` | Checks if none of the two flags is set         |
+| `CMP_NAND`  | `0x05` | Checks if up to one of the two flags is set    |
+| `CMP_LEFT`  | `0x06` | Checks if only the first flag is set           |
+| `CMP_RIGHT` | `0x07` | Checks if only the second flag is set          |
+
+#### `HWD` hardware information codes
+
 | Name             | Value  | Description                                                                                        |
 | ---------------- | ------ | -------------------------------------------------------------------------------------------------- |
-| `ZF`             | `0x00` | Flag: Zero                                                                                         |
-| `CF`             | `0x01` | Flag: Carry                                                                                        |
-| `OF`             | `0x02` | Flag: Overflow                                                                                     |
-| `SF`             | `0x03` | Flag: Sign                                                                                         |
-| `PF`             | `0x04` | Flag: Parity                                                                                       |
-| `ZUF`            | `0x05` | Flag: Zero-Upper                                                                                   |
-| `ZLF`            | `0x06` | Flag: Zero-Lower                                                                                   |
-| `DIV_USG`        | `0x00` | Perform an unsigned division/modulus                                                               |
-| `DIV_SIG`        | `0x10` | Perform a signed division/modulus                                                                  |
-| `DIV_ZRO_FRB`    | `0x00` | Forbid div/mod by zero                                                                             |
-| `DIV_ZRO_MIN`    | `0x04` | Make div/mod by zero result in the minimum value                                                   |
-| `DIV_ZRO_ZRO`    | `0x08` | Make div/mod by zero result in zero                                                                |
-| `DIV_ZRO_MAX`    | `0x0C` | Make div/mod by zero result in the maximum value                                                   |
-| `DIV_MBO_FRB`    | `0x00` | Forbid div/mod by zero                                                                             |
-| `DIV_MBO_MIN`    | `0x01` | Make div/mod of the minimum value by -1 result in the minimum value                                |
-| `DIV_MBO_ZRO`    | `0x02` | Make div/mod of the minimum value by -1 result in zero                                             |
-| `DIV_MBO_MAX`    | `0x03` | Make div/mod of the minimum value by -1 result in the maximum value                                |
-| `IF2_OR`         | `0x01` | Checks if at least one of the two flags is set                                                     |
-| `IF2_AND`        | `0x02` | Checks if both flags are set                                                                       |
-| `IF2_XOR`        | `0x03` | Checks if exactly one of the two flags is set                                                      |
-| `IF2_NOR`        | `0x04` | Checks if none of the two flags is set                                                             |
-| `IF2_NAND`       | `0x05` | Checks if up to one of the two flags is set                                                        |
-| `IF2_LEFT`       | `0x06` | Checks if only the first flag is set                                                               |
-| `IF2_RIGHT`      | `0x07` | Checks if only the second flag is set                                                              |
 | `HWD_COUNT`      | `0x00` | Get the number of auxiliary components                                                             |
 | `HWD_UID_UPPER`  | `0x01` | Get the component's unique identifier's 32 strongest bits                                          |
 | `HWD_UID_LOWER`  | `0x02` | Get the component's unique identifier's 32 weakest bits                                            |
@@ -537,25 +554,25 @@ There are a few _alias instructions_, which are strict aliases of existing instr
   Alias of: `IFN ZF`
 
 - `IFOR [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF OR)  
-  Alias of: `IF2 flag_a, flag_b, IF2_OR`
+  Alias of: `IF2 flag_a, flag_b, CMP_OR`
 
 - `IFAND [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF AND)  
-  Alias of: `IF2 flag_a, flag_b, IF2_AND`
+  Alias of: `IF2 flag_a, flag_b, CMP_AND`
 
 - `IFXOR [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF XOR)  
-  Alias of: `IF2 flag_a, flag_b, IF2_XOR`
+  Alias of: `IF2 flag_a, flag_b, CMP_XOR`
 
 - `IFNOR [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF NOR)  
-  Alias of: `IF2 flag_a, flag_b, IF2_NOR`
+  Alias of: `IF2 flag_a, flag_b, CMP_NOR`
 
 - `IFNAND [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF NAND)  
-  Alias of: `IF2 flag_a, flag_b, IF2_NAND`
+  Alias of: `IF2 flag_a, flag_b, CMP_NAND`
 
 - `IFLEFT [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF LEFT)  
-  Alias of: `IF2 flag_a, flag_b, IF2_LEFT`
+  Alias of: `IF2 flag_a, flag_b, CMP_LEFT`
 
 - `IFRIGHT [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF RIGHT)  
-  Alias of: `IF2 flag_a, flag_b, IF2_RIGHT`
+  Alias of: `IF2 flag_a, flag_b, CMP_RIGHT`
 
 - `JMPA [reg_addr | 2-bytes]` (JuMP Absolute)
   Go to the provided address  
