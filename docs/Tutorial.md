@@ -415,7 +415,8 @@ We'll now be able to call MRVM's assembler to generate machine code from our sou
 use mrvm_tools::lasm::assemble_words;
 
 fn main() {
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     // ...
 }
@@ -429,7 +430,8 @@ Now our program is assembled, we can put it in our BootROM:
 // ...
 
 fn main() {
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     let mut rng = rand::thread_rng();
 
@@ -453,7 +455,8 @@ use mrvm_aux::display::BufferedDisplay;
 use mrvm_tools::lasm::assemble_words;
 
 fn main() {
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     let mut rng = rand::thread_rng();
 
@@ -524,7 +527,8 @@ use mrvm_tools::lasm::assemble_words;
 fn main() {
     println!("> Assembling LASM code...");
 
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     println!("> Preparing components and motherboard...");
 
@@ -693,7 +697,8 @@ use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
 fn main() {
     println!("> Assembling LASM code...");
 
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     println!("> Preparing components and motherboard...");
 
@@ -721,7 +726,8 @@ For comparison with the previous versions, this is what we get if we remove the 
 // ...
 
 fn main() {
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     let mut rng = rand::thread_rng();
 
@@ -743,7 +749,8 @@ We can even use the `exec_vm` function from the `mrvm_tools::debug` module as we
 // ...
 
 fn main() {
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     let mut rng = rand::thread_rng();
 
@@ -763,7 +770,8 @@ Compared to our previous code:
 // ...
 
 fn main() {
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     let mut rng = rand::thread_rng();
 
