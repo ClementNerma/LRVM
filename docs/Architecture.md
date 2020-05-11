@@ -97,7 +97,7 @@ An _exception_ occurs either when an fatal error occurs, or when an interruption
 | `0x0B` | Forbidden operation overflow (division or modulus by -1 overflowed)  |                                    |
 | `0x0C` | Unknown component ID in `HWD` instruction                            | Faulty ID (weakest 16 bits)        |
 | `0x0D` | Invalid hardware information code in `HWD` instruction               | Faulty code                        |
-| `0x0E` | Component is not mapped                                             | Faulty ID (weakest 16 bits)        |
+| `0x0E` | Component is not mapped                                              | Faulty ID (weakest 16 bits)        |
 | `0x0F` | Invalid condition mode provided in `IF2` instruction                 | Faulty code                        |
 | `0x10` | Hardware exception                                                   | Exception's code & associated data |
 | `0xAA` | An interruption occurred                                             | Interruption code                  |
