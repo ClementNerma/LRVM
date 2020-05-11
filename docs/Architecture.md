@@ -380,11 +380,11 @@ The bitwise instructions allow to perform bit-by-bit instructions.
   Perform a bit-by-bit XOR operation between `reg` and the provided value, and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `LSH reg, [reg_val | 1-byte]` (Left SHift) | opcode: `0x0B`  
+- `SHL reg, [reg_val | 1-byte]` (Left SHift) | opcode: `0x0B`  
   Perform a left shift operation of the provided number of bits on `reg`, and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `RSH reg, [reg_val | 1-byte]` (Right SHift) | opcode: `0x0C`  
+- `SHR reg, [reg_val | 1-byte]` (Right SHift) | opcode: `0x0C`  
   Perform a right shift operation of the provided number of bits on `reg`, and put the result in `reg`
   **Affects** `reg`, `af`
 

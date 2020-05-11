@@ -21,7 +21,7 @@ fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Resul
         byte_index += 1;
         
         if byte_index < 4 {
-            instr.push(Instr::LSH(Reg::avr, 8_u8.into()));
+            instr.push(Instr::SHL(Reg::avr, 8_u8.into()));
         } else {
             instr.push(Instr::WEA(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
             instr.push(Instr::ADD(Reg::ac0, 4_u8.into()));

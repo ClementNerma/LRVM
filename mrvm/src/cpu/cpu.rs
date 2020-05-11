@@ -141,7 +141,7 @@ impl CPU {
                     })
                 },
 
-                // ADD, SUB, MUL, AND, BOR, XOR, LSH, RSH
+                // ADD, SUB, MUL, AND, BOR, XOR, SHL, SHR
                 0x03..=0x05 | 0x08..=0x0C => {
                     let (reg, value) = if opcode != 0x0B && opcode != 0x0C { args!(REG, REG_OR_LIT_2) } else { args!(REG, REG_OR_LIT_1) };
                     let reg_value = self.read_reg(reg)?;
@@ -153,8 +153,8 @@ impl CPU {
                         0x08 => Op::And,
                         0x09 => Op::Bor,
                         0x0A => Op::Xor,
-                        0x0B => Op::Lsh,
-                        0x0C => Op::Rsh,
+                        0x0B => Op::Shl,
+                        0x0C => Op::Shr,
                         _ => unreachable!()
                     })?;
 
@@ -551,12 +551,12 @@ impl CPU {
 
             Op::Xor => (op1 ^ op2, false, false),
 
-            Op::Lsh => {
+            Op::Shl => {
                 let (result, has_carry) = op1.overflowing_shl(op2);
                 (result, has_carry, has_carry)
             },
 
-            Op::Rsh => {
+            Op::Shr => {
                 let (result, has_carry) = op1.overflowing_shr(op2);
                 (result, has_carry, has_carry)
             }
@@ -734,7 +734,7 @@ impl CPU {
 
 /// (Internal) Numeric operation
 #[derive(PartialEq, Debug)]
-enum Op { Add, Sub, Mul, Div { mode: u8 }, Mod { mode: u8 }, And, Bor, Xor, Lsh, Rsh }
+enum Op { Add, Sub, Mul, Div { mode: u8 }, Mod { mode: u8 }, And, Bor, Xor, Shl, Shr }
 
 /// Occurred exception
 #[derive(Copy, Clone, Debug)]

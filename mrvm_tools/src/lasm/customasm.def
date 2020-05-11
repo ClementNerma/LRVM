@@ -135,11 +135,11 @@
     xor  {reg_obj: reg}, {reg_val: reg} -> ((0x0A << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
     xor  {reg_obj: reg}, {lit_val: u16} -> ((0x0A << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
 
-    lsh  {reg_obj: reg}, {reg_val: reg} -> ((0x0B << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
-    lsh  {reg_obj: reg}, {lit_val:  u8} -> ((0x0B << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ 0x00
+    shl  {reg_obj: reg}, {reg_val: reg} -> ((0x0B << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    shl  {reg_obj: reg}, {lit_val:  u8} -> ((0x0B << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ 0x00
 
-    rsh  {reg_obj: reg}, {reg_val: reg} -> ((0x0C << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
-    rsh  {reg_obj: reg}, {lit_val:  u8} -> ((0x0C << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ 0x00
+    shr  {reg_obj: reg}, {reg_val: reg} -> ((0x0C << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    shr  {reg_obj: reg}, {lit_val:  u8} -> ((0x0C << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ 0x00
 
     cmp  {reg_obj: reg}, {reg_val: reg} -> ((0x0D << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
     cmp  {reg_obj: reg}, {lit_val: u16} -> ((0x0D << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]

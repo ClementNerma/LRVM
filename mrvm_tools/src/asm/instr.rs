@@ -13,8 +13,8 @@ pub enum Instr {
     AND(Reg, RegOrLit2),
     BOR(Reg, RegOrLit2),
     XOR(Reg, RegOrLit2),
-    LSH(Reg, RegOrLit1),
-    RSH(Reg, RegOrLit1),
+    SHL(Reg, RegOrLit1),
+    SHR(Reg, RegOrLit1),
     CMP(Reg, RegOrLit2),
     JMP(RegOrLit2),
     LSM(RegOrLit2),
@@ -83,8 +83,8 @@ impl Instr {
             0x08 => Ok(Self::AND(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
             0x09 => Ok(Self::BOR(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
             0x0A => Ok(Self::XOR(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x0B => Ok(Self::LSH(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
-            0x0C => Ok(Self::RSH(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
+            0x0B => Ok(Self::SHL(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
+            0x0C => Ok(Self::SHR(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
             0x0D => Ok(Self::CMP(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
             0x0E => Ok(Self::JMP(arg_reg_or_lit_2(1)?)),
             0x0F => Ok(Self::LSM(arg_reg_or_lit_2(1)?)),
@@ -192,14 +192,14 @@ impl Instr {
                 0x0A
             }
 
-            Self::LSH(a, b) => {
+            Self::SHL(a, b) => {
                 doo!(r true, b.is_reg());
                 doo!(er a);
                 doo!(roc b);
                 0x0B
             }
 
-            Self::RSH(a, b) => {
+            Self::SHR(a, b) => {
                 doo!(r true, b.is_reg());
                 doo!(er a);
                 doo!(roc b);
