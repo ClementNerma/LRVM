@@ -213,7 +213,7 @@ impl MappedMemory {
         if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.end_addr()) {
             self.aux[mapping.aux_id].bus.lock().unwrap().write(addr - mapping.addr, word, ex);
         } else if cfg!(debug_assertions) {
-            eprintln!("Warning: tried to read non-mapped memory at address {:#010X}", addr);
+            eprintln!("Warning: tried to write non-mapped memory at address {:#010X}", addr);
         }
     }
 
