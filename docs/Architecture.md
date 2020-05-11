@@ -136,6 +136,15 @@ It does not tolerate any exception except than out-of-range addresses ; therefor
 Memory can only read and write whole words (32-bits values).
 It also only supports aligned addresses, which means each address must be a multiple of 4.
 
+### The stack
+
+The CPU contains a `PUSH` and a `POP` instruction that enables the use of a _stack_. It works very simply:
+
+The stack's next item's address is stored in the `ssp` register (for supervisor mode) or `usp` register (for userland mode).
+
+When a value is `PUSH`ed to it, the provided value is written to the current stack address and the register is decreased by 4.  
+When a value is `POP`ed from it, the register is increased by 4 and the new address's value is written to the provided register.
+
 ## Processor instructions
 
 The process interprets instructions on 32 bits.
