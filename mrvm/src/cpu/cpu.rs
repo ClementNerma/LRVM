@@ -585,9 +585,9 @@ impl CPU {
             (result >> 16) & 0xFFFF == 0
         ];
 
-        for (bit, flag) in flags.iter().rev().enumerate() {
+        for (bit, flag) in flags.iter().enumerate() {
             if *flag {
-                self.regs.af += 1 << bit;
+                self.regs.af += 1 << (7 - bit);
             }
         }
 
