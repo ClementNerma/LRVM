@@ -3,16 +3,14 @@
 //!
 //! The motherboard can also emulate a reset button through the [`reset`] function which propagates the even through all connected [`Bus`].
 
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 use crate::cpu::CPU;
-use super::{Bus, MappedMemory};
+use super::{Bus, HardwareBridge, MappedMemory};
 
 /// Virtual motherboard
 pub struct MotherBoard {
     /// Auxiliary components connected to the motherboard
     aux: Vec<Arc<Mutex<Box<dyn Bus>>>>,
-    /// Memory mappings
-    mem: Arc<Mutex<MappedMemory>>,
     /// Central Processing Unit (CPU)
     cpu: CPU
 }
@@ -20,22 +18,18 @@ pub struct MotherBoard {
 impl MotherBoard {
     /// Create a new motherboard with a set of components
     pub fn new(components: impl IntoIterator<Item=Box<dyn Bus>>) -> Self {
-        let mut aux = vec![];
-
-        for component in components.into_iter() {
-            let component = Arc::new(Mutex::new(component));
-            aux.push(Arc::clone(&component));
-        }
+        let aux = components.into_iter()
+            .map(|cp| Arc::new(Mutex::new(cp)))
+            .collect::<Vec<_>>();
 
         assert!(aux.len() <= std::u32::MAX as usize, "Cannot connect more than 2^32 components!");
 
         // Instanciate the memory
-        let mem = Arc::new(Mutex::new(MappedMemory::new(aux.clone())));
+        let mem = MappedMemory::new(HardwareBridge::new(aux.clone()));
 
         Self {
-            aux,
-            mem: Arc::clone(&mem),
-            cpu: CPU::new(Arc::clone(&mem))
+            cpu: CPU::new(HardwareBridge::new(aux.clone()), mem),
+            aux
         }
     }
 
@@ -46,8 +40,8 @@ impl MotherBoard {
     /// let mut motherboard = MotherBoard::new(vec![ /* component1 */ ]);
     /// motherboard.map(|mut mem| mem.map(0x10000000, 0).unwrap()); // Map first component (ID 0) to address 0x10000000
     /// ```
-    pub fn map<T>(&mut self, mut mapper: impl FnMut(MutexGuard<MappedMemory>) -> T) -> T {
-        mapper(self.mem.lock().unwrap())
+    pub fn map<T>(&mut self, mut mapper: impl FnMut(&mut MappedMemory) -> T) -> T {
+        mapper(&mut self.cpu.mem)
     }
 
     /// Get a mutable reference to the CPU (required to make the CPU advance)

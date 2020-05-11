@@ -1,17 +1,18 @@
 use std::convert::TryFrom;
-use std::sync::{Arc, Mutex};
-use crate::board::MappedMemory;
-use crate::mmu::MMU;
+use crate::board::{MappedMemory, HardwareBridge};
+use crate::mmu::{MMU, MemAction};
 use super::Registers;
 
 /// Central Processing Unit (CPU)
 pub struct CPU {
     /// Registers (available from the outside of the crate)
     pub regs: Registers,
-    /// MMU (available from the outside of the crate)
-    pub mmu: MMU,
-    /// Memory
-    mem: Arc<Mutex<MappedMemory>>,
+    /// Mapped memory
+    pub(crate) mem: MappedMemory,
+    /// Memory Management Unit (MMU)
+    mmu: MMU,
+    /// Hardware bridge
+    hwb: HardwareBridge,
     /// Current cycle count (goes back to 0 after reaching maximum)
     cycles: u32,
     /// Is the CPU halted?
@@ -22,11 +23,12 @@ pub struct CPU {
 
 impl CPU {
     /// Create a new CPU using an existing mapped memory (must be the same one the motherboard this CPU will be connected to uses).
-    pub fn new(mem: Arc<Mutex<MappedMemory>>) -> Self {
+    pub fn new(hwb: HardwareBridge, mem: MappedMemory) -> Self {
         let mut cpu = Self {
             regs: Registers::new(),
-            mmu: MMU::new(Arc::clone(&mem)),
             mem,
+            mmu: MMU::new(),
+            hwb,
             cycles: 0,
             halted: true,
             _cycle_changed_pc: false
@@ -351,10 +353,7 @@ impl CPU {
                     let (reg_dest, aux_id, hw_info) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
 
                     if aux_id == 0 && hw_info == 0 {
-                        return self.write_reg(reg_dest, {
-                            let mem = self.mem.lock().unwrap();
-                            mem.count()
-                        });
+                        return self.write_reg(reg_dest, self.hwb.count() as u32);
                     }
 
                     let aux_id = usize::try_from(aux_id)
@@ -629,68 +628,71 @@ impl CPU {
         }
     }
 
+    /// Perform an action on the memory.  
+    /// The provided address will be first translated by the MMU into a physical address, then the provided handler will be called with:
+    ///
+    /// * A mutable reference to the mapped memory  
+    /// * The translated physical address  
+    /// * A mutable reference to the exception variable
+    ///
+    /// The handler is expected to return a value (of any type), which will be turned into an Err() if an exception occurred.
+    fn mem_do<T>(&mut self, action: MemAction, v_addr: u32, handler: &mut dyn FnMut(&mut MappedMemory, u32, &mut u16) -> T) -> Result<T, Ex> {
+        let v_addr = self.ensure_aligned(v_addr)?;
+        
+        match self.mmu.translate(&mut self.mem, &self.regs, v_addr, action) {
+            Ok(p_addr) => {
+                let mut ex = 0;
+                let ret = handler(&mut self.mem, p_addr, &mut ex);
+
+                if ex != 0 {
+                    Err(self.exception(0x10, Some(ex)))
+                } else {
+                    Ok(ret)
+                }
+            },
+
+            Err(None) => Err(self.exception(0x06, Some(v_addr as u16))),
+
+            Err(Some(ex)) => Err(self.exception(0x10, Some(ex)))
+        }
+    }
+
     /// Read an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept reading this address in the current mode.
     fn mem_read(&mut self, v_addr: u32) -> Result<u32, Ex> {
-        let v_addr = self.ensure_aligned(v_addr)?;
-        let mut ex = 0;
-
-        self.mmu.read(&self.regs, v_addr, &mut ex)
-            .map_err(|()| self.exception(0x06, Some(v_addr as u16)))
-            .and_then(|word| { if ex != 0 { Err(self.exception(0x10, Some(ex))) } else { Ok(word) } })
+        self.mem_do(MemAction::Read, v_addr, &mut |mem, p_addr, ex| mem.read(p_addr, ex))
     }
 
     /// Write an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept writing this address in the current mode.
     fn mem_write(&mut self, v_addr: u32, word: u32) -> Result<(), Ex> {
-        let v_addr = self.ensure_aligned(v_addr)?;
-        let mut ex = 0;
-
-        self.mmu.write(&self.regs, v_addr, word, &mut ex)
-            .map_err(|()| self.exception(0x07, Some(v_addr as u16)))
-            .and_then(|()| { if ex != 0 { Err(self.exception(0x10, Some(ex))) } else { Ok(()) } })
+        self.mem_do(MemAction::Write, v_addr, &mut |mem, p_addr, ex| mem.write(p_addr, word, ex))
     }
 
     /// Execute (read) an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept executing this address in the current mode.
     fn mem_exec(&mut self, v_addr: u32) -> Result<u32, Ex> {
-        let v_addr = self.ensure_aligned(v_addr)?;
-        let mut ex = 0;
-
-        self.mmu.exec(&self.regs, v_addr, &mut ex)
-            .map_err(|()| self.exception(0x08, Some(v_addr as u16)))
-            .and_then(|word| { if ex != 0 { Err(self.exception(0x10, Some(ex))) } else { Ok(word) } })
+        self.mem_do(MemAction::Exec, v_addr, &mut |mem, p_addr, ex| mem.read(p_addr, ex))
     }
 
     /// Get informations about an auxiliary comopnent, after retrieving its name and raw metadata
     fn get_hw_info(&mut self, hw_info: u32, aux_id: usize) -> Result<u32, Ex> {
         // Get the auxiliary component's name and metadata (if it exists) as well as its optional mapping
-        let (aux_opt, mapping_opt) = {
-            let mem = self.mem.lock().unwrap();
-            
-            let aux_opt = mem.name_of(aux_id).map(|s| s.clone())
-                .and_then(|name| mem.metadata_of(aux_id)
-                .map(|md| (name, md)));
-
-            let mapping = mem.get_mapping(aux_id).map(|m| m.clone());
-
-            (aux_opt, mapping)
-        };
-
-        // Ensure the component exists
-        let (aux_name, aux_metadata) = aux_opt.ok_or_else(||
+        let cache = self.hwb.cache_of(aux_id).cloned().ok_or_else(||
             self.exception(0x0C, Some(aux_id as u16))
         )?;
 
-        let aux_name = aux_name.bytes();
+        let mapping_opt = self.mem.get_mapping(aux_id).cloned();
+
+        let aux_name = cache.name.bytes();
 
         // Return the value to write depending on the hardware information code
         let data = match hw_info {
             // UID's 32 strongest bits
-            0x01 => aux_metadata[0],
+            0x01 => cache.metadata[0],
 
             // UID's 32 weakest bits
-            0x02 => aux_metadata[1],
+            0x02 => cache.metadata[1],
 
             // Name's length, in bytes
             0x10 => aux_name.count() as u32,
@@ -707,17 +709,17 @@ impl CPU {
             },
 
             // Component's size
-            0x20 => aux_metadata[2],
+            0x20 => cache.metadata[2],
             // Category
-            0x21 => aux_metadata[3],
+            0x21 => cache.metadata[3],
             // Type
-            0x22 => aux_metadata[4],
+            0x22 => cache.metadata[4],
             // Model
-            0x23 => aux_metadata[5],
+            0x23 => cache.metadata[5],
             // Additional data's 32 strongest bits
-            0x24 => aux_metadata[6],
+            0x24 => cache.metadata[6],
             // Additional data's 32 weakest bits
-            0x25 => aux_metadata[7],
+            0x25 => cache.metadata[7],
 
             // Check if the component is mapped in memory
             0xA0 => if mapping_opt.is_some() { 0x00000001 } else { 0x00000000 },

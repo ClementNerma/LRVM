@@ -10,7 +10,7 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
 
     let mut motherboard = MotherBoard::new(components);
 
-    motherboard.map(|mut mem| {
+    motherboard.map(|mem| {
         let ContiguousMappingStatus { mapping, aux_mapping } =
             mem.map_contiguous(0x00000000, (0..aux_count).collect::<Vec<_>>());
 

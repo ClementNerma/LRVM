@@ -37,7 +37,7 @@ fn sync_keyboard() {
 
     assert!(*received_req.lock().unwrap(), "No keyboard request was triggered");
 
-    vm.map(|mut mem| {
+    vm.map(|mem| {
         let mut bytes = vec![];
 
         let mut ex = 0;

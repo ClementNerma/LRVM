@@ -29,7 +29,7 @@ fn main() {
     ], &RunConfig::halt_on_ex()).0;
 
     // We read the memory from inside this handler as the mapped memory object cannot be moved out of the motherboard instance.
-    motherboard.map(|mut mem| {
+    motherboard.map(|mem| {
         // Address of the data RAM
         let ram_addr = 0x1000;
         

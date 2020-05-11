@@ -18,7 +18,7 @@ fn volatile_mem() {
 
     let (mut err_a, mut err_b, mut err_c) = (0, 0, 0);
 
-    let (word_a, word_b, word_c) = vm.map(|mut mem|
+    let (word_a, word_b, word_c) = vm.map(|mem|
         (mem.read(0x1000, &mut err_a), mem.read(0x1008, &mut err_b), mem.read(0x1010, &mut err_c))
     );
 

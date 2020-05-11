@@ -1,26 +1,11 @@
-use std::sync::{Arc, Mutex};
-use super::Bus;
+use super::HardwareBridge;
 
 /// Mapped memory
 pub struct MappedMemory {
-    /// Auxiliary components candidates
-    aux: Vec<MemAuxComponent>,
+    /// Hardware bridge
+    bridge: HardwareBridge,
     /// Components mappings
     mappings: Vec<Mapping>
-}
-
-/// Auxiliary component candidate to mapping
-pub struct MemAuxComponent {
-    /// Auxiliary component's [`Bus`] interface
-    bus: Arc<Mutex<Box<dyn Bus>>>,
-    /// Auxiliary component's generic name
-    name: String,
-    /// Auxiliary component's metadata
-    metadata: [u32; 8],
-    /// Auxiliary component's unique identifier
-    hw_id: u64,
-    /// Auxiliary component's size
-    size: u32
 }
 
 /// A single component mapping.
@@ -88,32 +73,9 @@ pub struct AuxMappingStatus {
 }
 
 impl MappedMemory {
-    /// Create a new mapped memory from a list of auxiliary components' [`Bus`] interface
-    pub fn new(aux_list: Vec<Arc<Mutex<Box<dyn Bus>>>>) -> Self {
-        assert!(aux_list.len() <= std::u32::MAX as usize, "Cannot connect more than 2^32 components!");
-
-        Self {
-            aux: aux_list.into_iter().map(|shared_bus| {
-                let bus = shared_bus.lock().unwrap();
-
-                let name = bus.name().chars().take(32).collect::<String>();
-                let metadata = bus.metadata();
-                let hw_id = ((metadata[0] as u64) << 32) + metadata[1] as u64;
-                let size = metadata[2];
-
-                std::mem::drop(bus);
-
-                assert!(name.len() <= 32, "Auxiliary component's name must not exceed 32 bytes!");
-                MemAuxComponent { bus: shared_bus, name, metadata, hw_id, size }
-            }).collect(),
-
-            mappings: vec![]
-        }
-    }
-
-    /// Count the number of connected auxiliary components
-    pub fn count(&self) -> u32 {
-        self.aux.len() as u32
+    /// Create a new mapped memory using an hardware bridge
+    pub fn new(hwb: HardwareBridge) -> Self {
+        Self { bridge: hwb, mappings: vec![] }
     }
 
     /// Map an auxiliary component from a specific address.
@@ -153,8 +115,8 @@ impl MappedMemory {
 
             aux_mapping.push(AuxMappingStatus {
                 aux_id: *aux_id,
-                aux_hw_id: self.hw_id_of(*aux_id).unwrap(),
-                aux_name: self.name_of(*aux_id).unwrap().clone(),
+                aux_hw_id: self.bridge.hw_id_of(*aux_id).unwrap(),
+                aux_name: self.bridge.name_of(*aux_id).unwrap().clone(),
                 aux_mapping: result
             });
         }
@@ -165,26 +127,6 @@ impl MappedMemory {
         }
     }
 
-    /// Get the name of an auxiliary component from its ID
-    pub fn name_of(&self, aux_id: usize) -> Option<&String> {
-        self.aux.get(aux_id).map(|aux| &aux.name)
-    }
-
-    /// Get the metadata of an axuiliary component from its ID
-    pub fn metadata_of(&self, aux_id: usize) -> Option<[u32; 8]> {
-        self.aux.get(aux_id).map(|aux| aux.metadata)
-    }
-
-    /// Get the unique identifier of an auxiliary component from its ID
-    pub fn hw_id_of(&self, aux_id: usize) -> Option<u64> {
-        self.aux.get(aux_id).map(|aux| aux.hw_id)
-    }
-
-    /// Get the size of an auxiliary component from its ID
-    pub fn size_of(&self, aux_id: usize) -> Option<u32> {
-        self.aux.get(aux_id).map(|aux| aux.size)
-    }
-
     /// Read an arbitrary address in the mapped memory.
     /// The related component will be contacted through its [`Bus`] if mounted at this address.
     /// If no component is mount at this address, the `0x00000000` value will be returned.
@@ -193,7 +135,7 @@ impl MappedMemory {
         assert!(addr % 4 == 0, "Memory does not support reading from unaligned addresses");
         
         if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.end_addr()) {
-            self.aux[mapping.aux_id].bus.lock().unwrap().read(addr - mapping.addr, ex)
+            self.bridge.read(mapping.aux_id, addr - mapping.addr, ex).unwrap()
         } else {
             if cfg!(debug_assertions) {
                 eprintln!("Warning: tried to read non-mapped memory at address {:#010X}", addr);
@@ -211,7 +153,7 @@ impl MappedMemory {
         assert!(addr % 4 == 0, "Memory does not support writing to unaligned addresses");
         
         if let Some(mapping) = self.mappings.iter().find(|mapping| mapping.addr <= addr && addr <= mapping.end_addr()) {
-            self.aux[mapping.aux_id].bus.lock().unwrap().write(addr - mapping.addr, word, ex);
+            self.bridge.write(mapping.aux_id, addr - mapping.addr, word, ex).unwrap()
         } else if cfg!(debug_assertions) {
             eprintln!("Warning: tried to write non-mapped memory at address {:#010X}", addr);
         }
@@ -224,18 +166,19 @@ impl MappedMemory {
 
     /// (Internal) map an auxiliary component to the memory
     fn internal_map(&mut self, addr: u32, addr_end: Option<u32>, aux_id: usize) -> Result<MappingRange, MappingError> {
-        let aux = self.aux.get(aux_id).ok_or(MappingError::UnknownComponent)?;
-        let addr_end = addr_end.unwrap_or(addr + aux.size - 4);
+        let aux_size = self.bridge.size_of(aux_id).ok_or(MappingError::UnknownComponent)?;
+        
+        let addr_end = addr_end.unwrap_or(addr + aux_size - 4);
 
         if addr % 4 != 0 {
             return Err(MappingError::UnalignedStartAddress);
         }
 
-        if aux.size == 0 {
+        if aux_size == 0 {
             return Err(MappingError::NullBusSize);
         }
 
-        if aux.size % 4 != 0 {
+        if aux_size % 4 != 0 {
             return Err(MappingError::UnalignedBusSize);
         }
 
@@ -258,10 +201,16 @@ impl MappedMemory {
             },
 
             None => {
-                self.mappings.push(Mapping { aux_id, aux_hw_id: aux.hw_id, addr, size: aux.size });
+                self.mappings.push(Mapping {
+                    aux_id,
+                    aux_hw_id: self.bridge.hw_id_of(aux_id).expect("Internal error: failed to get HW ID of component after mapping validation"),
+                    addr,
+                    size: aux_size
+                });
+
                 Ok(MappingRange {
                     start_addr: addr,
-                    end_addr: addr + aux.size - 1
+                    end_addr: addr + aux_size - 1
                 })
             }
         }
