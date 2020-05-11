@@ -17,10 +17,10 @@ impl DeviceCategory {
         let typ = (code & 0xFFFFFFFF) as u32;
 
         match cat {
-            0x00001000 => Ok(Self::Display(DisplayType::decode(typ)?)),
-            0x00002000 => Ok(Self::Keyboard(KeyboardType::decode(typ)?)),
-            0x00005000 => Ok(Self::Memory(MemoryType::decode(typ)?)),
-            0x0000A000 => Ok(Self::Storage(StorageType::decode(typ)?)),
+            0x00011000 => Ok(Self::Display(DisplayType::decode(typ)?)),
+            0x00016000 => Ok(Self::Keyboard(KeyboardType::decode(typ)?)),
+            0x00021000 => Ok(Self::Memory(MemoryType::decode(typ)?)),
+            0x00022000 => Ok(Self::Storage(StorageType::decode(typ)?)),
             0xEEEEEEEE => Ok(Self::PlatformSpecific(typ)),
             0xFFFFFFFF => Ok(Self::Uncategorized()),
 
@@ -30,10 +30,10 @@ impl DeviceCategory {
 
     pub fn category_code(&self) -> u32 {
         match self {
-            Self::Display(_) => 0x00001000,
-            Self::Keyboard(_) => 0x00002000,
-            Self::Memory(_) => 0x00005000,
-            Self::Storage(_) => 0x0000A000,
+            Self::Display(_) => 0x00011000,
+            Self::Keyboard(_) => 0x00016000,
+            Self::Memory(_) => 0x00021000,
+            Self::Storage(_) => 0x00022000,
             Self::PlatformSpecific(_) => 0xEEEEEEEE,
             Self::Uncategorized() => 0xFFFFFFFF
         }
