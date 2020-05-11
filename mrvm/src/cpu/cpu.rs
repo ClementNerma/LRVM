@@ -493,7 +493,7 @@ impl CPU {
 
             Op::Sub => {
                 let (result, has_carry) = op1.overflowing_sub(op2);
-                (result, has_carry, iop1.overflowing_add(iop2).1)
+                (result, has_carry, iop1.overflowing_sub(iop2).1)
             },
 
             Op::Mul => {
