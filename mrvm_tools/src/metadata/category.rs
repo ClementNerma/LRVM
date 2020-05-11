@@ -6,7 +6,9 @@ pub enum DeviceCategory {
     Display(DisplayType),
     Keyboard(KeyboardType),
     Memory(MemoryType),
-    Storage(StorageType)
+    Storage(StorageType),
+    PlatformSpecific(u32),
+    Uncategorized()
 }
 
 impl DeviceCategory {
@@ -19,6 +21,8 @@ impl DeviceCategory {
             0x00002000 => Ok(Self::Keyboard(KeyboardType::decode(typ)?)),
             0x00005000 => Ok(Self::Memory(MemoryType::decode(typ)?)),
             0x0000A000 => Ok(Self::Storage(StorageType::decode(typ)?)),
+            0xEEEEEEEE => Ok(Self::PlatformSpecific(typ)),
+            0xFFFFFFFF => Ok(Self::Uncategorized()),
 
             _ => Err(())
         }
@@ -29,7 +33,9 @@ impl DeviceCategory {
             Self::Display(_) => 0x00001000,
             Self::Keyboard(_) => 0x00002000,
             Self::Memory(_) => 0x00005000,
-            Self::Storage(_) => 0x0000A000
+            Self::Storage(_) => 0x0000A000,
+            Self::PlatformSpecific(_) => 0xEEEEEEEE,
+            Self::Uncategorized() => 0xFFFFFFFF
         }
     }
 
@@ -38,7 +44,9 @@ impl DeviceCategory {
             Self::Display(t) => t.code(),
             Self::Keyboard(t) => t.code(),
             Self::Memory(t) => t.code(),
-            Self::Storage(t) => t.code()
+            Self::Storage(t) => t.code(),
+            Self::PlatformSpecific(typ) => *typ,
+            Self::Uncategorized() => 0x00000000
         }
     }
 
@@ -54,6 +62,8 @@ impl fmt::Display for DeviceCategory {
             Self::Keyboard(k) => format!("Keyboard:{}", k),
             Self::Memory(m) => format!("Memory:{}", m),
             Self::Storage(s) => format!("Storage:{}", s),
+            Self::PlatformSpecific(code) => format!("PlatformSpecific:(Code={:#010X})", code),
+            Self::Uncategorized() => "Uncategorized".to_owned()
         })
     }
 }
