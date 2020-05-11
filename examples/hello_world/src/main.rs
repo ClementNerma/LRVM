@@ -8,7 +8,8 @@ use mrvm_tools::lasm::assemble_words;
 fn main() {
     println!("> Assembling LASM code...");
 
-    let program = assemble_words(include_str!("display.lasm")).unwrap();
+    let program = assemble_words(include_str!("display.lasm"))
+        .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     println!("> Preparing components and motherboard...");
 
