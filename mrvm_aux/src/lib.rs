@@ -7,6 +7,7 @@ pub mod storage;
 pub mod memory;
 pub mod display;
 pub mod keyboard;
+pub mod time;
 
 #[cfg(test)]
 mod tests;

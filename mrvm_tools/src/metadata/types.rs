@@ -3,6 +3,44 @@ use super::DeviceCategory;
 
 #[non_exhaustive]
 #[derive(Copy, Clone, Debug)]
+pub enum ClockType {
+    Realtime
+}
+
+impl ClockType {
+    pub fn decode(code: u32) -> Result<Self, ()> {
+        match code {
+            0x00000001 => Ok(Self::Realtime),
+
+            _ => Err(())
+        }
+    }
+
+    pub fn code(&self) -> u32 {
+        match self {
+            Self::Realtime => 0x00000001
+        }
+    }
+
+    pub fn wrap(&self) -> DeviceCategory {
+        DeviceCategory::Clock(*self)
+    }
+
+    pub fn encode(&self) -> u64 {
+        self.wrap().encode()
+    }
+}
+
+impl fmt::Display for ClockType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::Realtime => "Realtime"
+        })
+    }
+}
+
+#[non_exhaustive]
+#[derive(Copy, Clone, Debug)]
 pub enum DisplayType {
     Number,
     Buffered

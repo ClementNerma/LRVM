@@ -2,6 +2,15 @@ use std::fmt;
 
 /// Strongly-typed hardware exception
 pub enum AuxHwException {
+    /// Unknown error
+    UnknownError,
+
+    /// Unspecified synchronization error
+    UnspecifiedSyncError,
+
+    /// Time synchronization error
+    TimeSynchronizationError,
+
     /// An unknown operation was requested.
     /// This can be for instance an invalid code sent to the last addressed word of a buffered display.
     UnknownOperation(u8),
@@ -38,6 +47,10 @@ impl AuxHwException {
         let data_or_err = data.ok_or(());
 
         match code {
+            0x00 => Ok(Self::UnknownError),
+            0x01 => Ok(Self::UnspecifiedSyncError),
+            0x02 => Ok(Self::TimeSynchronizationError),
+
             0x10 => Ok(Self::UnknownOperation(data_or_err?)),
             0x11 => Ok(Self::UnsupportedOperation),
             
@@ -54,6 +67,10 @@ impl AuxHwException {
     /// Get the exception's code
     pub fn code(&self) -> u8 {
         match self {
+            Self::UnknownError => 0x00,
+            Self::UnspecifiedSyncError => 0x01,
+            Self::TimeSynchronizationError => 0x02,
+
             Self::UnknownOperation(_) => 0x10,
             Self::UnsupportedOperation => 0x11,
 
@@ -68,6 +85,10 @@ impl AuxHwException {
     /// Get the exception's eventual associated data
     pub fn associated_data(&self) -> Option<u8> {
         match self {
+            Self::UnknownError => None,
+            Self::UnspecifiedSyncError => None,
+            Self::TimeSynchronizationError => None,
+
             Self::UnknownOperation(op) => Some(*op),
             Self::UnsupportedOperation => None,
 
@@ -94,6 +115,10 @@ impl Into<u16> for AuxHwException {
 impl fmt::Display for AuxHwException {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match self {
+            Self::UnknownError => "Unknown error".to_owned(),
+            Self::UnspecifiedSyncError => "Unspecified synchronization error".to_owned(),
+            Self::TimeSynchronizationError => "Time synchronization error".to_owned(),
+
             Self::UnknownOperation(op) => format!("Unknown operation {:#004X}", op),
             Self::UnsupportedOperation => "Unsupported operation".to_owned(),
 

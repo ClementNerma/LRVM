@@ -3,6 +3,7 @@ use super::types::*;
 
 #[derive(Copy, Clone, Debug)]
 pub enum DeviceCategory {
+    Clock(ClockType),
     Display(DisplayType),
     Keyboard(KeyboardType),
     Memory(MemoryType),
@@ -30,6 +31,7 @@ impl DeviceCategory {
 
     pub fn category_code(&self) -> u32 {
         match self {
+            Self::Clock(_) => 0x00001000,
             Self::Display(_) => 0x00011000,
             Self::Keyboard(_) => 0x00016000,
             Self::Memory(_) => 0x00021000,
@@ -41,6 +43,7 @@ impl DeviceCategory {
 
     pub fn type_code(&self) -> u32 {
         match self {
+            Self::Clock(t) => t.code(),
             Self::Display(t) => t.code(),
             Self::Keyboard(t) => t.code(),
             Self::Memory(t) => t.code(),
@@ -58,6 +61,7 @@ impl DeviceCategory {
 impl fmt::Display for DeviceCategory {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match self {
+            Self::Clock(c) => format!("Clock:{}", c),
             Self::Display(d) => format!("Display:{}", d),
             Self::Keyboard(k) => format!("Keyboard:{}", k),
             Self::Memory(m) => format!("Memory:{}", m),
