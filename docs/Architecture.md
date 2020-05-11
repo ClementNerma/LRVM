@@ -2,9 +2,7 @@
 
 RustVM is a single-threaded, lightweight virtual machine created for challenge purposes as well as to study how hardware behaves.
 
-## Architecture
-
-### Central Processing Unit
+## Central Processing Unit
 
 The CPU uses a 32-bit architecture, with a custom set of fixed-length instructions (32 bit each).
 It contains a single monothread processor, a MMU, and a memory relying on MMIO.
@@ -17,7 +15,7 @@ It has direct access to the memory but relies on the MMU to translate virtual ad
 
 The processor uses Big Endian (BE) representation for numbers.
 
-#### Registers
+### Registers
 
 The processor contains the 32 following registers, all with a capacity of 32 bits:
 
@@ -60,7 +58,7 @@ Conventionally, the `avr` register is used for very short-living operations, mea
 
 Also, the `rr0` to `rr7` registers are conventionally reserved to be used by routines, which means they may be rewritten when calling a routine.
 
-#### Arithmetic flags
+### Arithmetic flags
 
 The `af` register is set after each arithmetic instruction. Each of its bits are _flags_.
 They give the following indications on the operation that happened (starting from the strongest bit):
@@ -78,7 +76,7 @@ They give the following indications on the operation that happened (starting fro
 A flag is called _set_ if its value is `1`.
 The other bits of this register are unused and so are always equal to `0`.
 
-#### Exceptions
+### Exceptions
 
 An _exception_ occurs either when an fatal error occurs, or when an interruption is called. Here is the list errors:
 
@@ -115,12 +113,12 @@ When an exception occurs, three things happen:
 - If the exception occurred in supervisor mode, the "byte for mode" is `1`, otherwise it's `0`
 - Supervisor mode is toggled on using `smt`
 
-### Startup
+## Startup
 
 When the CPU starts, its sets all registers to `0`, except `smt` with is set to `1` to enable supervisor mode.
 This behaviour results reading the first instruction from address `0` of the memory.
 
-### Input/Output Memory Management Unit
+## Input/Output Memory Management Unit
 
 The IOMMU, abbreviated MMU, allows to translate virtual adresses to physical adresses using adress tables.
 It is the only component to have direct access to the memory.
@@ -128,7 +126,7 @@ It is the only component to have direct access to the memory.
 The MMU only allows to read and write whole words (32-bits values).
 It also only allows aligned addresses, which means each address must be a multiple of 4.
 
-### Memory-Mapped Input/Output
+## Memory-Mapped Input/Output
 
 The MMIO allows to map contiguous block of the memory to _bus_, which allow synchronous read and write operations.
 It does not tolerate any exception except than out-of-range addresses ; therefore a bus can never fail an operation.
@@ -136,7 +134,7 @@ It does not tolerate any exception except than out-of-range addresses ; therefor
 Memory can only read and write whole words (32-bits values).
 It also only supports aligned addresses, which means each address must be a multiple of 4.
 
-### The stack
+## The stack
 
 The CPU contains a `PUSH` and a `POP` instruction that enables the use of a _stack_. It works very simply:
 
