@@ -219,7 +219,9 @@ impl CPU {
                 0x11 | 0x12 => {
                     let flag: u32 = args!(REG_OR_LIT_1).into();
 
-                    if (self.regs.af & (1 << flag) == 1) ^ (opcode == 0x11) {
+                    let is_flag_set = (self.regs.af & (1 << (7 - flag))) != 0;
+
+                    if is_flag_set ^ (opcode == 0x11) {
                         self.regs.pc = self.regs.pc.wrapping_add(4);
                     }
 
