@@ -220,8 +220,8 @@ impl CPU {
                     let flag: u32 = args!(REG_OR_LIT_1).into();
 
                     let is_flag_set = (self.regs.af & (1 << (7 - flag))) != 0;
-
-                    if is_flag_set ^ (opcode == 0x11) {
+                    
+                    if is_flag_set != (opcode == 0x11) {
                         self.regs.pc = self.regs.pc.wrapping_add(4);
                     }
 
