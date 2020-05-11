@@ -1,0 +1,46 @@
+
+main:
+    ; Make the stack point to the volatile memory
+    cpy ssp, 0x2000
+
+    ; Choose the delay to wait for
+    cpy a0, 0xBBBB
+    shl a0, 9
+
+.wait_dspl:
+    ; Wait 1 second
+    call wait_1s
+    
+    ; Get the counter's value
+    cpy ac0, 0x2000
+    lsa avr, ac0, 0
+
+    ; Display the counter's value
+    wsa ac0, 4, avr
+
+    ; Stop the program at 5
+    cmp avr, 5
+
+    ifeq
+    halt
+
+    ; Loop
+    jmpa .wait_dspl
+
+wait_1s:
+    ; We'll wait until cycle (delay + number of cycles when the previously printed the counter)
+    cpy a1, a0
+    add a1, a3
+
+.loop:
+    ; Check if the number of cycles is enough    
+    cycles a2
+    cmp a2, a1
+
+    ; If not, loop
+    ifls
+    jmpa .loop
+
+    ; If enough, remember the number of cycles so far and return
+    cpy a3, a1
+    ret

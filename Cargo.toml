@@ -5,5 +5,6 @@ members = [
     "mrvm_tools",
     "examples/minimal",
     "examples/hello_world",
-    "examples/hw_detect"
+    "examples/hw_detect",
+    "examples/async_hw"
 ]
