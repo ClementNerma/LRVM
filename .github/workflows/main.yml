@@ -1,0 +1,22 @@
+name: CI
+
+on: [push]
+
+jobs:
+  check-broken-md-links:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache unpublished "broken-md-links" dependency
+        uses: actions/cache@v1.1.2
+        with:
+          path: ~/.cargo/bin
+          key: broken-md-links-tool
+      - name: Get "broken-md-links"  tool
+        run: |
+          if ! type broken-md-links > /dev/null; then
+            cargo install --git https://github.com/ClementNerma/broken-md-links.git
+          fi
+      - name: Look for broken MD links
+        run: broken-md-links ${GITHUB_WORKSPACE} --recursive
