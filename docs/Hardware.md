@@ -8,7 +8,7 @@ Components cannot communicate with the motherboard on their own ; only the mothe
 
 ## Bus interface
 
-A component is a structure instance implementing the [`Bus`](../mrvm/src/boards/bus.rs) trait.
+A component is a structure instance implementing the [`Bus`](../mrvm/src/board/bus.rs) trait.
 
 The motherboard may send _requests_ to components, which must be answered synchronously (CPU is paused meanwhile). The list of requests are:
 
