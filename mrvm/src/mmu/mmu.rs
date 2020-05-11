@@ -25,7 +25,7 @@ impl MMU {
             return Some(Err(()));
         }
 
-        // We read the mapping status for the current mode
+        // Check if pass-through is enabled for this entry
         if v_entry & (0b1 << if regs.smt != 0 { 31 } else { 30 }) == 0b0 {
             return None;
         }
