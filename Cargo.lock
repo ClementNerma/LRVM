@@ -52,6 +52,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "elapsed_time"
+version = "0.1.0"
+dependencies = [
+ "mrvm_aux",
+ "mrvm_tools",
+]
+
+[[package]]
 name = "getopts"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
