@@ -62,7 +62,7 @@ impl Bus for BufferedDisplay {
             self.hw_id,
             self.words * 4 + 4,
             DisplayType::Buffered.into(),
-            0x00000000,
+            None,
             None
         ).encode()
     }

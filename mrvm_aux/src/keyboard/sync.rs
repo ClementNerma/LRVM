@@ -59,7 +59,7 @@ impl Bus for SyncKeyboard {
             self.hw_id,
             self.words * 4 + 4,
             KeyboardType::ReadlineSynchronous.into(),
-            0x00000000,
+            None,
             None
         ).encode()
     }

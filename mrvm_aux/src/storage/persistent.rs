@@ -85,7 +85,7 @@ impl Bus for PersistentMem {
             self.hw_id,
             self.size * 4,
             StorageType::Persistent.into(),
-            0x00000000,
+            None,
             None
         ).encode()
     }

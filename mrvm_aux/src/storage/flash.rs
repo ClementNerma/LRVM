@@ -61,7 +61,7 @@ impl Bus for FlashMem {
             self.hw_id,
             self.size * 4,
             StorageType::Flash.into(),
-            0x00000000,
+            None,
             None
         ).encode()
     }

@@ -87,7 +87,7 @@ impl Bus for VolatileMem {
             self.hw_id,
             self.size * 4,
             MemoryType::Volatile.into(),
-            0x00000000,
+            None,
             None
         ).encode()
     }

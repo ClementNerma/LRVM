@@ -34,7 +34,7 @@ impl Bus for AsyncCounter {
     }
 
     fn metadata(&self) -> [u32; 8] {
-        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized(), 0, None).encode()
+        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized(), None, None).encode()
     }
 
     fn read(&mut self, _addr: u32, _ex: &mut u16) -> u32 {
