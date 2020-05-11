@@ -379,7 +379,60 @@ impl CPU {
 
                 // RESET
                 0x1F => {
-                    self.reset();
+                    let mode = args!(REG_OR_LIT_1);
+
+                    // Get the two modes (one per byte)
+                    let (cpu_mode, aux_mode) = ((mode & 0xF0) as u8, (mode & 0x0F) as u8);
+
+                    // Determine which components should be reset
+                    match aux_mode {
+                        // Reset all components
+                        0x0 => {
+                            for id in 0..self.hwb.count() {
+                                self.hwb.reset(id).unwrap();
+                            }
+                        },
+
+                        // Reset a specific component (ID in `avr`)
+                        0x1 => {
+                            let id = usize::try_from(self.regs.avr)
+                                .map_err(|_| self.exception(0x0C, Some(self.regs.avr as u16)))?;
+                            
+                                self.hwb.reset(id)
+                                    .ok_or_else(|| self.exception(0x0C, Some(self.regs.avr as u16)))?;
+                        },
+
+                        // Reset a component based on a condition (operand ID in `avr`)
+                        0x2..=0x4 => {
+                            let ignore_id = usize::try_from(self.regs.avr).ok();
+
+                            // Determine how to test if a component should be reset
+                            let test = move |id| match ignore_id {
+                                None => true,
+                                Some(ignore_id) => match aux_mode {
+                                    0x2 => id != ignore_id,
+                                    0x3 => id < ignore_id,
+                                    0x4 => id > ignore_id,
+                                    _ => unreachable!()
+                                }
+                            };
+
+                            for id in 0..self.hwb.count() {
+                                if test(id) {
+                                    self.hwb.reset(id).unwrap();
+                                }
+                            }
+                        },
+
+                        _ => {}
+
+                    };
+
+                    // Reset the processor
+                    if cpu_mode == 0 {
+                        self.reset();
+                    }
+
                     Ok(())
                 },
 

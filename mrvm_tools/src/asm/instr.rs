@@ -33,7 +33,7 @@ pub enum Instr {
     HWD(Reg, RegOrLit1, RegOrLit1),
     CYCLES(Reg),
     HALT(),
-    RESET(),
+    RESET(RegOrLit1),
 }
 
 impl Instr {
@@ -103,7 +103,7 @@ impl Instr {
             0x1C => Ok(Self::HWD(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
             0x1D => Ok(Self::CYCLES(arg_reg(1)?)),
             0x1E => Ok(Self::HALT()),
-            0x1F => Ok(Self::RESET()),
+            0x1F => Ok(Self::RESET(arg_reg_or_lit_1(1)?)),
             _ => Err(InstrDecodingError::UnknownOpCode { opcode }),
         }
     }
@@ -313,7 +313,12 @@ impl Instr {
             }
 
             Self::HALT() => 0x1E,
-            Self::RESET() => 0x1F,
+
+            Self::RESET(a) => {
+                doo!(r a.is_reg());
+                doo!(roc a);
+                0x1F
+            },
         };
 
         assert!(

@@ -222,7 +222,8 @@
 
     halt  -> ((0x1E << 3) + 0b000)[7:0] @ 0x00 @ 0x00 @ 0x00
 
-    reset -> ((0x1F << 3) + 0b000)[7:0] @ 0x00 @ 0x00 @ 0x00
+    reset {reg_mode: reg} -> ((0x1F << 3) + 0b100)[7:0] @ reg_mode[7:0] @ 0x00 @ 0x00
+    reset {lit_mode:  u8} -> ((0x1F << 3) + 0b000)[7:0] @ lit_mode[7:0] @ 0x00 @ 0x00
 
     ; Aliases
     zro  {reg: reg} -> ((0x0A << 3) + 0b110)[7:0] @ reg[7:0] @ reg[7:0] @ 0x00

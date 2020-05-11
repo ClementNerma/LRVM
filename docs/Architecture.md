@@ -528,8 +528,24 @@ These instructions allow to control how the processor behave or to get informati
 - `HALT` (HALT) {H} | opcode: `0x1E`  
   Halt the processor
 
-- `RESET` (RESET) {H} | opcode: `0x1F`  
-  Reset the processor
+- `RESET [reg_mode | 1-byte]` (RESET) {H} | opcode: `0x1F`  
+  The mode is split in two bytes to indicate reset informations for the processor and for the auxiliary components.
+
+  Strongest byte:
+
+  - `0x0`: reset the processor
+  - Other: doesn't reset the process
+
+  Weakest byte:
+
+  - `0x0`: resets all components
+  - `0x1`: resets the component whose ID is in `avr`
+  - `0x2`: resets all components except the one in `avr`
+  - `0x3`: resets all components with an ID smaller than or equal to the one in `avr`
+  - `0x4`: resets all components with an ID greater than or equal to the one in `avr`
+  - Other: doesn't reset any component
+
+  The processor is always reset _after_ the specified components (if any).
 
 #### Alias instructions
 
