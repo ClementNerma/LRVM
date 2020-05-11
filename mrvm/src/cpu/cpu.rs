@@ -188,6 +188,7 @@ impl CPU {
                     let reg_value = self.read_reg(reg)?;
 
                     self.compute(reg_value, value, Op::Sub)?;
+
                     Ok(())
                 },
 
@@ -234,11 +235,11 @@ impl CPU {
                 // IF2
                 0x13 => {
                     let (flag_a, flag_b, cond) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
-                    let (flag_a, flag_b) = (self.regs.af & (1 << flag_a) == 0, self.regs.af & (1 << flag_b) == 0);
+                    let (flag_a, flag_b) = (self.regs.af & (1 << (7 - flag_a)) != 0, self.regs.af & (1 << (7 - flag_b)) != 0);
 
                     let result = match cond {
-                        0x01 => flag_a && flag_b,
-                        0x02 => flag_a || flag_b,
+                        0x01 => flag_a || flag_b,
+                        0x02 => flag_a && flag_b,
                         0x03 => flag_a ^ flag_b,
                         0x04 => !flag_a && !flag_b,
                         0x05 => !(flag_a && flag_b),
