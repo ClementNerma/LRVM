@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use mrvm_tools::asm::{Program, Instr, ExtInstr, Reg};
 use crate::storage::BootROM;
 use crate::keyboard::SyncKeyboard;
-use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
+use mrvm_tools::debug::{exec_vm, RunConfig};
 
 static PLACEHOLDER_KEYB_INPUT: &'static str = "Placeholder keyboard input";
 
@@ -22,7 +22,7 @@ fn sync_keyboard() {
     let received_req = Arc::new(Mutex::new(false));
     let received_req_closure = Arc::clone(&received_req);
     
-    let mut vm = prepare_vm(vec![
+    let (mut vm, state) = exec_vm(vec![
         Box::new(BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
         Box::new(SyncKeyboard::new(0x100, Box::new(move || {
             let mut received_req = received_req_closure.lock().unwrap();
@@ -31,9 +31,11 @@ fn sync_keyboard() {
 
             Ok(String::from(PLACEHOLDER_KEYB_INPUT))
         }), 0x1).unwrap())
-    ]);
+    ], &RunConfig::halt_on_ex());
 
-    run_vm(vm.cpu(), &RunConfig::new());
+    if state.ex.is_some() {
+        panic!("Unexpected exception occurred while running the VM!");
+    }
 
     assert!(*received_req.lock().unwrap(), "No keyboard request was triggered");
 

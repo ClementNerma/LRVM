@@ -1,7 +1,7 @@
 use mrvm_tools::asm::{Program, Instr, ExtInstr};
 use crate::storage::BootROM;
 use crate::memory::VolatileMem;
-use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
+use mrvm_tools::debug::{exec_vm, RunConfig};
 
 #[test]
 fn volatile_mem() {
@@ -9,12 +9,14 @@ fn volatile_mem() {
     program.append_all(ExtInstr::WriteAddrLit(0x1008, 0x89ABCDEF).to_instr());
     program.append(Instr::HALT());
 
-    let mut vm = prepare_vm(vec![
+    let (mut vm, state) = exec_vm(vec![
         Box::new(BootROM::with_size(program.encode_words(), 0x1000, 0x0).unwrap()),
         Box::new(VolatileMem::new(0x1000, 0x1).unwrap())
-    ]);
-
-    run_vm(&mut vm.cpu(), &RunConfig::new());
+    ], &RunConfig::halt_on_ex());
+    
+    if state.ex.is_some() {
+        panic!("Unexpected exception occurred while running the VM!");
+    }
 
     let (mut err_a, mut err_b, mut err_c) = (0, 0, 0);
 

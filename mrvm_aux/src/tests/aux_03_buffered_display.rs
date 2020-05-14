@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use mrvm_tools::asm::{Program, Instr, ExtInstr, Reg};
 use crate::storage::BootROM;
 use crate::display::BufferedDisplay;
-use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
+use mrvm_tools::debug::{exec_vm, RunConfig};
 
 fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Result<Program, ()> {
     let mut instr = ExtInstr::SetReg(Reg::ac0, display_addr).to_instr();
@@ -47,7 +47,7 @@ fn buffered_display() {
     let received_msg = Arc::new(Mutex::new(false));
     let received_msg_closure = Arc::clone(&received_msg);
 
-    let mut vm = prepare_vm(vec![
+    let (_, state) = exec_vm(vec![
         Box::new(BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(move |msg| {
             let mut received_msg = received_msg_closure.lock().unwrap();
@@ -59,9 +59,11 @@ fn buffered_display() {
 
             *received_msg = true;
         }), 0x1).unwrap())
-    ]);
+    ], &RunConfig::halt_on_ex());
 
-    run_vm(vm.cpu(), &RunConfig::new());
+    if state.ex.is_some() {
+        panic!("Unexpected exception occurred while running the VM!");
+    }
 
     assert!(*received_msg.lock().unwrap(), "No message received by buffered display");
 }
