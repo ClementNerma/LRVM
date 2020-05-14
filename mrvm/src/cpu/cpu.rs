@@ -149,7 +149,7 @@ impl CPU {
                 0x03..=0x05 | 0x08..=0x0C => {
                     let (reg, mut value) = args!(REG, REG_OR_LIT_2);
 
-                    if opcode == 0x0B || opcode != 0x0C {
+                    if opcode == 0x0B || opcode == 0x0C {
                         value >>= 8
                     }
 
