@@ -574,7 +574,7 @@ impl CPU {
                         _ => unreachable!()
                     },
 
-                    // Maximum signed value divided / moduled by -1 (overflowing multiplication)
+                    // Minimum signed value divided / moduled by -1 (overflowing multiplication)
                     (_, true, std::i32::MIN, -1) => match (mode & 0b00000011) >> 2 {
                         // Forbid
                         0b00 => return Err(self.exception(0x0B, None)),
