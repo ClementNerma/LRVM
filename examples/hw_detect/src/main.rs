@@ -77,7 +77,7 @@ fn main() {
 
             println!("> Model    : {:#010X}", read(aux_addr + 0x34));
 
-            println!("> Data     : {:#018X}", (read(aux_addr + 0x38) as u64) << 32 + read(aux_addr + 0x3C));
+            println!("> Data     : {:#018X}", ((read(aux_addr + 0x38) as u64) << 32) + read(aux_addr + 0x3C) as u64);
 
             println!("> Mapping  : {}", match read(aux_addr + 0x40) {
                 0x00000000 => "<device is not mapped>".to_owned(),
