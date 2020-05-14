@@ -3,4 +3,4 @@ main:
     sub a0, 0xFF
     div a0, 0x00, DIV_ZRO_MIN
     mod a0, 0x00, DIV_ZRO_MIN
-    jp main
+    jpr -16
