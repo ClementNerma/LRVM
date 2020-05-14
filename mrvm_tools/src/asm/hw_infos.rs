@@ -1,5 +1,6 @@
 
 /// Hardware information number
+#[derive(Debug, Copy, Clone)]
 pub enum HwInfo {
     Count,
     UIDUpper,

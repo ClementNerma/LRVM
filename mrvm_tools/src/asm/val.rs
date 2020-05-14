@@ -3,7 +3,7 @@ use super::Reg;
 macro_rules! declare_val {
     ($typename: ident, $num: ident, $inum: ident) => {
         /// Strongly-typed assembly value
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
         pub enum $typename {
             Reg(Reg),
             Lit($num)

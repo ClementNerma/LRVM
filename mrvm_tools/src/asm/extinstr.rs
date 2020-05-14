@@ -3,6 +3,7 @@
 use super::{Instr, Reg};
 
 /// Extended instruction
+#[derive(Debug, Copy, Clone)]
 pub enum ExtInstr {
     SetReg(Reg, u32),
     ReadAddr(u32),
