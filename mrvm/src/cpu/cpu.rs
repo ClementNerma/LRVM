@@ -564,32 +564,32 @@ impl CPU {
             // This one is a bit tricky
             Op::Div { mode } | Op::Mod { mode } => {
                 // Must we perform a signed division / modulus?
-                let signed = mode & 0b00010000 != 0;
+                let signed = mode & 0b0001_0000 != 0;
 
                 match (op == Op::Div { mode }, signed, iop1, iop2) {
                     // Division / modulus by zero
-                    (_, _, _, 0) => match (mode & 0b00001100) >> 2 {
+                    (_, _, _, 0) => match (mode & 0b0000_1100) >> 2 {
                         // Forbid
                         0b00 => return Err(self.exception(0x0A, None)),
                         // Result in the minimum signed value
-                        0b01 => (0x80000000, true, true),
+                        0b01 => (0x8000_0000, true, true),
                         // Result in zero
-                        0b10 => (0x00000000, true, true),
+                        0b10 => (0x0000_0000, true, true),
                         // Result in the maximum signed value
-                        0b11 => (0x7FFFFFFF, true, true),
+                        0b11 => (0x7FFF_FFFF, true, true),
                         _ => unreachable!()
                     },
 
                     // Minimum signed value divided / moduled by -1 (overflowing multiplication)
-                    (_, true, std::i32::MIN, -1) => match (mode & 0b00000011) >> 2 {
+                    (_, true, std::i32::MIN, -1) => match (mode & 0b0000_0011) >> 2 {
                         // Forbid
                         0b00 => return Err(self.exception(0x0B, None)),
                         // Result in the minimum signed value
-                        0b01 => (0x80000000, true, true),
+                        0b01 => (0x8000_0000, true, true),
                         // Result in zero
-                        0b10 => (0x00000000, true, true),
+                        0b10 => (0x0000_0000, true, true),
                         // Result in the maximum signed value
-                        0b11 => (0x7FFFFFFF, true, true),
+                        0b11 => (0x7FFF_FFFF, true, true),
                         _ => unreachable!()
                     },
 
@@ -783,7 +783,7 @@ impl CPU {
             0x25 => cache.metadata[7],
 
             // Check if the component is mapped in memory
-            0xA0 => if mapping_opt.is_some() { 0x00000001 } else { 0x00000000 },
+            0xA0 => if mapping_opt.is_some() { 1 } else { 0 },
             // Mapping's start address
             0xA1 => mapping_opt.ok_or_else(|| self.exception(0x0E, Some(aux_id as u16)))?.addr,
             // Mapping's end address

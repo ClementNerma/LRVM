@@ -47,7 +47,7 @@ impl MMU {
         // 3. Check if the permission bit is set
         if (v_entry & (0b1 << (24 + action_shift + mode_shift))) == 1 {
             // 4. If so, get the weakest 24 bits as the entry value
-            EntryDecodingResult::Decoded(v_entry & 0b111111111111111111111111)
+            EntryDecodingResult::Decoded(v_entry & 0b1111_1111_1111_1111_1111_1111)
         } else {
             // 5. Else, return an error
             EntryDecodingResult::PermissionNotSet
@@ -61,7 +61,7 @@ impl MMU {
         }
 
         // Get the entry number in the VPI
-        let vpi_entry_number = v_addr & 0b1111111111;
+        let vpi_entry_number = v_addr & 0b11_1111_1111;
 
         // Get the address of the VPI entry to read
         let vpi_entry_addr = regs.pda + (vpi_entry_number * 4);
@@ -89,7 +89,7 @@ impl MMU {
         };
 
         // Translate the virtual address into a physical one
-        Ok(p_page_number * 1024 + (v_addr & 0b1111111111))
+        Ok(p_page_number * 1024 + (v_addr & 0b11_1111_1111))
     }
 }
 
