@@ -75,25 +75,36 @@ impl CPU {
         // Used to determine if the current cycle changed PC (see below)
         self._cycle_changed_pc = false;
 
-        // Decode a register-or-literal parameter
-        macro_rules! __reg_or_lit {
-            // '$param' is the parameter first byte's index (starting from 0)
-            // '$value' is the decoded parameter's value (combined bytes of params[$param..=$param+<param length>])
-            // If the specified parameter is marked as being a register, the provided value is considered to be a register ID and the we try
-            // to read its value. Else, the provided value is a plain number.
-            (with_val $param: expr, $value: expr) => {
-                if opregs[$param] { self.read_reg(params[$param])? } else { $value }
-            };
-            // 1-byte long parameters
-            ($param: expr, 1) => {
-                __reg_or_lit!(with_val $param, params[$param].into())
-            };
-            // 2-bytes long parameters
-            ($param: expr, 2) => {
-                __reg_or_lit!(with_val $param, u16::from_be_bytes([ params[$param], params[$param + 1] ]).into())
-            };
-        }
+        // Run the decoded instruction
+        self.run_instr(opcode, opregs, params)?;
 
+        // By default, the program counter (located in the PC register) is incremented of 4 bytes to make the CPU retrieve the next instruction
+        //  from the memory's next word.
+        // BUT if the current instruction purposedly modified PC, we don't want it to the be modified again.
+        // So, we only add 4 to PC if it hasn't been changed by the current instruction.
+        if !self._cycle_changed_pc {
+            self.regs.pc = self.regs.pc.wrapping_add(4);
+        }
+        
+        // Everything went fine!
+        Ok(true)
+    }
+
+    /// Check if the CPU is halted
+    pub fn halted(&self) -> bool {
+        self.halted
+    }
+
+    /// Get the number of cycles the CPU run so far
+    /// Note that this number goes back to 0 after reaching its maximum (overflow).
+    pub fn cycles(&self) -> u32 {
+        self.cycles
+    }
+
+    /// (Internal) Run a decoded instruction
+    /// This method exists for the sole purpose of making the code cleaner in order to make the ".next()" method more understandable
+    #[allow(clippy::cognitive_complexity)]
+    fn run_instr(&mut self, opcode: u8, opregs: [bool; 3], params: [u8; 3]) -> Result<(), Ex> {
         // Decode the opcode's arguments
         // 'REG' = parameter is always a register
         // 'REG_OR_LIT_1' = parameter is either a register or a 1-byte literal
@@ -118,355 +129,349 @@ impl CPU {
             (REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1) => { (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1), __reg_or_lit!(2, 1)) };
         }
 
-        // Wrap the opcode's matching block in a closure in order to be able to interrupt the flow with the `?` operator
-        // This makes this part a **lot** more readable
-        let ok_or_exception = (|| -> Result<(), Ex> {
-            // Run the instruction based on its opcode
-            match opcode {
-                // <Unknown instruction>
-                0x00 => {
-                    Err(self.exception(0x01, Some(opcode.into())))
-                },
-
-                // CPY
-                0x01 => {
-                    let (reg_dest, value) = args!(REG, REG_OR_LIT_2);
-                    self.write_reg(reg_dest, value)
-                },
-
-                // EX
-                0x02 => {
-                    let (reg_a, reg_b) = args!(REG, REG);
-                    let pivot_a = self.read_reg(reg_a)?;
-
-                    self.read_reg(reg_b).and_then(|reg_b_value| {
-                        self.write_reg(reg_a, reg_b_value)?;
-                        self.write_reg(reg_b, pivot_a)
-                    })
-                },
-
-                // ADD, SUB, MUL, AND, BOR, XOR, SHL, SHR
-                0x03..=0x05 | 0x08..=0x0C => {
-                    let (reg, mut value) = args!(REG, REG_OR_LIT_2);
-
-                    if opcode == 0x0B || opcode == 0x0C {
-                        value >>= 8
-                    }
-
-                    let reg_value = self.read_reg(reg)?;
-
-                    let compute = self.compute(reg_value, value, match opcode {
-                        0x03 => Op::Add,
-                        0x04 => Op::Sub,
-                        0x05 => Op::Mul,
-                        0x08 => Op::And,
-                        0x09 => Op::Bor,
-                        0x0A => Op::Xor,
-                        0x0B => Op::Shl,
-                        0x0C => Op::Shr,
-                        _ => unreachable!()
-                    })?;
-
-                    self.write_reg(reg, compute)
-                },
-
-                // DIV
-                0x06 => {
-                    let (reg, value, mode) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
-                    let reg_value = self.read_reg(reg)?;
-
-                    let compute = self.compute(reg_value, value, Op::Div { mode: (mode & 0xFF) as u8 })?;
-                    self.write_reg(reg, compute)
-                },
-
-                // MOD
-                0x07 => {
-                    let (reg, value, mode) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
-                    let reg_value = self.read_reg(reg)?;
-
-                    let compute = self.compute(reg_value, value, Op::Mod { mode: (mode & 0xFF) as u8 })?;
-                    self.write_reg(reg, compute)
-                },
-
-                // CMP
-                0x0D => {
-                    let (reg, value) = args!(REG, REG_OR_LIT_2);
-                    let reg_value = self.read_reg(reg)?;
-
-                    self.compute(reg_value, value, Op::Sub)?;
-
-                    Ok(())
-                },
-
-                // JMP
-                0x0E => {
-                    let bytes = args!(REG_OR_LIT_2) as i16;
-
-                    self.regs.pc = (self.regs.pc as i32).wrapping_add(bytes.into()) as u32;
-                    self._cycle_changed_pc = true;
-                    Ok(())
-                },
-
-                // LSM
-                0x0F => {
-                    if self.sv_mode() {
-                        self.regs.pc = args!(REG_OR_LIT_2);
-                        self.regs.smt = 0;
-                        Ok(())
-                    } else {
-                        Err(self.exception(0x09, Some(opcode.into())))
-                    }
-                },
-
-                // ITR
-                0x10 => {
-                    let itr_code = args!(REG_OR_LIT_1);
-
-                    Err(self.exception(0xAA, Some(itr_code as u16)))
-                },
-
-                // IF, IFN
-                0x11 | 0x12 => {
-                    let flag = args!(REG_OR_LIT_1);
-
-                    let is_flag_set = (self.regs.af & (1 << (7 - flag))) != 0;
-                    
-                    if is_flag_set != (opcode == 0x11) {
-                        self.regs.pc = self.regs.pc.wrapping_add(4);
-                    }
-
-                    Ok(())
-                },
-
-                // IF2
-                0x13 => {
-                    let (flag_a, flag_b, cond) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
-                    let (flag_a, flag_b) = (self.regs.af & (1 << (7 - flag_a)) != 0, self.regs.af & (1 << (7 - flag_b)) != 0);
-
-                    let result = match cond {
-                        0x01 => flag_a || flag_b,
-                        0x02 => flag_a && flag_b,
-                        0x03 => flag_a ^ flag_b,
-                        0x04 => !flag_a && !flag_b,
-                        0x05 => !(flag_a && flag_b),
-                        0x06 => flag_a && !flag_b,
-                        0x07 => flag_b && !flag_a,
-                        _ => return Err(self.exception(0x0F, Some(cond as u16)))
-                    };
-
-                    if !result {
-                        self.regs.pc = self.regs.pc.wrapping_add(4);
-                    }
-                    
-                    Ok(())
-                },
-
-                // LSA
-                0x14 => {
-                    let (reg_dest, v_addr, add) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
-
-                    let word = self.mem_read(v_addr + add)?;
-
-                    self.write_reg(reg_dest, word)
-                },
-
-                // LEA
-                0x15 => {
-                    let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
-
-                    self.regs.avr = self.mem_read(v_addr + add * mul)?;
-                    Ok(())
-                },
-
-                // WSA
-                0x16 => {
-                    let (v_addr, add, val) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
-
-                    self.mem_write(v_addr + add, val)
-                },
-
-                // WEA
-                0x17 => {
-                    let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
-
-                    self.mem_write(v_addr + add * mul, self.regs.avr)
-                },
-
-                // SRM
-                0x18 => {
-                    let (v_addr, add, reg_swap) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG);
-
-                    let old_word = self.mem_read(v_addr + add)?;
-                    let to_write = self.read_reg(reg_swap)?;
-                    self.mem_write(v_addr + add, to_write)?;
-                    self.write_reg(reg_swap, old_word)
-                },
-
-                // PUSH
-                0x19 => {
-                    let word = args!(REG_OR_LIT_2);
-
-                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
-
-                    self.mem_write(stack_v_addr, word)?;
-                    
-                    if self.sv_mode() {
-                        self.regs.ssp = stack_v_addr;
-                    } else {
-                        self.regs.usp = stack_v_addr;
-                    }
-
-                    Ok(())
-                },
-
-                // POP
-                0x1A => {
-                    let reg_dest = args!(REG);
-
-                    let word = if self.sv_mode() {
-                        let word = self.mem_read(self.regs.ssp)?;
-                        self.regs.ssp = self.regs.ssp.wrapping_add(4);
-                        word
-                    } else {
-                        let word = self.mem_read(self.regs.usp)?;
-                        self.regs.usp = self.regs.usp.wrapping_add(4);
-                        word
-                    };
-
-                    self.write_reg(reg_dest, word)
-                },
-
-                // CALL
-                0x1B => {
-                    let jmp_v_addr = args!(REG_OR_LIT_2);
-
-                    let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
-
-                    self.mem_write(stack_v_addr, self.regs.pc + 4)?;
-                    
-                    if self.sv_mode() {
-                        self.regs.ssp = stack_v_addr;
-                    } else {
-                        self.regs.usp = stack_v_addr;
-                    }
-
-                    self.regs.pc = jmp_v_addr;
-                    self._cycle_changed_pc = true;
-
-                    Ok(())
-                },
-                
-                // HWD
-                0x1C => {
-                    let (reg_dest, aux_id, hw_info) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
-
-                    if aux_id == 0 && hw_info == 0 {
-                        return self.write_reg(reg_dest, self.hwb.count() as u32);
-                    }
-
-                    let aux_id = usize::try_from(aux_id)
-                        .map_err(|_| self.exception(0x0C, Some(aux_id as u16)))?;
-                    
-                    let hw_data = self.get_hw_info(hw_info, aux_id)?;
-
-                    self.write_reg(reg_dest, hw_data)
-                },
-
-                // CYCLES
-                0x1D => {
-                    let reg_dest = args!(REG);
-                    self.write_reg(reg_dest, self.cycles)
-                },
-
-                // HALT
-                0x1E => {
-                    self.halted = true;
-                    Ok(())
-                },
-
-                // RESET
-                0x1F => {
-                    let mode = args!(REG_OR_LIT_1);
-
-                    // Get the two modes (one per byte)
-                    let (cpu_mode, aux_mode) = ((mode & 0xF0) as u8, (mode & 0x0F) as u8);
-
-                    // Determine which components should be reset
-                    match aux_mode {
-                        // Reset all components
-                        0x0 => {
-                            for id in 0..self.hwb.count() {
-                                self.hwb.reset(id).unwrap();
-                            }
-                        },
-
-                        // Reset a specific component (ID in `avr`)
-                        0x1 => {
-                            let id = usize::try_from(self.regs.avr)
-                                .map_err(|_| self.exception(0x0C, Some(self.regs.avr as u16)))?;
-                            
-                                self.hwb.reset(id)
-                                    .ok_or_else(|| self.exception(0x0C, Some(self.regs.avr as u16)))?;
-                        },
-
-                        // Reset a component based on a condition (operand ID in `avr`)
-                        0x2..=0x4 => {
-                            let ignore_id = usize::try_from(self.regs.avr).ok();
-
-                            // Determine how to test if a component should be reset
-                            let test = move |id| match ignore_id {
-                                None => true,
-                                Some(ignore_id) => match aux_mode {
-                                    0x2 => id != ignore_id,
-                                    0x3 => id < ignore_id,
-                                    0x4 => id > ignore_id,
-                                    _ => unreachable!()
-                                }
-                            };
-
-                            for id in 0..self.hwb.count() {
-                                if test(id) {
-                                    self.hwb.reset(id).unwrap();
-                                }
-                            }
-                        },
-
-                        _ => {}
-
-                    };
-
-                    // Reset the processor
-                    if cpu_mode == 0 {
-                        self.reset();
-                    }
-
-                    Ok(())
-                },
-
-                _ => unreachable!("Internal error: processor encountered an instruction with an opcode greater than 0x1F (> 5 bits)")
-            }
-        })();
-
-        // By default, the program counter (located in the PC register) is incremented of 4 bytes to make the CPU retrieve the next instruction
-        //  from the memory's next word.
-        // BUT if the current instruction purposedly modified PC, we don't want it to the be modified again.
-        // So, we only add 4 to PC if it hasn't been changed by the current instruction.
-        if !self._cycle_changed_pc {
-            self.regs.pc = self.regs.pc.wrapping_add(4);
+        // Decode a register-or-literal parameter
+        macro_rules! __reg_or_lit {
+            // '$param' is the parameter first byte's index (starting from 0)
+            // '$value' is the decoded parameter's value (combined bytes of params[$param..=$param+<param length>])
+            // If the specified parameter is marked as being a register, the provided value is considered to be a register ID and the we try
+            // to read its value. Else, the provided value is a plain number.
+            (with_val $param: expr, $value: expr) => {
+                if opregs[$param] { self.read_reg(params[$param])? } else { $value }
+            };
+            // 1-byte long parameters
+            ($param: expr, 1) => {
+                __reg_or_lit!(with_val $param, params[$param].into())
+            };
+            // 2-bytes long parameters
+            ($param: expr, 2) => {
+                __reg_or_lit!(with_val $param, u16::from_be_bytes([ params[$param], params[$param + 1] ]).into())
+            };
         }
 
-        ok_or_exception.map(|()| true)
-    }
+        // Run the instruction based on its opcode
+        match opcode {
+            // <Unknown instruction>
+            0x00 => {
+                Err(self.exception(0x01, Some(opcode.into())))
+            },
 
-    /// Check if the CPU is halted
-    pub fn halted(&self) -> bool {
-        self.halted
-    }
+            // CPY
+            0x01 => {
+                let (reg_dest, value) = args!(REG, REG_OR_LIT_2);
+                self.write_reg(reg_dest, value)
+            },
 
-    /// Get the number of cycles the CPU run so far
-    /// Note that this number goes back to 0 after reaching its maximum (overflow).
-    pub fn cycles(&self) -> u32 {
-        self.cycles
+            // EX
+            0x02 => {
+                let (reg_a, reg_b) = args!(REG, REG);
+                let pivot_a = self.read_reg(reg_a)?;
+
+                self.read_reg(reg_b).and_then(|reg_b_value| {
+                    self.write_reg(reg_a, reg_b_value)?;
+                    self.write_reg(reg_b, pivot_a)
+                })
+            },
+
+            // ADD, SUB, MUL, AND, BOR, XOR, SHL, SHR
+            0x03..=0x05 | 0x08..=0x0C => {
+                let (reg, mut value) = args!(REG, REG_OR_LIT_2);
+
+                if opcode == 0x0B || opcode == 0x0C {
+                    value >>= 8
+                }
+
+                let reg_value = self.read_reg(reg)?;
+
+                let compute = self.compute(reg_value, value, match opcode {
+                    0x03 => Op::Add,
+                    0x04 => Op::Sub,
+                    0x05 => Op::Mul,
+                    0x08 => Op::And,
+                    0x09 => Op::Bor,
+                    0x0A => Op::Xor,
+                    0x0B => Op::Shl,
+                    0x0C => Op::Shr,
+                    _ => unreachable!()
+                })?;
+
+                self.write_reg(reg, compute)
+            },
+
+            // DIV
+            0x06 => {
+                let (reg, value, mode) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
+                let reg_value = self.read_reg(reg)?;
+
+                let compute = self.compute(reg_value, value, Op::Div { mode: (mode & 0xFF) as u8 })?;
+                self.write_reg(reg, compute)
+            },
+
+            // MOD
+            0x07 => {
+                let (reg, value, mode) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
+                let reg_value = self.read_reg(reg)?;
+
+                let compute = self.compute(reg_value, value, Op::Mod { mode: (mode & 0xFF) as u8 })?;
+                self.write_reg(reg, compute)
+            },
+
+            // CMP
+            0x0D => {
+                let (reg, value) = args!(REG, REG_OR_LIT_2);
+                let reg_value = self.read_reg(reg)?;
+
+                self.compute(reg_value, value, Op::Sub)?;
+
+                Ok(())
+            },
+
+            // JMP
+            0x0E => {
+                let bytes = args!(REG_OR_LIT_2) as i16;
+
+                self.regs.pc = (self.regs.pc as i32).wrapping_add(bytes.into()) as u32;
+                self._cycle_changed_pc = true;
+                Ok(())
+            },
+
+            // LSM
+            0x0F => {
+                if self.sv_mode() {
+                    self.regs.pc = args!(REG_OR_LIT_2);
+                    self.regs.smt = 0;
+                    Ok(())
+                } else {
+                    Err(self.exception(0x09, Some(opcode.into())))
+                }
+            },
+
+            // ITR
+            0x10 => {
+                let itr_code = args!(REG_OR_LIT_1);
+
+                Err(self.exception(0xAA, Some(itr_code as u16)))
+            },
+
+            // IF, IFN
+            0x11 | 0x12 => {
+                let flag = args!(REG_OR_LIT_1);
+
+                let is_flag_set = (self.regs.af & (1 << (7 - flag))) != 0;
+                
+                if is_flag_set != (opcode == 0x11) {
+                    self.regs.pc = self.regs.pc.wrapping_add(4);
+                }
+
+                Ok(())
+            },
+
+            // IF2
+            0x13 => {
+                let (flag_a, flag_b, cond) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
+                let (flag_a, flag_b) = (self.regs.af & (1 << (7 - flag_a)) != 0, self.regs.af & (1 << (7 - flag_b)) != 0);
+
+                let result = match cond {
+                    0x01 => flag_a || flag_b,
+                    0x02 => flag_a && flag_b,
+                    0x03 => flag_a ^ flag_b,
+                    0x04 => !flag_a && !flag_b,
+                    0x05 => !(flag_a && flag_b),
+                    0x06 => flag_a && !flag_b,
+                    0x07 => flag_b && !flag_a,
+                    _ => return Err(self.exception(0x0F, Some(cond as u16)))
+                };
+
+                if !result {
+                    self.regs.pc = self.regs.pc.wrapping_add(4);
+                }
+                
+                Ok(())
+            },
+
+            // LSA
+            0x14 => {
+                let (reg_dest, v_addr, add) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
+
+                let word = self.mem_read(v_addr + add)?;
+
+                self.write_reg(reg_dest, word)
+            },
+
+            // LEA
+            0x15 => {
+                let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
+
+                self.regs.avr = self.mem_read(v_addr + add * mul)?;
+                Ok(())
+            },
+
+            // WSA
+            0x16 => {
+                let (v_addr, add, val) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
+
+                self.mem_write(v_addr + add, val)
+            },
+
+            // WEA
+            0x17 => {
+                let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
+
+                self.mem_write(v_addr + add * mul, self.regs.avr)
+            },
+
+            // SRM
+            0x18 => {
+                let (v_addr, add, reg_swap) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG);
+
+                let old_word = self.mem_read(v_addr + add)?;
+                let to_write = self.read_reg(reg_swap)?;
+                self.mem_write(v_addr + add, to_write)?;
+                self.write_reg(reg_swap, old_word)
+            },
+
+            // PUSH
+            0x19 => {
+                let word = args!(REG_OR_LIT_2);
+
+                let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
+
+                self.mem_write(stack_v_addr, word)?;
+                
+                if self.sv_mode() {
+                    self.regs.ssp = stack_v_addr;
+                } else {
+                    self.regs.usp = stack_v_addr;
+                }
+
+                Ok(())
+            },
+
+            // POP
+            0x1A => {
+                let reg_dest = args!(REG);
+
+                let word = if self.sv_mode() {
+                    let word = self.mem_read(self.regs.ssp)?;
+                    self.regs.ssp = self.regs.ssp.wrapping_add(4);
+                    word
+                } else {
+                    let word = self.mem_read(self.regs.usp)?;
+                    self.regs.usp = self.regs.usp.wrapping_add(4);
+                    word
+                };
+
+                self.write_reg(reg_dest, word)
+            },
+
+            // CALL
+            0x1B => {
+                let jmp_v_addr = args!(REG_OR_LIT_2);
+
+                let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
+
+                self.mem_write(stack_v_addr, self.regs.pc + 4)?;
+                
+                if self.sv_mode() {
+                    self.regs.ssp = stack_v_addr;
+                } else {
+                    self.regs.usp = stack_v_addr;
+                }
+
+                self.regs.pc = jmp_v_addr;
+                self._cycle_changed_pc = true;
+
+                Ok(())
+            },
+            
+            // HWD
+            0x1C => {
+                let (reg_dest, aux_id, hw_info) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
+
+                if aux_id == 0 && hw_info == 0 {
+                    return self.write_reg(reg_dest, self.hwb.count() as u32);
+                }
+
+                let aux_id = usize::try_from(aux_id)
+                    .map_err(|_| self.exception(0x0C, Some(aux_id as u16)))?;
+                
+                let hw_data = self.get_hw_info(hw_info, aux_id)?;
+
+                self.write_reg(reg_dest, hw_data)
+            },
+
+            // CYCLES
+            0x1D => {
+                let reg_dest = args!(REG);
+                self.write_reg(reg_dest, self.cycles)
+            },
+
+            // HALT
+            0x1E => {
+                self.halted = true;
+                Ok(())
+            },
+
+            // RESET
+            0x1F => {
+                let mode = args!(REG_OR_LIT_1);
+
+                // Get the two modes (one per byte)
+                let (cpu_mode, aux_mode) = ((mode & 0xF0) as u8, (mode & 0x0F) as u8);
+
+                // Determine which components should be reset
+                match aux_mode {
+                    // Reset all components
+                    0x0 => {
+                        for id in 0..self.hwb.count() {
+                            self.hwb.reset(id).unwrap();
+                        }
+                    },
+
+                    // Reset a specific component (ID in `avr`)
+                    0x1 => {
+                        let id = usize::try_from(self.regs.avr)
+                            .map_err(|_| self.exception(0x0C, Some(self.regs.avr as u16)))?;
+                        
+                            self.hwb.reset(id)
+                                .ok_or_else(|| self.exception(0x0C, Some(self.regs.avr as u16)))?;
+                    },
+
+                    // Reset a component based on a condition (operand ID in `avr`)
+                    0x2..=0x4 => {
+                        let ignore_id = usize::try_from(self.regs.avr).ok();
+
+                        // Determine how to test if a component should be reset
+                        let test = move |id| match ignore_id {
+                            None => true,
+                            Some(ignore_id) => match aux_mode {
+                                0x2 => id != ignore_id,
+                                0x3 => id < ignore_id,
+                                0x4 => id > ignore_id,
+                                _ => unreachable!()
+                            }
+                        };
+
+                        for id in 0..self.hwb.count() {
+                            if test(id) {
+                                self.hwb.reset(id).unwrap();
+                            }
+                        }
+                    },
+
+                    _ => {}
+
+                };
+
+                // Reset the processor
+                if cpu_mode == 0 {
+                    self.reset();
+                }
+
+                Ok(())
+            },
+
+            _ => unreachable!("Internal error: processor encountered an instruction with an opcode greater than 0x1F (> 5 bits)")
+        }
     }
 
     /// Try to read a register's value.
