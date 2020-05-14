@@ -61,9 +61,3 @@ As some examples depends on other, and Cargo does not provide a way to prevent t
 ```shell
 cargo test -- --test-threads=1
 ```
-
-And if you want the output of each test:
-
-```shell
-cargo test -- --test-threads=1 --nocapture
-```
