@@ -1,3 +1,4 @@
+use std::fmt;
 use mrvm::cpu::CPU;
 use super::RunConfig;
 use crate::exceptions::NativeException;
@@ -104,4 +105,16 @@ pub fn prettify_stop(state: &StoppedState) -> String {
     }
 
     output
+}
+
+impl fmt::Display for ExWithMode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", prettify_ex_with_mode(self))
+    }
+}
+
+impl fmt::Display for StoppedState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", prettify_stop(self))
+    }
 }
