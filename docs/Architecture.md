@@ -372,13 +372,15 @@ Below is the list of arithmetic instructions:
 
   When a division by zero or -2^32 by -1 happens and is accepted by the mode, both carry and overflow flags are set.
 
-  **Affects** `reg`, `af`
+  **Affects** `reg`, `af`  
+  **Exceptions** `0x0A` for forbidden division by zero, `0x0B` for forbidden overflowing division by -1 (in signed mode)
 
 - `MOD reg, [reg_val | 1-byte], [reg_mode | 1-mode]` (MODulus) | opcode: `0x07`  
   Compute the modulus of `reg` by the provided value and put the result in `reg`  
   As computations are integer-based, this is equal to the remainder of `reg` by the provided value  
   The provided mode is interpreted the same way as for the `DIV` instruction
-  **Affects** `reg`, `af`
+  **Affects** `reg`, `af`  
+  **Exceptions** `0x0A` for forbidden modulus by zero, `0x0B` for forbidden overflowing modulus by -1 (in signed mode)
 
 #### Bitwise instructions
 
@@ -460,7 +462,8 @@ Under the hood, they simply jump four bytes forward if the condition is not met,
 
   Providing an invalid code will raise an `0x0F` exception.
 
-  **Affects** `pc`
+  **Affects** `pc`  
+  **Exceptions** `0x0F` if the provided condition does not exist
 
 #### Memory read/write instructions
 
@@ -513,8 +516,15 @@ The memory instructions allow to manipulate the memory:
   To get the number of connected components, provide ID `0` and info number `0`.  
   The `hw_info` indicates which information must be retrieved, see [hardware informations](#reading-hardware-informations).  
   Providing an invalid component ID will result in an `0x0C` exception, and an invalid information code will result in an `0x0D` exception.  
-  Asking for mapping informations on an unmapped component will result in an `0x0E` exception.  
+  Asking for mapping informations on an unmapped component will result in an `0x0E` exception.
+
   **Affects** `reg_dest`
+
+  **Exceptions**
+
+  - `0x0C` if the provided ID is unknown
+  - `0x0D` if the provided hardware information code is unknown
+  - `0x0E` if the component when retrieving mapping if the component is not mapped
 
 #### Processor control instructions
 
