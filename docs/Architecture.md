@@ -118,13 +118,12 @@ When an exception occurs, three things happen:
 When the CPU starts, its sets all registers to `0`, except `smt` with is set to `1` to enable supervisor mode.
 This behaviour results reading the first instruction from address `0` of the memory.
 
-## Input/Output Memory Management Unit
+## Memory Management Unit
 
-The IOMMU, abbreviated MMU, allows to translate virtual adresses to physical adresses using adress tables.
+The Memory Management Unit, abbreviated MMU, allows to translate virtual adresses to physical adresses using adress tables.
 It is the only component to have direct access to the memory.
 
-The MMU only allows to read and write whole words (32-bits values).
-It also only allows aligned addresses, which means each address must be a multiple of 4.
+The MMU only allows to read and write whole words (32-bits values) on unaligned addresses (multiples of 4 bytes).
 
 ### Physical address pages
 
