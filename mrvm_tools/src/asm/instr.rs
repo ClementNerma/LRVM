@@ -109,7 +109,7 @@ impl Instr {
     }
 
     /// Encode the instruction as a set of 4 bytes
-    pub fn encode(&self) -> [u8; 4] {
+    pub fn encode(self) -> [u8; 4] {
         let mut is_reg: Vec<bool> = vec![];
         let mut params: Vec<u8> = vec![];
 
@@ -347,7 +347,7 @@ impl Instr {
     }
 
     /// Encode the instruction as a single word
-    pub fn encode_word(&self) -> u32 {
+    pub fn encode_word(self) -> u32 {
         u32::from_be_bytes(self.encode())
     }
 }

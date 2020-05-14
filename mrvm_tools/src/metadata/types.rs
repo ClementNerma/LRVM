@@ -16,17 +16,17 @@ impl ClockType {
         }
     }
 
-    pub fn code(&self) -> u32 {
+    pub fn code(self) -> u32 {
         match self {
             Self::Realtime => 0x0000_0001
         }
     }
 
-    pub fn wrap(&self) -> DeviceCategory {
-        DeviceCategory::Clock(*self)
+    pub fn wrap(self) -> DeviceCategory {
+        DeviceCategory::Clock(self)
     }
 
-    pub fn encode(&self) -> u64 {
+    pub fn encode(self) -> u64 {
         self.wrap().encode()
     }
 }
@@ -56,18 +56,18 @@ impl DisplayType {
         }
     }
 
-    pub fn code(&self) -> u32 {
+    pub fn code(self) -> u32 {
         match self {
             Self::Number => 0x0000_0001,
             Self::Buffered => 0x0000_0100
         }
     }
 
-    pub fn wrap(&self) -> DeviceCategory {
-        DeviceCategory::Display(*self)
+    pub fn wrap(self) -> DeviceCategory {
+        DeviceCategory::Display(self)
     }
 
-    pub fn encode(&self) -> u64 {
+    pub fn encode(self) -> u64 {
         self.wrap().encode()
     }
 }
@@ -102,17 +102,17 @@ impl KeyboardType {
         }
     }
 
-    pub fn code(&self) -> u32 {
+    pub fn code(self) -> u32 {
         match self {
             Self::ReadlineSynchronous => 0x0000_0100
         }
     }
 
-    pub fn wrap(&self) -> DeviceCategory {
-        DeviceCategory::Keyboard(*self)
+    pub fn wrap(self) -> DeviceCategory {
+        DeviceCategory::Keyboard(self)
     }
 
-    pub fn encode(&self) -> u64 {
+    pub fn encode(self) -> u64 {
         self.wrap().encode()
     }
 }
@@ -146,17 +146,17 @@ impl MemoryType {
         }
     }
 
-    pub fn code(&self) -> u32 {
+    pub fn code(self) -> u32 {
         match self {
             Self::Volatile => 0x0000_0100
         }
     }
 
-    pub fn wrap(&self) -> DeviceCategory {
-        DeviceCategory::Memory(*self)
+    pub fn wrap(self) -> DeviceCategory {
+        DeviceCategory::Memory(self)
     }
 
-    pub fn encode(&self) -> u64 {
+    pub fn encode(self) -> u64 {
         self.wrap().encode()
     }
 }
@@ -194,7 +194,7 @@ impl StorageType {
         }
     }
 
-    pub fn code(&self) -> u32 {
+    pub fn code(self) -> u32 {
         match self {
             Self::Readonly => 0x0000_0100,
             Self::Flash => 0x0000_0011,
@@ -202,11 +202,11 @@ impl StorageType {
         }
     }
 
-    pub fn wrap(&self) -> DeviceCategory {
-        DeviceCategory::Storage(*self)
+    pub fn wrap(self) -> DeviceCategory {
+        DeviceCategory::Storage(self)
     }
 
-    pub fn encode(&self) -> u64 {
+    pub fn encode(self) -> u64 {
         self.wrap().encode()
     }
 }

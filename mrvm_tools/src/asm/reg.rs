@@ -121,7 +121,7 @@ impl Reg {
     }
 
     /// Get the register's code
-    pub fn code(&self) -> u8 {
+    pub fn code(self) -> u8 {
         match self {
             Self::a0  => 0x00,
             Self::a1  => 0x01,
@@ -159,7 +159,7 @@ impl Reg {
     }
     
     /// Get the register's name
-    pub fn name(&self) -> &'static str {
+    pub fn name(self) -> &'static str {
         match self {
             Self::a0  => "a0",
             Self::a1  => "a1",
@@ -197,13 +197,13 @@ impl Reg {
     }
 
     /// Convert the register to a register-or-1-byte-literal parameter
-    pub fn to_roc_1(&self) -> RegOrLit1 {
-        RegOrLit1::reg(*self)
+    pub fn to_roc_1(self) -> RegOrLit1 {
+        RegOrLit1::reg(self)
     }
 
     /// Convert the register to a register-or-2-bytes-literal parameter
-    pub fn to_roc_2(&self) -> RegOrLit2 {
-        RegOrLit2::reg(*self)
+    pub fn to_roc_2(self) -> RegOrLit2 {
+        RegOrLit2::reg(self)
     }
 }
 

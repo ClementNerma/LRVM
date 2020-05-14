@@ -27,22 +27,22 @@ impl DivSignMode {
         }
     }
 
-    pub fn is_signed(&self) -> bool {
+    pub fn is_signed(self) -> bool {
         match self {
             Self::Unsigned => false,
             Self::Signed => true
         }
     }
 
-    pub fn mask(&self) -> u8 {
+    pub fn mask(self) -> u8 {
         match self {
             Self::Unsigned => cst::DIV_USG,
             Self::Signed => cst::DIV_SIG
         }
     }
 
-    pub fn to_mode(&self) -> DivMode {
-        DivMode::from(*self, DivByZeroMode::default(), DivMinByLessOneMode::default())
+    pub fn to_mode(self) -> DivMode {
+        DivMode::from(self, DivByZeroMode::default(), DivMinByLessOneMode::default())
     }
 }
 
@@ -86,7 +86,7 @@ impl DivByZeroMode {
         }
     }
 
-    pub fn mask(&self) -> u8 {
+    pub fn mask(self) -> u8 {
         match self {
             Self::Forbid   => cst::DIV_ZRO_FRB,
             Self::EqToMin  => cst::DIV_ZRO_MIN,
@@ -95,7 +95,7 @@ impl DivByZeroMode {
         }
     }
 
-    pub fn result(&self) -> u32 {
+    pub fn result(self) -> u32 {
         match self {
             Self::Forbid   => 0,
             Self::EqToMin  => std::i32::MIN as u32,
@@ -104,8 +104,8 @@ impl DivByZeroMode {
         }
     }
 
-    pub fn to_mode(&self) -> DivMode {
-        DivMode::from(DivSignMode::default(), *self, DivMinByLessOneMode::default())
+    pub fn to_mode(self) -> DivMode {
+        DivMode::from(DivSignMode::default(), self, DivMinByLessOneMode::default())
     }
 }
 
@@ -149,7 +149,7 @@ impl DivMinByLessOneMode {
         }
     }
 
-    pub fn mask(&self) -> u8 {
+    pub fn mask(self) -> u8 {
         match self {
             Self::Forbid   => cst::DIV_MBO_FRB,
             Self::EqToMin  => cst::DIV_MBO_MIN,
@@ -158,7 +158,7 @@ impl DivMinByLessOneMode {
         }
     }
 
-    pub fn result(&self) -> u32 {
+    pub fn result(self) -> u32 {
         match self {
             Self::Forbid   => 0,
             Self::EqToMin  => std::i32::MIN as u32,
@@ -167,8 +167,8 @@ impl DivMinByLessOneMode {
         }
     }
 
-    pub fn to_mode(&self) -> DivMode {
-        DivMode::from(DivSignMode::default(), DivByZeroMode::default(), *self)
+    pub fn to_mode(self) -> DivMode {
+        DivMode::from(DivSignMode::default(), DivByZeroMode::default(), self)
     }
 }
 
@@ -212,15 +212,15 @@ impl DivMode {
         ))
     }
 
-    pub fn sign_mode(&self) -> DivSignMode {
+    pub fn sign_mode(self) -> DivSignMode {
         self.0
     }
 
-    pub fn zro_mode(&self) -> DivByZeroMode {
+    pub fn zro_mode(self) -> DivByZeroMode {
         self.1
     }
 
-    pub fn mbo_mode(&self) -> DivMinByLessOneMode {
+    pub fn mbo_mode(self) -> DivMinByLessOneMode {
         self.2
     }
 
@@ -236,11 +236,11 @@ impl DivMode {
         self.2 = mode;
     }
 
-    pub fn mode(&self) -> u8 {
+    pub fn mode(self) -> u8 {
         self.0.mask() | self.1.mask() | self.2.mask()
     }
 
-    pub fn to_roc(&self) -> RegOrLit1 {
+    pub fn to_roc(self) -> RegOrLit1 {
         self.mode().into()
     }
 }

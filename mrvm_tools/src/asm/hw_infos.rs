@@ -53,7 +53,7 @@ impl HwInfo {
         }
     }
 
-    pub fn code(&self) -> u8 {
+    pub fn code(self) -> u8 {
         match self {
             Self::Count => 0x00,
             Self::UIDUpper => 0x01,

@@ -28,7 +28,7 @@ impl ArFlag {
     }
 
     /// Get the arithmetic flag's code
-    pub fn code(&self) -> u8 {
+    pub fn code(self) -> u8 {
         match self {
             Self::Zero => 0x00,
             Self::Carry => 0x01,
@@ -41,7 +41,7 @@ impl ArFlag {
     }
 
     /// Get the arithmetic flag's name
-    pub fn name(&self) -> &'static str {
+    pub fn name(self) -> &'static str {
         match self {
             Self::Zero => "Zero",
             Self::Carry => "Carry",
@@ -54,7 +54,7 @@ impl ArFlag {
     }
 
     /// Get the arithmetic flag's short name
-    pub fn short_name(&self) -> &'static str {
+    pub fn short_name(self) -> &'static str {
         match self {
             Self::Zero => "ZF",
             Self::Carry => "CF",

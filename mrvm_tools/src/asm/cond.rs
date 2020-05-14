@@ -26,7 +26,7 @@ impl If2Cond {
     }
 
     /// Get the code of the 'IF2' condition
-    pub fn code(&self) -> u8 {
+    pub fn code(self) -> u8 {
         match self {
             Self::Or    => 0x01,
             Self::And   => 0x02,
@@ -39,7 +39,7 @@ impl If2Cond {
     }
 
     /// Get the name of the 'IF2' condition
-    pub fn name(&self) -> &'static str {
+    pub fn name(self) -> &'static str {
         match self {
             Self::Or    => "OR"  ,
             Self::And   => "AND" ,

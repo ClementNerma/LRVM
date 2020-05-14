@@ -29,7 +29,7 @@ impl DeviceCategory {
         }
     }
 
-    pub fn category_code(&self) -> u32 {
+    pub fn category_code(self) -> u32 {
         match self {
             Self::Clock(_) => 0x0000_1000,
             Self::Display(_) => 0x0001_1000,
@@ -41,19 +41,19 @@ impl DeviceCategory {
         }
     }
 
-    pub fn type_code(&self) -> u32 {
+    pub fn type_code(self) -> u32 {
         match self {
             Self::Clock(t) => t.code(),
             Self::Display(t) => t.code(),
             Self::Keyboard(t) => t.code(),
             Self::Memory(t) => t.code(),
             Self::Storage(t) => t.code(),
-            Self::PlatformSpecific(typ) => *typ,
+            Self::PlatformSpecific(typ) => typ,
             Self::Uncategorized() => 0x0000_0000
         }
     }
 
-    pub fn encode(&self) -> u64 {
+    pub fn encode(self) -> u64 {
         ((self.category_code() as u64) << 32) + self.type_code() as u64
     }
 }
