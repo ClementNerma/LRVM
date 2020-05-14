@@ -87,7 +87,7 @@ pub fn run_vm(cpu: &mut CPU, config: &RunConfig) -> StoppedState {
 pub fn prettify_ex_with_mode(ex: &ExWithMode) -> String {
     match NativeException::decode_parts(ex.code, ex.associated) {
         Ok(ex) => format!("{}", ex),
-        Err(()) => format!("<invalid exception code or data>")
+        Err(()) => "<invalid exception code or data>".to_owned()
     }
 }
 

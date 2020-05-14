@@ -3,6 +3,8 @@
 #![forbid(unsafe_code)]
 #![deny(unused_must_use)]
 
+#![allow(clippy::len_without_is_empty)]
+
 pub mod storage;
 pub mod memory;
 pub mod display;

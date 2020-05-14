@@ -2,6 +2,7 @@ use crate::mem::MappedMemory;
 use crate::cpu::Registers;
 
 /// Memory Management Unit (MMU)
+#[derive(Default)]
 pub struct MMU { }
 
 pub enum EntryDecodingResult {
@@ -44,7 +45,7 @@ impl MMU {
         };
 
         // 3. Check if the permission bit is set
-        if (v_entry & (0b1 << 24 + action_shift + mode_shift)) == 1 {
+        if (v_entry & (0b1 << (24 + action_shift + mode_shift))) == 1 {
             // 4. If so, get the weakest 24 bits as the entry value
             EntryDecodingResult::Decoded(v_entry & 0b111111111111111111111111)
         } else {

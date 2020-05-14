@@ -5,6 +5,8 @@
 #![forbid(unsafe_code)]
 #![deny(unused_must_use)]
 
+#![allow(clippy::module_inception)]
+
 pub mod board;
 pub mod mem;
 pub mod cpu;

@@ -110,237 +110,239 @@ impl Instr {
 
     /// Encode the instruction as a set of 4 bytes
     pub fn encode(&self) -> [u8; 4] {
-        let mut r: Vec<bool> = vec![];
-        let mut p: Vec<u8> = vec![];
+        let mut is_reg: Vec<bool> = vec![];
+        let mut params: Vec<u8> = vec![];
 
-        macro_rules! doo {
-            // Declare which parameters are registers
-            (r $($is_reg: expr),*) => {{ r = vec![ $( $is_reg ),* ]; }};
+        // Declare which parameters are registers
+        macro_rules! regs { ($($is_reg: expr),*) => {{ is_reg = vec![ $( $is_reg ),* ]; }} }
+
+        // Push parameters
+        macro_rules! push {
             // Push register parameters
-            (er $($reg: expr),*) => {{ $( p.push($reg.code()) );* }};
+            (regs $($reg: expr),*) => {{ $( params.push($reg.code()) );* }};
             // Push a parameter's value (register or constant)
-            (roc $($val: expr),*) => {{ $( p.extend_from_slice(&$val.value().to_be_bytes()) );* }};
+            (regs_or_lit $($val: expr),*) => {{ $( params.extend_from_slice(&$val.value().to_be_bytes()) );* }};
         }
 
         let opcode = match self {
             Self::CPY(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x01
             }
 
             Self::EX(a, b) => {
-                doo!(r true, true);
-                doo!(er a, b);
+                regs!(true, true);
+                push!(regs a, b);
                 0x02
             }
 
             Self::ADD(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x03
             }
 
             Self::SUB(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x04
             }
 
             Self::MUL(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x05
             }
 
             Self::DIV(a, b, c) => {
-                doo!(r true, b.is_reg(), c.is_reg());
-                doo!(er a);
-                doo!(roc b, c);
+                regs!(true, b.is_reg(), c.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b, c);
                 0x06
             }
 
             Self::MOD(a, b, c) => {
-                doo!(r true, b.is_reg(), c.is_reg());
-                doo!(er a);
-                doo!(roc b, c);
+                regs!(true, b.is_reg(), c.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b, c);
                 0x07
             }
 
             Self::AND(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x08
             }
 
             Self::BOR(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x09
             }
 
             Self::XOR(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x0A
             }
 
             Self::SHL(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x0B
             }
 
             Self::SHR(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x0C
             }
 
             Self::CMP(a, b) => {
-                doo!(r true, b.is_reg());
-                doo!(er a);
-                doo!(roc b);
+                regs!(true, b.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b);
                 0x0D
             }
 
             Self::JPR(a) => {
-                doo!(r a.is_reg());
-                doo!(roc a);
+                regs!(a.is_reg());
+                push!(regs_or_lit a);
                 0x0E
             }
 
             Self::LSM(a) => {
-                doo!(r a.is_reg());
-                doo!(roc a);
+                regs!(a.is_reg());
+                push!(regs_or_lit a);
                 0x0F
             }
 
             Self::ITR(a) => {
-                doo!(r a.is_reg());
-                doo!(roc a);
+                regs!(a.is_reg());
+                push!(regs_or_lit a);
                 0x10
             }
 
             Self::IF(a) => {
-                doo!(r a.is_reg());
-                doo!(roc a);
+                regs!(a.is_reg());
+                push!(regs_or_lit a);
                 0x11
             }
 
             Self::IFN(a) => {
-                doo!(r a.is_reg());
-                doo!(roc a);
+                regs!(a.is_reg());
+                push!(regs_or_lit a);
                 0x12
             }
 
             Self::IF2(a, b, c) => {
-                doo!(r a.is_reg(), b.is_reg(), c.is_reg());
-                doo!(roc a, b, c);
+                regs!(a.is_reg(), b.is_reg(), c.is_reg());
+                push!(regs_or_lit a, b, c);
                 0x13
             }
 
             Self::LSA(a, b, c) => {
-                doo!(r true, b.is_reg(), c.is_reg());
-                doo!(er a);
-                doo!(roc b, c);
+                regs!(true, b.is_reg(), c.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b, c);
                 0x14
             }
 
             Self::LEA(a, b, c) => {
-                doo!(r a.is_reg(), b.is_reg(), c.is_reg());
-                doo!(roc a, b, c);
+                regs!(a.is_reg(), b.is_reg(), c.is_reg());
+                push!(regs_or_lit a, b, c);
                 0x15
             }
 
             Self::WSA(a, b, c) => {
-                doo!(r a.is_reg(), b.is_reg(), c.is_reg());
-                doo!(roc a, b, c);
+                regs!(a.is_reg(), b.is_reg(), c.is_reg());
+                push!(regs_or_lit a, b, c);
                 0x16
             }
 
             Self::WEA(a, b, c) => {
-                doo!(r a.is_reg(), b.is_reg(), c.is_reg());
-                doo!(roc a, b, c);
+                regs!(a.is_reg(), b.is_reg(), c.is_reg());
+                push!(regs_or_lit a, b, c);
                 0x17
             }
 
             Self::SRM(a, b, c) => {
-                doo!(r a.is_reg(), b.is_reg(), true);
-                doo!(roc a, b);
-                doo!(er c);
+                regs!(a.is_reg(), b.is_reg(), true);
+                push!(regs_or_lit a, b);
+                push!(regs c);
                 0x18
             }
 
             Self::PUSH(a) => {
-                doo!(r a.is_reg());
-                doo!(roc a);
+                regs!(a.is_reg());
+                push!(regs_or_lit a);
                 0x19
             }
 
             Self::POP(a) => {
-                doo!(r true);
-                doo!(er a);
+                regs!(true);
+                push!(regs a);
                 0x1A
             }
 
             Self::CALL(a) => {
-                doo!(r a.is_reg());
-                doo!(roc a);
+                regs!(a.is_reg());
+                push!(regs_or_lit a);
                 0x1B
             }
 
             Self::HWD(a, b, c) => {
-                doo!(r true, b.is_reg(), c.is_reg());
-                doo!(er a);
-                doo!(roc b, c);
+                regs!(true, b.is_reg(), c.is_reg());
+                push!(regs a);
+                push!(regs_or_lit b, c);
                 0x1C
             }
 
             Self::CYCLES(a) => {
-                doo!(r true);
-                doo!(er a);
+                regs!(true);
+                push!(regs a);
                 0x1D
             }
 
             Self::HALT() => 0x1E,
 
             Self::RESET(a) => {
-                doo!(r a.is_reg());
-                doo!(roc a);
+                regs!(a.is_reg());
+                push!(regs_or_lit a);
                 0x1F
             },
         };
 
         assert!(
-            r.len() <= 3,
+            is_reg.len() <= 3,
             "Internal error: more than 3 serialized parameters"
         );
         assert!(
-            p.len() <= 3,
+            params.len() <= 3,
             "Internal error: serialized parameters length exceed 3 bytes"
         );
 
-        r.resize(3, false);
-        p.resize(3, 0);
+        is_reg.resize(3, false);
+        params.resize(3, 0);
 
         [
             (opcode << 3)
-                + if r[0] { 1 << 2 } else { 0 }
-                + if r[1] { 1 << 1 } else { 0 }
-                + if r[2] { 1 } else { 0 },
-            p[0],
-            p[1],
-            p[2],
+                + if is_reg[0] { 1 << 2 } else { 0 }
+                + if is_reg[1] { 1 << 1 } else { 0 }
+                + if is_reg[2] { 1 } else { 0 },
+            params[0],
+            params[1],
+            params[2],
         ]
     }
 

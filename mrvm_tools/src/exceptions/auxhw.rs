@@ -37,7 +37,7 @@ impl AuxHwException {
     /// Decode an auxiliary component's exception
     pub fn decode(code: u16) -> Result<Self, ()> {
         let code = (code >> 8) as u8;
-        let data = (code & 0xFF) as u8;
+        let data = code as u8;
 
         Self::decode_parts(code, Some(data))
     }

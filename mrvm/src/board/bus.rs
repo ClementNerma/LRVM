@@ -21,7 +21,7 @@ pub trait Bus {
     /// Answer a WRITE request from the bus.
     /// The provided address is guaranteed to be aligned (multiple of 4) and strictly lower than the provided size.
     /// May raise ane xception by assigning a non-zero exception code and data to the provided reference.
-    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) -> ();
+    fn write(&mut self, addr: u32, word: u32, ex: &mut u16);
 
     /// Handle a RESET signal sent by the motherboard.
     /// All volatile data from the component must be reset.

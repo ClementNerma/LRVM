@@ -1,6 +1,7 @@
 //! The persistent memory component offers a simple non-volatile storage that persists on the disk.
 //! See [`PersistentMem`] for more details.
 
+use std::cmp::Ordering;
 use std::fs::{File, OpenOptions};
 use std::path::Path;
 use std::io::{Result as IOResult, Read, Write, Seek, SeekFrom};
@@ -53,10 +54,10 @@ impl PersistentMem {
     pub fn writable_with_size(path: impl AsRef<Path>, size: u32, hw_id: u64) -> IOResult<Self> {
         let mut mem = Self::writable(path, hw_id)?;
 
-        if mem.real_size > size {
-            mem.size = size;
-        } else if mem.real_size < size {
-            mem.handler.set_len(size.into())?;
+        match mem.real_size.cmp(&size) {
+            Ordering::Greater => mem.size = size,
+            Ordering::Less => mem.handler.set_len(size.into())?,
+            Ordering::Equal => {}
         }
 
         Ok(mem)
@@ -92,22 +93,22 @@ impl Bus for PersistentMem {
 
     fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
         if addr >= self.real_size {
-            0
-        } else {
-            let mut buffer = [0; 4];
-            
-            if let Err(_) = self.handler.seek(SeekFrom::Start(addr.into())) {
-                *ex = AuxHwException::GenericPhysicalReadError.into();
-                return 0;
-            }
-
-            if let Err(_) = self.handler.read_exact(&mut buffer) {
-                *ex = AuxHwException::GenericPhysicalReadError.into();
-                return 0;
-            }
-
-            u32::from_be_bytes(buffer)
+           return 0
         }
+        
+        let mut buffer = [0; 4];
+        
+        if self.handler.seek(SeekFrom::Start(addr.into())).is_err() {
+            *ex = AuxHwException::GenericPhysicalReadError.into();
+            return 0;
+        }
+
+        if self.handler.read_exact(&mut buffer).is_err() {
+            *ex = AuxHwException::GenericPhysicalReadError.into();
+            return 0;
+        }
+
+        u32::from_be_bytes(buffer)
     }
 
     fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
@@ -115,7 +116,7 @@ impl Bus for PersistentMem {
             *ex = AuxHwException::MemoryNotWritable.into();
         } else if addr < self.real_size {
             self.handler.seek(SeekFrom::Start(addr.into())).unwrap();
-            self.handler.write(&word.to_be_bytes()).unwrap();
+            self.handler.write_all(&word.to_be_bytes()).unwrap();
         }
     }
 

@@ -5,7 +5,7 @@ use customasm::{FileServerMock, AssemblerState, RcReport};
 use crate::asm::{Program, InstrDecodingError};
 use crate::bytes::bytes_to_words;
 
-static CUSTOMASM_HEADER: &'static str = include_str!("customasm.def");
+static CUSTOMASM_HEADER: &str = include_str!("customasm.def");
 
 /// Assemble a LASM source code to machine code.
 /// Returns an error message in case of error.
@@ -40,7 +40,7 @@ pub fn assemble(source: &str) -> Result<Vec<u8>, String> {
 /// Assemble a LASM source code to machine code and split it to words.
 /// Returns an error message in case of error.
 pub fn assemble_words(source: &str) -> Result<Vec<u32>, String> {
-    assemble(source).map(|bytes| bytes_to_words(bytes))
+    assemble(source).map(bytes_to_words)
 }
 
 /// Convert a LASM source code to a strongly-typed program

@@ -4,7 +4,7 @@
 use super::{Instr, InstrDecodingError};
 
 //. Strongly-typed assembly program
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Program(pub Vec<Instr>);
 
 impl Program {

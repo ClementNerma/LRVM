@@ -59,7 +59,7 @@ impl MappedMemory {
         }
 
         ContiguousMappingStatus {
-            mapping: if failed.len() == 0 { Ok(MappingRange { start_addr: addr, end_addr: max_addr }) } else { Err(failed) },
+            mapping: if failed.is_empty() { Ok(MappingRange { start_addr: addr, end_addr: max_addr }) } else { Err(failed) },
             aux_mapping
         }
     }
@@ -127,7 +127,7 @@ impl MappedMemory {
             return Err(MappingError::NullOrNegAddressRange);
         }
 
-        if self.mappings.iter().find(|mapping| mapping.aux_id == aux_id).is_some() {
+        if self.mappings.iter().any(|mapping| mapping.aux_id == aux_id) {
             return Err(MappingError::AlreadyMapped);
         }
 

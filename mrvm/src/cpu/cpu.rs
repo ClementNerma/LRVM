@@ -52,6 +52,7 @@ impl CPU {
 
     /// Run the next instruction.
     /// Returns `Ok(true)` if the instruction run correctly, `Ok(false)` if the CPU is currently halted and an `Err()` if an exception occurred.
+    #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> Result<bool, Ex> {
         // Do not run if the CPU is halted
         if self.halted {
@@ -146,10 +147,15 @@ impl CPU {
 
                 // ADD, SUB, MUL, AND, BOR, XOR, SHL, SHR
                 0x03..=0x05 | 0x08..=0x0C => {
-                    let (reg, value) = if opcode != 0x0B && opcode != 0x0C { args!(REG, REG_OR_LIT_2) } else { args!(REG, REG_OR_LIT_1) };
+                    let (reg, mut value) = args!(REG, REG_OR_LIT_2);
+
+                    if opcode == 0x0B || opcode != 0x0C {
+                        value >>= 8
+                    }
+
                     let reg_value = self.read_reg(reg)?;
 
-                    let compute = self.compute(reg_value, value.into(), match opcode {
+                    let compute = self.compute(reg_value, value, match opcode {
                         0x03 => Op::Add,
                         0x04 => Op::Sub,
                         0x05 => Op::Mul,
@@ -221,7 +227,7 @@ impl CPU {
 
                 // IF, IFN
                 0x11 | 0x12 => {
-                    let flag: u32 = args!(REG_OR_LIT_1).into();
+                    let flag = args!(REG_OR_LIT_1);
 
                     let is_flag_set = (self.regs.af & (1 << (7 - flag))) != 0;
                     
@@ -636,7 +642,7 @@ impl CPU {
             // Zero-Upper Flag
             result <= 0xFFFF,
             // Zero-Lower Flag
-            (result >> 16) & 0xFFFF == 0
+            (result >> 16).trailing_zeros() == 0
         ];
 
         for (bit, flag) in flags.iter().enumerate() {

@@ -62,7 +62,7 @@ impl NativeException {
             0x10 => Ok(Self::HardwareException(AuxHwException::decode(data_or_err?)?)),
             0xAA => Ok(Self::Interruption(data_or_err? as u8)),
 
-            _ => return Err(())
+            _ => Err(())
         }
     }
 
@@ -134,8 +134,8 @@ impl fmt::Display for NativeException {
             Self::MMURefusedWrite(addr_lower) => format!("Address cannot be written in this mode (address' weakest bits are {:#006X})", addr_lower),
             Self::MMURefusedExec(addr_lower) => format!("Address cannot be executed in this mode (address' weakest bits are {:#006X})", addr_lower),
             Self::SupervisorReservedInstruction(opcode) => format!("Instruction with opcode {:#004X} cannot be run in userland mode", opcode),
-            Self::DivisionOrModByZero => format!("Cannot perform a division or modulus by zero"),
-            Self::ForbiddenOverflowDivOrMod => format!("Cannot perform an overflowing division or modulus"),
+            Self::DivisionOrModByZero => "Cannot perform a division or modulus by zero".to_owned(),
+            Self::ForbiddenOverflowDivOrMod => "Cannot perform an overflowing division or modulus".to_owned(),
             Self::UnknownComponentID(id_lower) => format!("Unknown component ID (weakest bits are {:#006X})", id_lower),
             Self::UnknownHardwareInformationCode(code) => format!("Unknown hardware information code {:#004X}", code),
             Self::ComponentNotMapped(id_lower) => format!("Component with ID {:#004X} is not mapped", id_lower),

@@ -4,7 +4,7 @@ use mrvm_aux::display::NumberDisplay;
 use mrvm_tools::lasm::assemble_words;
 use mrvm_tools::debug::{exec_vm, RunConfig};
 
-static LASM_SOURCE: &'static str = "
+static LASM_SOURCE: &str = "
 main:
     cpy ac0, 0x1000
     lsa a1, ac0, 16
