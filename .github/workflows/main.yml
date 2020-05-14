@@ -42,7 +42,7 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Run Cargo tests
         run: |
-          cargo test -- --test-threads=1 --nocapture
+          cargo test -- --test-threads=1
 
   lint:
     runs-on: ubuntu-latest
