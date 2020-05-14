@@ -1,7 +1,7 @@
 use crate::asm::*;
 
 #[test]
-fn encoding() {
+fn typed_asm_test() {
     let prog = Program::from(vec![
         Instr::ADD(Reg::a0, 0xFFu8.into()),
         Instr::SUB(Reg::a0, 0xFFu8.into()),
