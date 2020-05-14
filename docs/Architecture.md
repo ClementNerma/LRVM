@@ -420,7 +420,7 @@ The logical instructions are:
 
 The control flow instructions allow to control the program's flow by changing the address of the next instruction:
 
-- `JMP [reg_jump | 2-bytes]` (JuMP) | opcode: `0x0E`  
+- `JPR [reg_jump | 2-bytes]` (JumP Relatively) | opcode: `0x0E`  
   Jump by as many bytes as specified  
   The number of bytes is interpreted using two's complement representation  
   **Affects** `pc`
@@ -611,7 +611,7 @@ There are a few _alias instructions_, which are strict aliases of existing instr
 - `IFRIGHT [reg_flag_a | 1-byte], [reg_flag_b | 1-byte]` (IF RIGHT)  
   Alias of: `IF2 flag_a, flag_b, CMP_RIGHT`
 
-- `JMPA [reg_addr | 2-bytes]` (JuMP Absolute)
+- `JP [reg_addr | 2-bytes]` (JumP)
   Go to the provided address  
   ALias of: `CPY cp, [reg_addr | 2-bytes]`
 

@@ -144,8 +144,8 @@
     cmp  {reg_obj: reg}, {reg_val: reg} -> ((0x0D << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
     cmp  {reg_obj: reg}, {lit_val: u16} -> ((0x0D << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
 
-    jmp  {reg_addr: reg} -> ((0x0E << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
-    jmp  {lit_addr: i16} -> ((0x0E << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
+    jpr  {reg_addr: reg} -> ((0x0E << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
+    jpr  {lit_addr: i16} -> ((0x0E << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
 
     lsm  {reg_addr: reg} -> ((0x0F << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
     lsm  {lit_addr: u16} -> ((0x0F << 3) + 0b000)[7:0] @ lit_addr[15:8] @ lit_addr[7:0] @ 0x00
@@ -267,8 +267,8 @@
     ifright {lit_flag_a:  u8}, {reg_flag_b: reg} -> ((0x13 << 3) + 0b010)[7:0] @ lit_flag_a[7:0] @ reg_flag_b[7:0] @ 0x07
     ifright {lit_flag_a:  u8}, {lit_flag_b:  u8} -> ((0x13 << 3) + 0b000)[7:0] @ lit_flag_a[7:0] @ lit_flag_b[7:0] @ 0x07
     
-    jmpa {reg_addr: reg} -> ((0x01 << 3) + 0b110)[7:0] @ 0x16 @ reg_addr[7:0] @ 0x00
-    jmpa {lit_addr: u16} -> ((0x01 << 3) + 0b100)[7:0] @ 0x16 @ lit_addr[15:8] @ lit_addr[7:0]
+    jp {reg_addr: reg} -> ((0x01 << 3) + 0b110)[7:0] @ 0x16 @ reg_addr[7:0] @ 0x00
+    jp {lit_addr: u16} -> ((0x01 << 3) + 0b100)[7:0] @ 0x16 @ lit_addr[15:8] @ lit_addr[7:0]
     
     ret -> ((0x1A << 3) + 0b100)[7:0] @ 0x16 @ 0x00 @ 0x00
 }

@@ -57,7 +57,7 @@ main:
     halt
 
     ; Else, we loop to extract informations about the next component
-    jmpa .loop
+    jp .loop
 
 ; Write the informations of the component specified in `a0`
 ; All routine registers (rr0 to rr7) are rewritten by this routine.
@@ -119,7 +119,7 @@ extract_infos:
     hwd rr0, a0, HWD_IS_MAPPED
     cmp rr0, 1
     ifnq
-    jmp 0x18
+    jpr 0x18
 
     hwd rr0, a0, HWD_MAP_START
     hwd rr1, a0, HWD_MAP_END

@@ -188,10 +188,10 @@ If the values are equal, we will jump to a new local label called `.display`, wh
     cmp a0, 0
 
     ifeq
-    jmpa .display
+    jp .display
 ```
 
-The `if` instructions only run the instruction below them if the specified flag is set. This means that, if the `ZF` flag is not set (so if `a0` is not equal to `0x00000000`), our `jmpa` instruction won't be run and the program won't jump. Which means the instructions we'll put below `jmpa` will be run in turn.
+The `if` instructions only run the instruction below them if the specified flag is set. This means that, if the `ZF` flag is not set (so if `a0` is not equal to `0x00000000`), our `jp` instruction won't be run and the program won't jump. Which means the instructions we'll put below `jp` will be run in turn.
 
 So the first thing we'll do in this case is to write the read word to the display's buffer:
 
@@ -201,7 +201,7 @@ So the first thing we'll do in this case is to write the read word to the displa
     cmp a0, 0
 
     ifeq
-    jmpa .display
+    jp .display
 
     wsa ac1, 0, a0
 ```
@@ -214,7 +214,7 @@ Then, we'll increment `ac0` (which contains the address of the word to read) and
     cmp a0, 0
 
     ifeq
-    jmpa .display
+    jp .display
 
     wsa ac1, 0, a0
 
@@ -230,14 +230,14 @@ And finally, we loop to `.copy_byte`:
     cmp a0, 0
 
     ifeq
-    jmpa .display
+    jp .display
 
     wsa ac1, 0, a0
 
     add ac0, 4
     add ac1, 4
 
-    jmpa .copy_byte
+    jp .copy_byte
 ```
 
 Finally, let's make the `.display` label. To ask a buffered display to print its content, we need to write `0xAA` at its very last word:
@@ -258,7 +258,7 @@ Apart from this, we also need to indicate the VM our program is finished. So, to
     halt
 ```
 
-Now, let's choose the labels' order. In fact, we don't have much choice: `main:` is the entrypoint of our program, and as the CPU always starts reading instructions at address `0x00000000`, we need to put it first. Or we can put it at another place and write a `jmpa` instruction at the very beginning, but there's no point to do this here.
+Now, let's choose the labels' order. In fact, we don't have much choice: `main:` is the entrypoint of our program, and as the CPU always starts reading instructions at address `0x00000000`, we need to put it first. Or we can put it at another place and write a `jp` instruction at the very beginning, but there's no point to do this here.
 
 This gives us the following, final program:
 
@@ -273,14 +273,14 @@ main:
     cmp a0, 0
 
     ifeq
-    jmpa .display
+    jp .display
 
     wsa ac1, 0, a0
 
     add ac0, 4
     add ac1, 4
 
-    jmpa .copy_byte
+    jp .copy_byte
 
 .display:
     wsa ac2, 0, 0xAA

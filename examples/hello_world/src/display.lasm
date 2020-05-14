@@ -9,14 +9,14 @@ main:
     cmp a0, 0
 
     ifeq
-    jmpa .display
+    jp .display
 
     wsa ac1, 0, a0
 
     add ac0, 4
     add ac1, 4
 
-    jmpa .copy_byte
+    jp .copy_byte
 
 .display:
     wsa ac2, 0, 0xAA

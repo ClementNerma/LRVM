@@ -25,7 +25,7 @@ main:
     halt
 
     ; Loop
-    jmpa .wait_dspl
+    jp .wait_dspl
 
 wait_1s:
     ; We'll wait until cycle (delay + number of cycles when the previously printed the counter)
@@ -39,7 +39,7 @@ wait_1s:
 
     ; If not, loop
     ifls
-    jmpa .loop
+    jp .loop
 
     ; If enough, remember the number of cycles so far and return
     cpy a3, a1

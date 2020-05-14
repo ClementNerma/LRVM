@@ -16,7 +16,7 @@ pub enum Instr {
     SHL(Reg, RegOrLit1),
     SHR(Reg, RegOrLit1),
     CMP(Reg, RegOrLit2),
-    JMP(RegOrLit2),
+    JPR(RegOrLit2),
     LSM(RegOrLit2),
     ITR(RegOrLit1),
     IF(RegOrLit1),
@@ -86,7 +86,7 @@ impl Instr {
             0x0B => Ok(Self::SHL(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
             0x0C => Ok(Self::SHR(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
             0x0D => Ok(Self::CMP(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x0E => Ok(Self::JMP(arg_reg_or_lit_2(1)?)),
+            0x0E => Ok(Self::JPR(arg_reg_or_lit_2(1)?)),
             0x0F => Ok(Self::LSM(arg_reg_or_lit_2(1)?)),
             0x10 => Ok(Self::ITR(arg_reg_or_lit_1(1)?)),
             0x11 => Ok(Self::IF(arg_reg_or_lit_1(1)?)),
@@ -213,7 +213,7 @@ impl Instr {
                 0x0D
             }
 
-            Self::JMP(a) => {
+            Self::JPR(a) => {
                 doo!(r a.is_reg());
                 doo!(roc a);
                 0x0E

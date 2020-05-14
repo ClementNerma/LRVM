@@ -45,7 +45,7 @@ main:
     cmp a0, 10
     if zf
     halt
-    jp -16
+    jpr -16
 ```
 
 This program adds `1` to the `a0` register until it reaches `10`, then it halts the processor.

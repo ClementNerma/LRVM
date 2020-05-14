@@ -7,7 +7,7 @@ fn encoding() {
         Instr::SUB(Reg::a0, 0xFFu8.into()),
         Instr::DIV(Reg::a0, 0x00u8.into(), cst::DIV_ZRO_MIN.into()),
         Instr::MOD(Reg::a0, 0x00u8.into(), cst::DIV_ZRO_MIN.into()),
-        Instr::JMP(RegOrLit2::from(-80i16)),
+        Instr::JPR(RegOrLit2::from(-80i16)),
     ]);
 
     let encoded = prog.encode();

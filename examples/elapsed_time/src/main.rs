@@ -14,11 +14,11 @@ wait_second:
     cmp a0, a1
 
     ifle
-    jmp 12
+    jpr 12
 
     wsa ac0, 24, a0
     cpy a1, a0
-    jmpa wait_second
+    jp wait_second
 ";
 
 fn main() {
