@@ -54,7 +54,7 @@ impl Bus for RealtimeClock {
 
         match addr % 3 {
             0x00 => (time.as_secs() >> 32) as u32,
-            0x01 => (time.as_secs() & 0xFFFFFFFF) as u32,
+            0x01 => (time.as_secs() & 0xFFFF_FFFF) as u32,
             0x02 => (time.subsec_millis() * 1_000_000) + (time.subsec_micros() * 1000) + time.subsec_nanos(),
             _ => unreachable!()
         }

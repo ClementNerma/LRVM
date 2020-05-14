@@ -26,7 +26,7 @@ fn main() {
     let mut motherboard = MotherBoard::new(components);
 
     motherboard.map(|mem| {
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
     
     motherboard.reset();

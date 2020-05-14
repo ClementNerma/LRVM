@@ -328,7 +328,7 @@ fn main() {
 
     motherboard.map(|mut mem| {
         // We ask the memory to map all components contiguously
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
 }
 ```
@@ -342,7 +342,7 @@ fn main() {
 
     motherboard.map(|mut mem| {
         // We ask the memory to map all components contiguously
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
 
     motherboard.reset();
@@ -358,7 +358,7 @@ fn main() {
 
     motherboard.map(|mut mem| {
         // We ask the memory to map all components contiguously
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
 
     let cpu = motherboard.cpu();
@@ -388,7 +388,7 @@ fn main() {
     let mut motherboard = MotherBoard::new(components);
 
     motherboard.map(|mut mem| {
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
 
     motherboard.reset();
@@ -471,7 +471,7 @@ fn main() {
     let mut motherboard = MotherBoard::new(components);
 
     motherboard.map(|mut mem| {
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
 
     motherboard.reset();
@@ -545,7 +545,7 @@ fn main() {
     let mut motherboard = MotherBoard::new(components);
 
     motherboard.map(|mut mem| {
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
 
     motherboard.reset();
@@ -605,7 +605,7 @@ fn main() {
     let mut motherboard = MotherBoard::new(components);
 
     motherboard.map(|mut mem| {
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
 
     motherboard.reset();
@@ -786,7 +786,7 @@ fn main() {
     let mut motherboard = MotherBoard::new(components);
 
     motherboard.map(|mut mem| {
-        mem.map_contiguous(0x00000000, [ 0, 1, 2 ]).mapping.unwrap();
+        mem.map_contiguous(0x0000_0000, [ 0, 1, 2 ]).mapping.unwrap();
     });
 
     motherboard.reset();
