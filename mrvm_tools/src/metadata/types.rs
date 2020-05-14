@@ -10,7 +10,7 @@ pub enum ClockType {
 impl ClockType {
     pub fn decode(code: u32) -> Result<Self, ()> {
         match code {
-            0x00000001 => Ok(Self::Realtime),
+            0x0000_0001 => Ok(Self::Realtime),
 
             _ => Err(())
         }
@@ -18,7 +18,7 @@ impl ClockType {
 
     pub fn code(&self) -> u32 {
         match self {
-            Self::Realtime => 0x00000001
+            Self::Realtime => 0x0000_0001
         }
     }
 
@@ -49,8 +49,8 @@ pub enum DisplayType {
 impl DisplayType {
     pub fn decode(code: u32) -> Result<Self, ()> {
         match code {
-            0x00000001 => Ok(Self::Number),
-            0x00000100 => Ok(Self::Buffered),
+            0x0000_0001 => Ok(Self::Number),
+            0x0000_0100 => Ok(Self::Buffered),
 
             _ => Err(())
         }
@@ -58,8 +58,8 @@ impl DisplayType {
 
     pub fn code(&self) -> u32 {
         match self {
-            Self::Number => 0x00000001,
-            Self::Buffered => 0x00000100
+            Self::Number => 0x0000_0001,
+            Self::Buffered => 0x0000_0100
         }
     }
 
@@ -96,7 +96,7 @@ pub enum KeyboardType {
 impl KeyboardType {
     pub fn decode(code: u32) -> Result<Self, ()> {
         match code {
-            0x00000100 => Ok(Self::ReadlineSynchronous),
+            0x0000_0100 => Ok(Self::ReadlineSynchronous),
 
             _ => Err(())
         }
@@ -104,7 +104,7 @@ impl KeyboardType {
 
     pub fn code(&self) -> u32 {
         match self {
-            Self::ReadlineSynchronous => 0x00000100
+            Self::ReadlineSynchronous => 0x0000_0100
         }
     }
 
@@ -140,7 +140,7 @@ pub enum MemoryType {
 impl MemoryType {
     pub fn decode(code: u32) -> Result<Self, ()> {
         match code {
-            0x00000100 => Ok(Self::Volatile),
+            0x0000_0100 => Ok(Self::Volatile),
 
             _ => Err(())
         }
@@ -148,7 +148,7 @@ impl MemoryType {
 
     pub fn code(&self) -> u32 {
         match self {
-            Self::Volatile => 0x00000100
+            Self::Volatile => 0x0000_0100
         }
     }
 
@@ -186,9 +186,9 @@ pub enum StorageType {
 impl StorageType {
     pub fn decode(code: u32) -> Result<Self, ()> {
         match code {
-            0x00000100 => Ok(Self::Readonly),
-            0x00000011 => Ok(Self::Flash),
-            0x00000021 => Ok(Self::Persistent),
+            0x0000_0100 => Ok(Self::Readonly),
+            0x0000_0011 => Ok(Self::Flash),
+            0x0000_0021 => Ok(Self::Persistent),
 
             _ => Err(())
         }
@@ -196,9 +196,9 @@ impl StorageType {
 
     pub fn code(&self) -> u32 {
         match self {
-            Self::Readonly => 0x00000100,
-            Self::Flash => 0x00000011,
-            Self::Persistent => 0x00000021
+            Self::Readonly => 0x0000_0100,
+            Self::Flash => 0x0000_0011,
+            Self::Persistent => 0x0000_0021
         }
     }
 

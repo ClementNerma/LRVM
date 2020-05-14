@@ -206,9 +206,9 @@ impl DivMode {
 
     pub fn from_mode(mode: u8) -> Result<Self, ()> {
         Ok(Self(
-            DivSignMode::from_mask(mode & 0b00010000)?,
-            DivByZeroMode::from_mask(mode & 0b00001100)?,
-            DivMinByLessOneMode::from_mask(mode & 0b00000011)?
+            DivSignMode::from_mask(mode & 0b0001_0000)?,
+            DivByZeroMode::from_mask(mode & 0b0000_1100)?,
+            DivMinByLessOneMode::from_mask(mode & 0b0000_0011)?
         ))
     }
 
