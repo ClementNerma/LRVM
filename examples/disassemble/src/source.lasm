@@ -1,0 +1,37 @@
+main:
+    cpy a0, 0
+    add a0, 0x10
+    shl a0, 4
+    shr a0, 4
+    sub a0, 0x10
+    div a1, a0, DIV_ZRO_MIN
+    sub a2, ac2
+    cmp a1, 0
+    
+    ifeq
+    call test1
+    
+    ifle
+    call test2
+
+    ifleft ZF, EF
+    call test3
+
+    if2 EF, ZF, cmp_xor
+    call test4
+
+test1:
+    ret
+
+test2:
+    add a0, a1
+    ret
+
+test3:
+    add a0, 1
+    ret
+
+test4:
+    sub a0, 1
+    cpy pc, 0x10
+    ret

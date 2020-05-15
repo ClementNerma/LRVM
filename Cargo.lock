@@ -52,6 +52,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "disassemble"
+version = "0.1.0"
+dependencies = [
+ "mrvm_tools",
+]
+
+[[package]]
 name = "elapsed_time"
 version = "0.1.0"
 dependencies = [
