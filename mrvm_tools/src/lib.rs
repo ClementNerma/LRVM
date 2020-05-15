@@ -4,6 +4,7 @@
 #![deny(unused_must_use)]
 
 #![allow(clippy::module_inception)]
+#![allow(clippy::wrong_self_convention)]
 
 pub mod asm;
 pub mod lasm;
