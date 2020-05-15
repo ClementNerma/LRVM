@@ -20,6 +20,8 @@ main:
     if2 EF, ZF, cmp_xor
     call test4
 
+    halt
+
 test1:
     ret
 

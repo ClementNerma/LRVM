@@ -17,6 +17,7 @@ ifleft ZF, EF
 call 0x4C
 ifxor EF, ZF
 call 0x54
+halt
 ret
 add a0, a1
 ret
