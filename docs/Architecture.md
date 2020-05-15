@@ -236,10 +236,10 @@ They cannot be re-declared manually.
 | `DIV_ZRO_MIN` | `0x04` | Make div/mod by zero result in the minimum value                    |
 | `DIV_ZRO_ZRO` | `0x08` | Make div/mod by zero result in zero                                 |
 | `DIV_ZRO_MAX` | `0x0C` | Make div/mod by zero result in the maximum value                    |
-| `DIV_MBO_FRB` | `0x00` | Forbid div/mod by zero                                              |
-| `DIV_MBO_MIN` | `0x01` | Make div/mod of the minimum value by -1 result in the minimum value |
-| `DIV_MBO_ZRO` | `0x02` | Make div/mod of the minimum value by -1 result in zero              |
-| `DIV_MBO_MAX` | `0x03` | Make div/mod of the minimum value by -1 result in the maximum value |
+| `DIV_OFW_FRB` | `0x00` | Forbid div/mod by zero                                              |
+| `DIV_OFW_MIN` | `0x01` | Make div/mod of the minimum value by -1 result in the minimum value |
+| `DIV_OFW_ZRO` | `0x02` | Make div/mod of the minimum value by -1 result in zero              |
+| `DIV_OFW_MAX` | `0x03` | Make div/mod of the minimum value by -1 result in the maximum value |
 
 #### `IF2` conditions
 

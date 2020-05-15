@@ -60,10 +60,10 @@
         DIV_ZRO_ZRO = 0b1000
         DIV_ZRO_MAX = 0b1100
 
-        DIV_MBO_FRB = 0b00
-        DIV_MBO_MIN = 0b01
-        DIV_MBO_ZRO = 0b10
-        DIV_MBO_MAX = 0b11
+        DIV_OFW_FRB = 0b00
+        DIV_OFW_MIN = 0b01
+        DIV_OFW_ZRO = 0b10
+        DIV_OFW_MAX = 0b11
     }
 
     #tokendef hw_info

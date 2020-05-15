@@ -37,10 +37,10 @@ pub const DIV_ZRO_ZRO: u8 = 0b0000_1000;
 pub const DIV_ZRO_MAX: u8 = 0b0000_1100;
 
 /// Forbid overflowing division by -1 (mode)
-pub const DIV_MBO_FRB: u8 = 0;
+pub const DIV_OFW_FRB: u8 = 0;
 /// Make overflowing division by -1 result in the minimum signed value (mode)
-pub const DIV_MBO_MIN: u8 = 0b0000_0001;
+pub const DIV_OFW_MIN: u8 = 0b0000_0001;
 /// Make overflowing division by -1 result in zero (mode)
-pub const DIV_MBO_ZRO: u8 = 0b0000_0010;
+pub const DIV_OFW_ZRO: u8 = 0b0000_0010;
 /// Make overflowing division by -1 result in the maximum signed value (mode)
-pub const DIV_MBO_MAX: u8 = 0b0000_0011;
+pub const DIV_OFW_MAX: u8 = 0b0000_0011;

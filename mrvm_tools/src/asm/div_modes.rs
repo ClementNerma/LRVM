@@ -203,20 +203,20 @@ impl DivSubMode for DivOverflowMode {
 
     fn decode(sub_mode: u8) -> Result<Self, ()> {
         match sub_mode {
-            cst::DIV_MBO_FRB => Ok(Self::Forbid),
-            cst::DIV_MBO_MIN => Ok(Self::EqToMin),
-            cst::DIV_MBO_ZRO => Ok(Self::EqToZero),
-            cst::DIV_MBO_MAX => Ok(Self::EqToMax),
+            cst::DIV_OFW_FRB => Ok(Self::Forbid),
+            cst::DIV_OFW_MIN => Ok(Self::EqToMin),
+            cst::DIV_OFW_ZRO => Ok(Self::EqToZero),
+            cst::DIV_OFW_MAX => Ok(Self::EqToMax),
             _ => Err(())
         }
     }
 
     fn encode(self) -> u8 {
         match self {
-            Self::Forbid   => cst::DIV_MBO_FRB,
-            Self::EqToMin  => cst::DIV_MBO_MIN,
-            Self::EqToZero => cst::DIV_MBO_ZRO,
-            Self::EqToMax  => cst::DIV_MBO_MAX
+            Self::Forbid   => cst::DIV_OFW_FRB,
+            Self::EqToMin  => cst::DIV_OFW_MIN,
+            Self::EqToZero => cst::DIV_OFW_ZRO,
+            Self::EqToMax  => cst::DIV_OFW_MAX
         }
     }
 
@@ -226,10 +226,10 @@ impl DivSubMode for DivOverflowMode {
 
     fn to_lasm(self) -> &'static str {
         match self {
-            Self::Forbid => "DIV_MBO_FRB",
-            Self::EqToMin => "DIV_MBO_MIN",
-            Self::EqToZero => "DIV_MBO_ZRO",
-            Self::EqToMax => "DIV_MBO_MAX"
+            Self::Forbid => "DIV_OFW_FRB",
+            Self::EqToMin => "DIV_OFW_MIN",
+            Self::EqToZero => "DIV_OFW_ZRO",
+            Self::EqToMax => "DIV_OFW_MAX"
         }
     }
 }
@@ -309,7 +309,7 @@ impl DivMode {
     }
 
     /// Set the overflow mode
-    pub fn with_mbo_mode(mut self, mode: DivOverflowMode) -> Self {
+    pub fn with_ofw_mode(mut self, mode: DivOverflowMode) -> Self {
         self.2 = mode;
         self
     }
@@ -324,7 +324,7 @@ impl DivMode {
         self.encode().into()
     }
 
-    /// Convert the mode to its LASM representation (e.g. 'DIV_MIN_ZRO | DIV_MBO_MAX').  
+    /// Convert the mode to its LASM representation (e.g. 'DIV_MIN_ZRO | DIV_OFW_MAX').  
     /// Sub modes that are set to their default value are not present in the returned string.
     pub fn to_lasm(self) -> String {
         let mut modes = vec![];
