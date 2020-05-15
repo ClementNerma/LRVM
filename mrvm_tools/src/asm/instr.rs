@@ -1,3 +1,5 @@
+use std::fmt;
+use super::cst;
 use super::{Reg, RegOrLit1, RegOrLit2, ArFlag, If2Cond, HwInfo, DivMode};
 
 /// Native assembly instruction
@@ -380,41 +382,83 @@ impl Instr {
             Self::Jpr(a) => format!("jpr {}", a.to_lasm_signed()), // Be aware of the ".to_lasm_signed()" here as JPR takes a signed argument
             Self::Lsm(a) => format!("lsm {}", a.to_lasm()),
             Self::Itr(a) => format!("itr {}", a.to_lasm()),
-            Self::If(a) => format!("if {}", a.to_lasm_with(|lit| match ArFlag::decode(lit) {
-                Ok(flag) => flag.to_lasm().to_string(),
-                Err(()) => format!("{:#X} ; Warning: unknown flag", lit)
-            })),
-            Self::IfN(a) => format!("ifn {}", a.to_lasm_with(|lit| match ArFlag::decode(lit) {
-                Ok(flag) => flag.to_lasm().to_string(),
-                Err(()) => format!("{:#X} ; Warning: unknown flag", lit)
-            })),
+            Self::If(a) => match a {
+                RegOrLit1::Reg(reg) => format!("if {}", reg.to_lasm()),
+                RegOrLit1::Lit(lit) => match ArFlag::decode(lit) {
+                    Ok(flag) => match flag {
+                        ArFlag::Zero => "ifeq".to_string(),
+                        ArFlag::Carry => "ifls".to_string(),
+                        _ => format!("if {}", flag.to_lasm())
+                    },
+                    Err(()) => format!("if {:#X} ; Warning: unknown flag", lit)
+                }
+            },
+            Self::IfN(a) => match a {
+                RegOrLit1::Reg(reg) => format!("ifn {}", reg.to_lasm()),
+                RegOrLit1::Lit(lit) => match ArFlag::decode(lit) {
+                    Ok(flag) => match flag {
+                        ArFlag::Zero => "ifnq".to_string(),
+                        ArFlag::Carry => "ifge".to_string(),
+                        _ => format!("ifn {}", flag.to_lasm())
+                    },
+                    Err(()) => format!("ifn {:#X} ; Warning: unknown flag", lit)
+                }
+            },
             Self::If2(a, b, c) => {
                 let mut warns = vec![];
-                let mut decode_flag = |flag: RegOrLit1, warn: &'static str| -> String {
-                    flag.to_lasm_with(|lit| match ArFlag::decode(lit) {
-                        Ok(flag) => flag.to_lasm().to_string(),
-                        Err(()) => {
-                            warns.push(warn);
-                            format!("{:#X}", lit)
-                        }
-                    })
+
+                enum Pos { Left, Right }
+
+                let mut decode_flag = |flag: RegOrLit1, pos: Pos| -> String {
+                    flag.to_lasm_with(|lit|
+                        ArFlag::decode(lit)
+                            .map(|lit| lit.to_lasm().to_string())
+                            .unwrap_or_else(|()| {
+                                warns.push(match pos { Pos::Left => "invalid left flag", Pos::Right => "invalid right flag" });
+                                format!("{:#004X}", lit)
+                            })
+                    )
                 };
 
-                format!(
-                    "if2 {}, {}, {}{}",
-                    decode_flag(a, "unknown first condition"),
-                    decode_flag(b, "unknown second condition"),
-                    c.to_lasm_with(|lit| match If2Cond::decode(lit) {
-                        Ok(cond) => cond.to_lasm(),
-                        Err(()) => {
-                            warns.push("unknown condition");
-                            format!("{:#X}", lit)
+                let no_warn = match (a, b, c) {
+                    (_, _, RegOrLit1::Lit(cond)) => {
+                        match If2Cond::decode(cond) {
+                            Ok(If2Cond::Nor) if matches!(a, RegOrLit1::Lit(cst::ZF)) && matches!(b, RegOrLit1::Lit(cst::CF)) => "ifgt".to_string(),
+                            Ok(If2Cond::Or) if matches!(a, RegOrLit1::Lit(cst::ZF)) && matches!(b, RegOrLit1::Lit(cst::CF)) => "ifle".to_string(),
+
+                            Ok(cond) => format!(
+                                "{} {}, {}",
+                                match cond {
+                                    If2Cond::Or => "ifor",
+                                    If2Cond::And => "ifand",
+                                    If2Cond::Xor => "ifxor",
+                                    If2Cond::Nor => "ifnor",
+                                    If2Cond::Nand => "ifnand",
+                                    If2Cond::Left => "ifleft",
+                                    If2Cond::Right => "ifright"
+                                },
+                                decode_flag(a, Pos::Left),
+                                decode_flag(b, Pos::Right)
+                            ),
+                            
+                            Err(()) => {
+                                let a = decode_flag(a, Pos::Left);
+                                let b = decode_flag(b, Pos::Right);
+                                warns.push("invalid condition");
+                                format!("if2 {}, {}, {:#004X}", a, b, cond)
+                            }
                         }
-                    }),
-                    if warns.is_empty() { "".to_string() } else {
-                        format!("; Warning{}: {}", if warns.len() > 1 { "s" } else { "" }, warns.join(" ; "))
-                    }
-                )
+                    },
+                    (RegOrLit1::Reg(a), RegOrLit1::Reg(b), RegOrLit1::Reg(c)) => format!("if2 {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+                    (_, _, RegOrLit1::Reg(cond)) => format!(
+                        "if2 {}, {}, {}",
+                        decode_flag(a, Pos::Left),
+                        decode_flag(b, Pos::Right),
+                        cond.to_lasm()
+                    )
+                };
+
+                if warns.is_empty() { no_warn } else { format!("{} ; {}", no_warn, warns.join(", ")) }
             },
             Self::Lsa(a, b, c) => format!("lsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
             Self::Lea(a, b, c) => format!("lea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
@@ -444,4 +488,14 @@ pub enum InstrDecodingError {
     UnknownOpCode { opcode: u8 },
     /// An unknown register code was used in a parameter
     UnknownRegister { param: usize, code: u8 },
+}
+
+impl fmt::Display for InstrDecodingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::SourceNotMultipleOf4Bytes => "The provided program's length is not a multiple of 4 bytes (unaligned instructions)".to_string(),
+            Self::UnknownOpCode { opcode } => format!("Unknown opcode: {:#004X}", opcode),
+            Self::UnknownRegister { param, code } => format!("Parameter {} uses unknown register: {:#004X}", param + 1, code)
+        })
+    }
 }
