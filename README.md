@@ -43,7 +43,7 @@ Here is an example of a simple LASM program:
 main:
     add a0, 1
     cmp a0, 10
-    if zf
+    ifeq
     halt
     jpr -16
 ```
