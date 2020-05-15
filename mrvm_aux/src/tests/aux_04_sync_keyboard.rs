@@ -9,7 +9,7 @@ static PLACEHOLDER_KEYB_INPUT: &'static str = "Placeholder keyboard input";
 fn keyb_prog(input_end_addr: u32) -> Program {
     let mut prog = Program::from(ExtInstr::SetReg(Reg::ac0, input_end_addr).to_instr());
     prog.append_all(ExtInstr::SetReg(Reg::avr, 0xAA).to_instr());
-    prog.append(Instr::WEA(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
+    prog.append(Instr::Wea(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
     
     prog
 }
@@ -17,7 +17,7 @@ fn keyb_prog(input_end_addr: u32) -> Program {
 #[test]
 fn sync_keyboard() {
     let mut prog = keyb_prog(0x1100 - 0x04);
-    prog.append(Instr::HALT());
+    prog.append(Instr::Halt());
 
     let received_req = Arc::new(Mutex::new(false));
     let received_req_closure = Arc::clone(&received_req);

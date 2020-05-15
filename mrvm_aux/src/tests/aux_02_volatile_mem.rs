@@ -7,7 +7,7 @@ use mrvm_tools::debug::{exec_vm, RunConfig};
 fn volatile_mem() {
     let mut program = Program::from(ExtInstr::WriteAddrLit(0x1000, 0x01234567).to_instr());
     program.append_all(ExtInstr::WriteAddrLit(0x1008, 0x89ABCDEF).to_instr());
-    program.append(Instr::HALT());
+    program.append(Instr::Halt());
 
     let (mut vm, state) = exec_vm(vec![
         Box::new(BootROM::with_size(program.encode_words(), 0x1000, 0x0).unwrap()),

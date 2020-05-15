@@ -17,45 +17,45 @@ impl ExtInstr {
     pub fn to_instr(&self) -> Vec<Instr> {
         match self {
             ExtInstr::SetReg(reg, value) => vec![
-                Instr::CPY(*reg, ((value >> 16) as u16).into()),
-                Instr::SHL(*reg, 16_u8.into()),
-                Instr::ADD(*reg, (*value as u16).into()),
+                Instr::Cpy(*reg, ((value >> 16) as u16).into()),
+                Instr::Shl(*reg, 16_u8.into()),
+                Instr::Add(*reg, (*value as u16).into()),
             ],
 
             ExtInstr::ReadAddr(addr) => vec![
-                Instr::CPY(Reg::avr, ((addr >> 16) as u16).into()),
-                Instr::SHL(Reg::avr, 16_u8.into()),
-                Instr::ADD(Reg::avr, (*addr as u16).into()),
-                Instr::LEA(Reg::avr.into(), 0u8.into(), 0u8.into())
+                Instr::Cpy(Reg::avr, ((addr >> 16) as u16).into()),
+                Instr::Shl(Reg::avr, 16_u8.into()),
+                Instr::Add(Reg::avr, (*addr as u16).into()),
+                Instr::Lea(Reg::avr.into(), 0u8.into(), 0u8.into())
             ],
 
             ExtInstr::ReadAddrTo(reg, addr) => vec![
-                Instr::CPY(Reg::avr, ((addr >> 16) as u16).into()),
-                Instr::SHL(Reg::avr, 16_u8.into()),
-                Instr::ADD(Reg::avr, (*addr as u16).into()),
-                Instr::LEA(Reg::avr.into(), 0u8.into(), 0u8.into()),
-                Instr::CPY(*reg, Reg::avr.into())
+                Instr::Cpy(Reg::avr, ((addr >> 16) as u16).into()),
+                Instr::Shl(Reg::avr, 16_u8.into()),
+                Instr::Add(Reg::avr, (*addr as u16).into()),
+                Instr::Lea(Reg::avr.into(), 0u8.into(), 0u8.into()),
+                Instr::Cpy(*reg, Reg::avr.into())
             ],
 
             ExtInstr::WriteAddr(addr, reg_value) => vec![
-                Instr::CPY(Reg::rr0, ((addr >> 16) as u16).into()),
-                Instr::SHL(Reg::rr0, 16_u8.into()),
-                Instr::ADD(Reg::rr0, (*addr as u16).into()),
+                Instr::Cpy(Reg::rr0, ((addr >> 16) as u16).into()),
+                Instr::Shl(Reg::rr0, 16_u8.into()),
+                Instr::Add(Reg::rr0, (*addr as u16).into()),
                 
-                Instr::CPY(Reg::avr, (*reg_value).into()),
-                Instr::WEA(Reg::rr0.into(), 0u8.into(), 0u8.into())
+                Instr::Cpy(Reg::avr, (*reg_value).into()),
+                Instr::Wea(Reg::rr0.into(), 0u8.into(), 0u8.into())
             ],
 
             ExtInstr::WriteAddrLit(addr, value) => vec![
-                Instr::CPY(Reg::rr0, ((addr >> 16) as u16).into()),
-                Instr::SHL(Reg::rr0, 16_u8.into()),
-                Instr::ADD(Reg::rr0, (*addr as u16).into()),
+                Instr::Cpy(Reg::rr0, ((addr >> 16) as u16).into()),
+                Instr::Shl(Reg::rr0, 16_u8.into()),
+                Instr::Add(Reg::rr0, (*addr as u16).into()),
 
-                Instr::CPY(Reg::avr, ((value >> 16) as u16).into()),
-                Instr::SHL(Reg::avr, 16_u8.into()),
-                Instr::ADD(Reg::avr, (*value as u16).into()),
+                Instr::Cpy(Reg::avr, ((value >> 16) as u16).into()),
+                Instr::Shl(Reg::avr, 16_u8.into()),
+                Instr::Add(Reg::avr, (*value as u16).into()),
 
-                Instr::WEA(Reg::rr0.into(), 0u8.into(), 0u8.into())
+                Instr::Wea(Reg::rr0.into(), 0u8.into(), 0u8.into())
             ]
         }
     }

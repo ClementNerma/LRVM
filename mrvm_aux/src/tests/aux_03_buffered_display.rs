@@ -6,7 +6,7 @@ use mrvm_tools::debug::{exec_vm, RunConfig};
 
 fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Result<Program, ()> {
     let mut instr = ExtInstr::SetReg(Reg::ac0, display_addr).to_instr();
-    instr.push(Instr::CPY(Reg::avr, 0_u8.into()));
+    instr.push(Instr::Cpy(Reg::avr, 0_u8.into()));
 
     let mut byte_index = 0;
 
@@ -17,21 +17,21 @@ fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Resul
     }
 
     for byte in text_bytes {
-        instr.push(Instr::ADD(Reg::avr, byte.into()));
+        instr.push(Instr::Add(Reg::avr, byte.into()));
         byte_index += 1;
         
         if byte_index < 4 {
-            instr.push(Instr::SHL(Reg::avr, 8_u8.into()));
+            instr.push(Instr::Shl(Reg::avr, 8_u8.into()));
         } else {
-            instr.push(Instr::WEA(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
-            instr.push(Instr::ADD(Reg::ac0, 4_u8.into()));
-            instr.push(Instr::CPY(Reg::avr, 0_u8.into()));
+            instr.push(Instr::Wea(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
+            instr.push(Instr::Add(Reg::ac0, 4_u8.into()));
+            instr.push(Instr::Cpy(Reg::avr, 0_u8.into()));
             byte_index = 0;
         }
     }
 
     if byte_index != 0 {
-        instr.push(Instr::WEA(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
+        instr.push(Instr::Wea(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
     }
 
     instr.extend_from_slice(&ExtInstr::WriteAddrLit(display_final_addr, 0xAA).to_instr());
@@ -42,7 +42,7 @@ fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Resul
 #[test]
 fn buffered_display() {
     let mut prog = display_prog("Hello world!", 0x1000, 0x1100 - 0x04).unwrap();
-    prog.append(Instr::HALT());
+    prog.append(Instr::Halt());
 
     let received_msg = Arc::new(Mutex::new(false));
     let received_msg_closure = Arc::clone(&received_msg);

@@ -2,11 +2,11 @@ use crate::asm::*;
 
 fn prog() -> Program {
     Program::from(vec![
-        Instr::ADD(Reg::a0, 0xFFu8.into()),
-        Instr::SUB(Reg::a0, 0xFFu8.into()),
-        Instr::DIV(Reg::a0, 0x00u8.into(), cst::DIV_ZRO_MIN.into()),
-        Instr::MOD(Reg::a0, 0x00u8.into(), (cst::DIV_ZRO_MIN | cst::DIV_MBO_MAX).into()),
-        Instr::JPR(RegOrLit2::from(-80i16)),
+        Instr::Add(Reg::a0, 0xFFu8.into()),
+        Instr::Sub(Reg::a0, 0xFFu8.into()),
+        Instr::Div(Reg::a0, 0x00u8.into(), cst::DIV_ZRO_MIN.into()),
+        Instr::Mod(Reg::a0, 0x00u8.into(), (cst::DIV_ZRO_MIN | cst::DIV_MBO_MAX).into()),
+        Instr::Jpr(RegOrLit2::from(-80i16)),
     ])
 }
 

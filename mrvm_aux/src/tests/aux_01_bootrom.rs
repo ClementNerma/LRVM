@@ -7,7 +7,7 @@ use crate::storage::BootROM;
 fn prepare(instr: Instr) -> MotherBoard {
     let prog = Program::from(vec![
         instr,
-        Instr::HALT()
+        Instr::Halt()
     ]);
 
     prepare_vm(vec![
@@ -17,7 +17,7 @@ fn prepare(instr: Instr) -> MotherBoard {
 
 #[test]
 fn bootrom_read() {
-    let mut vm = prepare(Instr::CPY(Reg::a0, 0xABCD_u16.into()));
+    let mut vm = prepare(Instr::Cpy(Reg::a0, 0xABCD_u16.into()));
 
     let cpu = &mut vm.cpu();
 
@@ -29,7 +29,7 @@ fn bootrom_read() {
 
 #[test]
 fn bootrom_write() {
-    let mut vm = prepare(Instr::WEA(0u8.into(), 0u8.into(), 0u8.into()));
+    let mut vm = prepare(Instr::Wea(0u8.into(), 0u8.into(), 0u8.into()));
     let ex = run_vm(&mut vm.cpu(), &RunConfig::halt_on_ex()).ex.expect("No exception occurred while writing BootROM");
 
     match NativeException::decode_parts(ex.code, ex.associated) {

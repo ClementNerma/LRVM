@@ -3,37 +3,37 @@ use super::{Reg, RegOrLit1, RegOrLit2, ArFlag, If2Cond, HwInfo, DivMode};
 /// Native assembly instruction
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Instr {
-    CPY(Reg, RegOrLit2),
-    EX(Reg, Reg),
-    ADD(Reg, RegOrLit2),
-    SUB(Reg, RegOrLit2),
-    MUL(Reg, RegOrLit2),
-    DIV(Reg, RegOrLit1, RegOrLit1),
-    MOD(Reg, RegOrLit1, RegOrLit1),
-    AND(Reg, RegOrLit2),
-    BOR(Reg, RegOrLit2),
-    XOR(Reg, RegOrLit2),
-    SHL(Reg, RegOrLit1),
-    SHR(Reg, RegOrLit1),
-    CMP(Reg, RegOrLit2),
-    JPR(RegOrLit2),
-    LSM(RegOrLit2),
-    ITR(RegOrLit1),
-    IF(RegOrLit1),
-    IFN(RegOrLit1),
-    IF2(RegOrLit1, RegOrLit1, RegOrLit1),
-    LSA(Reg, RegOrLit1, RegOrLit1),
-    LEA(RegOrLit1, RegOrLit1, RegOrLit1),
-    WSA(RegOrLit1, RegOrLit1, RegOrLit1),
-    WEA(RegOrLit1, RegOrLit1, RegOrLit1),
-    SRM(RegOrLit1, RegOrLit1, Reg),
-    PUSH(RegOrLit2),
-    POP(Reg),
-    CALL(RegOrLit2),
-    HWD(Reg, RegOrLit1, RegOrLit1),
-    CYCLES(Reg),
-    HALT(),
-    RESET(RegOrLit1),
+    Cpy(Reg, RegOrLit2),
+    Ex(Reg, Reg),
+    Add(Reg, RegOrLit2),
+    Sub(Reg, RegOrLit2),
+    Mul(Reg, RegOrLit2),
+    Div(Reg, RegOrLit1, RegOrLit1),
+    Mod(Reg, RegOrLit1, RegOrLit1),
+    And(Reg, RegOrLit2),
+    Bor(Reg, RegOrLit2),
+    Xor(Reg, RegOrLit2),
+    Shl(Reg, RegOrLit1),
+    Shr(Reg, RegOrLit1),
+    Cmp(Reg, RegOrLit2),
+    Jpr(RegOrLit2),
+    Lsm(RegOrLit2),
+    Itr(RegOrLit1),
+    If(RegOrLit1),
+    IfN(RegOrLit1),
+    If2(RegOrLit1, RegOrLit1, RegOrLit1),
+    Lsa(Reg, RegOrLit1, RegOrLit1),
+    Lea(RegOrLit1, RegOrLit1, RegOrLit1),
+    Wsa(RegOrLit1, RegOrLit1, RegOrLit1),
+    Wea(RegOrLit1, RegOrLit1, RegOrLit1),
+    Srm(RegOrLit1, RegOrLit1, Reg),
+    Push(RegOrLit2),
+    Pop(Reg),
+    Call(RegOrLit2),
+    Hwd(Reg, RegOrLit1, RegOrLit1),
+    Cycles(Reg),
+    Halt(),
+    Reset(RegOrLit1),
 }
 
 impl Instr {
@@ -73,37 +73,37 @@ impl Instr {
 
         // Decode the instruction based on its opcode
         match opcode {
-            0x01 => Ok(Self::CPY(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x02 => Ok(Self::EX(arg_reg(1)?, arg_reg(2)?)),
-            0x03 => Ok(Self::ADD(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x04 => Ok(Self::SUB(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x05 => Ok(Self::MUL(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x06 => Ok(Self::DIV(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x07 => Ok(Self::MOD(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x08 => Ok(Self::AND(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x09 => Ok(Self::BOR(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x0A => Ok(Self::XOR(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x0B => Ok(Self::SHL(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
-            0x0C => Ok(Self::SHR(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
-            0x0D => Ok(Self::CMP(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x0E => Ok(Self::JPR(arg_reg_or_lit_2(1)?)),
-            0x0F => Ok(Self::LSM(arg_reg_or_lit_2(1)?)),
-            0x10 => Ok(Self::ITR(arg_reg_or_lit_1(1)?)),
-            0x11 => Ok(Self::IF(arg_reg_or_lit_1(1)?)),
-            0x12 => Ok(Self::IFN(arg_reg_or_lit_1(1)?)),
-            0x13 => Ok(Self::IF2(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x14 => Ok(Self::LSA(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x15 => Ok(Self::LEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x16 => Ok(Self::WSA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x17 => Ok(Self::WEA(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x18 => Ok(Self::SRM(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg(3)?)),
-            0x19 => Ok(Self::PUSH(arg_reg_or_lit_2(1)?)),
-            0x1A => Ok(Self::POP(arg_reg(1)?)),
-            0x1B => Ok(Self::CALL(arg_reg_or_lit_2(1)?)),
-            0x1C => Ok(Self::HWD(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x1D => Ok(Self::CYCLES(arg_reg(1)?)),
-            0x1E => Ok(Self::HALT()),
-            0x1F => Ok(Self::RESET(arg_reg_or_lit_1(1)?)),
+            0x01 => Ok(Self::Cpy(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
+            0x02 => Ok(Self::Ex(arg_reg(1)?, arg_reg(2)?)),
+            0x03 => Ok(Self::Add(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
+            0x04 => Ok(Self::Sub(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
+            0x05 => Ok(Self::Mul(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
+            0x06 => Ok(Self::Div(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x07 => Ok(Self::Mod(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x08 => Ok(Self::And(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
+            0x09 => Ok(Self::Bor(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
+            0x0A => Ok(Self::Xor(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
+            0x0B => Ok(Self::Shl(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
+            0x0C => Ok(Self::Shr(arg_reg(1)?, arg_reg_or_lit_1(2)?)),
+            0x0D => Ok(Self::Cmp(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
+            0x0E => Ok(Self::Jpr(arg_reg_or_lit_2(1)?)),
+            0x0F => Ok(Self::Lsm(arg_reg_or_lit_2(1)?)),
+            0x10 => Ok(Self::Itr(arg_reg_or_lit_1(1)?)),
+            0x11 => Ok(Self::If(arg_reg_or_lit_1(1)?)),
+            0x12 => Ok(Self::IfN(arg_reg_or_lit_1(1)?)),
+            0x13 => Ok(Self::If2(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x14 => Ok(Self::Lsa(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x15 => Ok(Self::Lea(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x16 => Ok(Self::Wsa(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x17 => Ok(Self::Wea(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x18 => Ok(Self::Srm(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg(3)?)),
+            0x19 => Ok(Self::Push(arg_reg_or_lit_2(1)?)),
+            0x1A => Ok(Self::Pop(arg_reg(1)?)),
+            0x1B => Ok(Self::Call(arg_reg_or_lit_2(1)?)),
+            0x1C => Ok(Self::Hwd(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x1D => Ok(Self::Cycles(arg_reg(1)?)),
+            0x1E => Ok(Self::Halt()),
+            0x1F => Ok(Self::Reset(arg_reg_or_lit_1(1)?)),
             _ => Err(InstrDecodingError::UnknownOpCode { opcode }),
         }
     }
@@ -125,198 +125,198 @@ impl Instr {
         }
 
         let opcode = match self {
-            Self::CPY(a, b) => {
+            Self::Cpy(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x01
             }
 
-            Self::EX(a, b) => {
+            Self::Ex(a, b) => {
                 regs!(true, true);
                 push!(regs a, b);
                 0x02
             }
 
-            Self::ADD(a, b) => {
+            Self::Add(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x03
             }
 
-            Self::SUB(a, b) => {
+            Self::Sub(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x04
             }
 
-            Self::MUL(a, b) => {
+            Self::Mul(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x05
             }
 
-            Self::DIV(a, b, c) => {
+            Self::Div(a, b, c) => {
                 regs!(true, b.is_reg(), c.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b, c);
                 0x06
             }
 
-            Self::MOD(a, b, c) => {
+            Self::Mod(a, b, c) => {
                 regs!(true, b.is_reg(), c.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b, c);
                 0x07
             }
 
-            Self::AND(a, b) => {
+            Self::And(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x08
             }
 
-            Self::BOR(a, b) => {
+            Self::Bor(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x09
             }
 
-            Self::XOR(a, b) => {
+            Self::Xor(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x0A
             }
 
-            Self::SHL(a, b) => {
+            Self::Shl(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x0B
             }
 
-            Self::SHR(a, b) => {
+            Self::Shr(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x0C
             }
 
-            Self::CMP(a, b) => {
+            Self::Cmp(a, b) => {
                 regs!(true, b.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b);
                 0x0D
             }
 
-            Self::JPR(a) => {
+            Self::Jpr(a) => {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x0E
             }
 
-            Self::LSM(a) => {
+            Self::Lsm(a) => {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x0F
             }
 
-            Self::ITR(a) => {
+            Self::Itr(a) => {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x10
             }
 
-            Self::IF(a) => {
+            Self::If(a) => {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x11
             }
 
-            Self::IFN(a) => {
+            Self::IfN(a) => {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x12
             }
 
-            Self::IF2(a, b, c) => {
+            Self::If2(a, b, c) => {
                 regs!(a.is_reg(), b.is_reg(), c.is_reg());
                 push!(regs_or_lit a, b, c);
                 0x13
             }
 
-            Self::LSA(a, b, c) => {
+            Self::Lsa(a, b, c) => {
                 regs!(true, b.is_reg(), c.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b, c);
                 0x14
             }
 
-            Self::LEA(a, b, c) => {
+            Self::Lea(a, b, c) => {
                 regs!(a.is_reg(), b.is_reg(), c.is_reg());
                 push!(regs_or_lit a, b, c);
                 0x15
             }
 
-            Self::WSA(a, b, c) => {
+            Self::Wsa(a, b, c) => {
                 regs!(a.is_reg(), b.is_reg(), c.is_reg());
                 push!(regs_or_lit a, b, c);
                 0x16
             }
 
-            Self::WEA(a, b, c) => {
+            Self::Wea(a, b, c) => {
                 regs!(a.is_reg(), b.is_reg(), c.is_reg());
                 push!(regs_or_lit a, b, c);
                 0x17
             }
 
-            Self::SRM(a, b, c) => {
+            Self::Srm(a, b, c) => {
                 regs!(a.is_reg(), b.is_reg(), true);
                 push!(regs_or_lit a, b);
                 push!(regs c);
                 0x18
             }
 
-            Self::PUSH(a) => {
+            Self::Push(a) => {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x19
             }
 
-            Self::POP(a) => {
+            Self::Pop(a) => {
                 regs!(true);
                 push!(regs a);
                 0x1A
             }
 
-            Self::CALL(a) => {
+            Self::Call(a) => {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x1B
             }
 
-            Self::HWD(a, b, c) => {
+            Self::Hwd(a, b, c) => {
                 regs!(true, b.is_reg(), c.is_reg());
                 push!(regs a);
                 push!(regs_or_lit b, c);
                 0x1C
             }
 
-            Self::CYCLES(a) => {
+            Self::Cycles(a) => {
                 regs!(true);
                 push!(regs a);
                 0x1D
             }
 
-            Self::HALT() => 0x1E,
+            Self::Halt() => 0x1E,
 
-            Self::RESET(a) => {
+            Self::Reset(a) => {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x1F
@@ -354,41 +354,41 @@ impl Instr {
     /// Convert the instruction to LASM assembly
     pub fn to_lasm(self) -> String {
         match self {
-            Self::CPY(a, b) => format!("cpy {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::EX(a, b) => format!("ex {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::ADD(a, b) => format!("add {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::SUB(a, b) => format!("sub {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::MUL(a, b) => format!("mul {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::DIV(a, b, RegOrLit1::Reg(c)) => format!("div {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::MOD(a, b, RegOrLit1::Reg(c)) => format!("mod {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::DIV(a, b, RegOrLit1::Lit(mode)) | Self::MOD(a, b, RegOrLit1::Lit(mode)) => format!(
+            Self::Cpy(a, b) => format!("cpy {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Ex(a, b) => format!("ex {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Add(a, b) => format!("add {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Sub(a, b) => format!("sub {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Mul(a, b) => format!("mul {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Div(a, b, RegOrLit1::Reg(c)) => format!("div {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Mod(a, b, RegOrLit1::Reg(c)) => format!("mod {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Div(a, b, RegOrLit1::Lit(mode)) | Self::Mod(a, b, RegOrLit1::Lit(mode)) => format!(
                 "{} {}, {}, {}",
-                if matches!(self, Self::DIV(_, _, _)) { "div" } else { "mod" },
+                if matches!(self, Self::Div(_, _, _)) { "div" } else { "mod" },
                 a.to_lasm(),
                 b.to_lasm(),
-                match DivMode::from_mode(mode) {
+                match DivMode::decode(mode) {
                     Ok(mode) => mode.to_lasm(),
                     Err(()) => format!("{:#010b} ; Warning: invalid division mode", mode)
                 }
             ),
-            Self::AND(a, b) => format!("and {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::BOR(a, b) => format!("bor {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::XOR(a, b) => format!("xor {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::SHL(a, b) => format!("shl {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::SHR(a, b) => format!("shr {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::CMP(a, b) => format!("cmp {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::JPR(a) => format!("jpr {}", a.to_lasm_signed()), // Be aware of the ".to_lasm_signed()" here as JPR takes a signed argument
-            Self::LSM(a) => format!("lsm {}", a.to_lasm()),
-            Self::ITR(a) => format!("itr {}", a.to_lasm()),
-            Self::IF(a) => format!("if {}", a.to_lasm_with(|lit| match ArFlag::decode(lit) {
+            Self::And(a, b) => format!("and {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Bor(a, b) => format!("bor {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Xor(a, b) => format!("xor {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Shl(a, b) => format!("shl {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Shr(a, b) => format!("shr {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Cmp(a, b) => format!("cmp {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Jpr(a) => format!("jpr {}", a.to_lasm_signed()), // Be aware of the ".to_lasm_signed()" here as JPR takes a signed argument
+            Self::Lsm(a) => format!("lsm {}", a.to_lasm()),
+            Self::Itr(a) => format!("itr {}", a.to_lasm()),
+            Self::If(a) => format!("if {}", a.to_lasm_with(|lit| match ArFlag::decode(lit) {
                 Ok(flag) => flag.to_lasm().to_owned(),
                 Err(()) => format!("{:#X} ; Warning: unknown flag", lit)
             })),
-            Self::IFN(a) => format!("ifn {}", a.to_lasm_with(|lit| match ArFlag::decode(lit) {
+            Self::IfN(a) => format!("ifn {}", a.to_lasm_with(|lit| match ArFlag::decode(lit) {
                 Ok(flag) => flag.to_lasm().to_owned(),
                 Err(()) => format!("{:#X} ; Warning: unknown flag", lit)
             })),
-            Self::IF2(a, b, c) => {
+            Self::If2(a, b, c) => {
                 let mut warns = vec![];
                 let mut decode_flag = |flag: RegOrLit1, warn: &'static str| -> String {
                     flag.to_lasm_with(|lit| match ArFlag::decode(lit) {
@@ -416,21 +416,21 @@ impl Instr {
                     }
                 )
             },
-            Self::LSA(a, b, c) => format!("lsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::LEA(a, b, c) => format!("lea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::WSA(a, b, c) => format!("wsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::WEA(a, b, c) => format!("wea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::SRM(a, b, c) => format!("srm {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::PUSH(a) => format!("push {}", a.to_lasm()),
-            Self::POP(a) => format!("pop {}", a.to_lasm()),
-            Self::CALL(a) => format!("call {}", a.to_lasm()),
-            Self::HWD(a, b, c) => format!("hwd {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm_with(|lit| match HwInfo::decode(lit) {
+            Self::Lsa(a, b, c) => format!("lsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Lea(a, b, c) => format!("lea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Wsa(a, b, c) => format!("wsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Wea(a, b, c) => format!("wea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Srm(a, b, c) => format!("srm {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Push(a) => format!("push {}", a.to_lasm()),
+            Self::Pop(a) => format!("pop {}", a.to_lasm()),
+            Self::Call(a) => format!("call {}", a.to_lasm()),
+            Self::Hwd(a, b, c) => format!("hwd {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm_with(|lit| match HwInfo::decode(lit) {
                 Ok(info) => info.to_lasm().to_owned(),
                 Err(()) => format!("{:#X} ; Warning: unknown hardware information", lit)
             })),
-            Self::CYCLES(a) => format!("cycles {}", a.to_lasm()),
-            Self::HALT() => "halt".to_owned(),
-            Self::RESET(a) => format!("reset {}", a.to_lasm()),
+            Self::Cycles(a) => format!("cycles {}", a.to_lasm()),
+            Self::Halt() => "halt".to_owned(),
+            Self::Reset(a) => format!("reset {}", a.to_lasm()),
         }
     }
 }
