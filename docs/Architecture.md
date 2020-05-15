@@ -93,12 +93,13 @@ An _exception_ occurs either when an fatal error occurs, or when an interruption
 | `0x09` | This instruction can only be ran in supervisor mode                  | Faulty opcode                      |
 | `0x0A` | Cannot perform a division or modulus by 0                            |                                    |
 | `0x0B` | Forbidden operation overflow (division or modulus by -1 overflowed)  |                                    |
-| `0x0C` | Unknown component ID in `HWD` instruction                            | Faulty ID (weakest 16 bits)        |
-| `0x0D` | Invalid hardware information code in `HWD` instruction               | Faulty code                        |
-| `0x0E` | Component is not mapped                                              | Faulty ID (weakest 16 bits)        |
-| `0x0F` | Invalid condition mode provided in `IF2` instruction                 | Faulty code                        |
-| `0x10` | Hardware exception                                                   | Exception's code & associated data |
-| `0xAA` | An interruption occurred                                             | Interruption code                  |
+| `0x0C` | Invalid flag provided in `IF` or `IF2` instruction                   | Faulty flag                        |
+| `0x0D` | Invalid condition mode provided in `IF2` instruction                 | Faulty code                        |
+| `0x10` | Unknown component ID in `HWD` instruction                            | Faulty ID (weakest 16 bits)        |
+| `0x11` | Invalid hardware information code in `HWD` instruction               | Faulty code                        |
+| `0x12` | Component is not mapped                                              | Faulty ID (weakest 16 bits)        |
+| `0xA0` | Hardware exception                                                   | Exception's code & associated data |
+| `0xF0` | An interruption occurred                                             | Interruption code                  |
 
 The content of the exception type `et` register is as follows, starting from the strongest byte:
 
@@ -443,11 +444,13 @@ Under the hood, they simply jump four bytes forward if the condition is not met,
 
 - `IF [reg_flag]` (IF) | opcode: `0x11`  
   Run the next instruction only if the specified flag is set  
-  **Affects** `pc`
+  **Affects** `pc`  
+  **Exceptions** `0x0C` if the provided flag does not exist
 
 - `IFN [reg_flag]` (IF Not) | opcode: `0x12`  
   Run the next instruction only if the specified flag is _not_ set  
-  **Affects** `pc`
+  **Affects** `pc`  
+  **Exceptions** `0x0C` if the provided flag does not exist
 
 - `IF2 [reg_flag_a], [reg_flag_b], [reg_cond | 1-byte]` (IF) | opcode: `0x13`
   Run the next instruction only if the specified condition is met
@@ -463,7 +466,7 @@ Under the hood, they simply jump four bytes forward if the condition is not met,
   Providing an invalid code will raise an `0x0F` exception.
 
   **Affects** `pc`  
-  **Exceptions** `0x0F` if the provided condition does not exist
+  **Exceptions** `0x0C` if any of the provided flags does not exist, `0x0D` if the provided condition does not exist
 
 #### Memory read/write instructions
 
@@ -514,17 +517,15 @@ The memory instructions allow to manipulate the memory:
   Read a hardware information from a component.  
   The provided hardware identifier is the component's index, first component mounted to the motherboard getting ID 0.  
   To get the number of connected components, provide ID `0` and info number `0`.  
-  The `hw_info` indicates which information must be retrieved, see [hardware informations](#reading-hardware-informations).  
-  Providing an invalid component ID will result in an `0x0C` exception, and an invalid information code will result in an `0x0D` exception.  
-  Asking for mapping informations on an unmapped component will result in an `0x0E` exception.
+  The `hw_info` indicates which information must be retrieved, see [hardware informations](#reading-hardware-informations).
 
   **Affects** `reg_dest`
 
   **Exceptions**
 
-  - `0x0C` if the provided ID is unknown
-  - `0x0D` if the provided hardware information code is unknown
-  - `0x0E` if the component when retrieving mapping if the component is not mapped
+  - `0x10` if the provided ID is unknown
+  - `0x11` if the provided hardware information code is unknown
+  - `0x12` if the component when retrieving mapping if the component is not mapped
 
 #### Processor control instructions
 

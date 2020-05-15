@@ -249,12 +249,16 @@ impl CPU {
             0x10 => {
                 let itr_code = args!(REG_OR_LIT_1);
 
-                Err(self.exception(0xAA, Some(itr_code as u16)))
+                Err(self.exception(0xF0, Some(itr_code as u16)))
             },
 
             // IF, IFN
             0x11 | 0x12 => {
                 let flag = args!(REG_OR_LIT_1);
+
+                if flag > 7 {
+                    return Err(self.exception(0x0C, Some(flag as u8 as u16)));
+                }
 
                 let is_flag_set = (self.regs.af & (1 << (7 - flag))) != 0;
                 
@@ -278,7 +282,7 @@ impl CPU {
                     0x05 => !(flag_a && flag_b),
                     0x06 => flag_a && !flag_b,
                     0x07 => flag_b && !flag_a,
-                    _ => return Err(self.exception(0x0F, Some(cond as u16)))
+                    _ => return Err(self.exception(0x0D, Some(cond as u8 as u16)))
                 };
 
                 if !result {
@@ -392,7 +396,7 @@ impl CPU {
                 }
 
                 let aux_id = usize::try_from(aux_id)
-                    .map_err(|_| self.exception(0x0C, Some(aux_id as u16)))?;
+                    .map_err(|_| self.exception(0x10, Some(aux_id as u16)))?;
                 
                 let hw_data = self.get_hw_info(hw_info, aux_id)?;
 
@@ -430,10 +434,10 @@ impl CPU {
                     // Reset a specific component (ID in `avr`)
                     0x1 => {
                         let id = usize::try_from(self.regs.avr)
-                            .map_err(|_| self.exception(0x0C, Some(self.regs.avr as u16)))?;
+                            .map_err(|_| self.exception(0x10, Some(self.regs.avr as u16)))?;
                         
                             self.hwb.reset(id)
-                                .ok_or_else(|| self.exception(0x0C, Some(self.regs.avr as u16)))?;
+                                .ok_or_else(|| self.exception(0x10, Some(self.regs.avr as u16)))?;
                     },
 
                     // Reset a component based on a condition (operand ID in `avr`)
@@ -711,7 +715,7 @@ impl CPU {
                 let ret = handler(&mut self.mem, p_addr, &mut ex);
 
                 if ex != 0 {
-                    Err(self.exception(0x10, Some(ex)))
+                    Err(self.exception(0xA0, Some(ex)))
                 } else {
                     Ok(ret)
                 }
@@ -719,7 +723,7 @@ impl CPU {
 
             Err(None) => Err(self.exception(0x06, Some(v_addr as u16))),
 
-            Err(Some(ex)) => Err(self.exception(0x10, Some(ex)))
+            Err(Some(ex)) => Err(self.exception(0xA0, Some(ex)))
         }
     }
 
@@ -745,7 +749,7 @@ impl CPU {
     fn get_hw_info(&mut self, hw_info: u32, aux_id: usize) -> Result<u32, Ex> {
         // Get the auxiliary component's name and metadata (if it exists) as well as its optional mapping
         let cache = self.hwb.cache_of(aux_id).cloned().ok_or_else(||
-            self.exception(0x0C, Some(aux_id as u16))
+            self.exception(0x10, Some(aux_id as u16))
         )?;
 
         let mapping_opt = self.mem.get_mapping(aux_id).cloned();
@@ -790,12 +794,12 @@ impl CPU {
             // Check if the component is mapped in memory
             0xA0 => if mapping_opt.is_some() { 1 } else { 0 },
             // Mapping's start address
-            0xA1 => mapping_opt.ok_or_else(|| self.exception(0x0E, Some(aux_id as u16)))?.addr,
+            0xA1 => mapping_opt.ok_or_else(|| self.exception(0x12, Some(aux_id as u16)))?.addr,
             // Mapping's end address
-            0xA2 => mapping_opt.ok_or_else(|| self.exception(0x0E, Some(aux_id as u16)))?.end_addr(),
+            0xA2 => mapping_opt.ok_or_else(|| self.exception(0x12, Some(aux_id as u16)))?.end_addr(),
 
             // Invalid information code
-            _ => return Err(self.exception(0x0D, Some(hw_info as u16)))
+            _ => return Err(self.exception(0x11, Some(hw_info as u16)))
         };
 
         Ok(data)
