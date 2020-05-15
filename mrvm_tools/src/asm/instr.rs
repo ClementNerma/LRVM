@@ -65,7 +65,7 @@ impl Instr {
                             bytes[param + 1],
                         ])))
                     } else {
-                        Ok(RegOrLit2::reg(_decode_reg(param + 1)?))
+                        Ok(RegOrLit2::reg(_decode_reg(param)?))
                     }
                 },
             )
