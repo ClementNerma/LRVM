@@ -45,7 +45,7 @@
         CF  = 0x01
         OF  = 0x02
         SF  = 0x03
-        PF  = 0x04
+        EF  = 0x04
         ZUF = 0x05
         ZLF = 0x06
     }

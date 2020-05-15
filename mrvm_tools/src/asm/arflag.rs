@@ -7,7 +7,7 @@ pub enum ArFlag {
     Carry,
     Overflow,
     Sign,
-    Parity,
+    Even,
     ZeroUpper,
     ZeroLower
 }
@@ -20,7 +20,7 @@ impl ArFlag {
             0x01 => Ok(Self::Carry),
             0x02 => Ok(Self::Overflow),
             0x03 => Ok(Self::Sign),
-            0x04 => Ok(Self::Parity),
+            0x04 => Ok(Self::Even),
             0x05 => Ok(Self::ZeroUpper),
             0x06 => Ok(Self::ZeroLower),
             _ => Err(())
@@ -34,7 +34,7 @@ impl ArFlag {
             Self::Carry => 0x01,
             Self::Overflow => 0x02,
             Self::Sign => 0x03,
-            Self::Parity => 0x04,
+            Self::Even => 0x04,
             Self::ZeroUpper => 0x05,
             Self::ZeroLower => 0x06
         }
@@ -47,7 +47,7 @@ impl ArFlag {
             Self::Carry => "Carry",
             Self::Overflow => "Overflow",
             Self::Sign => "Sign",
-            Self::Parity => "Parity",
+            Self::Even => "Even",
             Self::ZeroUpper => "ZeroUpper",
             Self::ZeroLower => "ZeroLower"
         }
@@ -60,7 +60,7 @@ impl ArFlag {
             Self::Carry => "CF",
             Self::Overflow => "OF",
             Self::Sign => "SF",
-            Self::Parity => "PF",
+            Self::Even => "EF",
             Self::ZeroUpper => "ZUF",
             Self::ZeroLower => "ZLF"
         }

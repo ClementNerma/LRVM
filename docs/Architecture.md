@@ -63,15 +63,15 @@ Also, the `rr0` to `rr7` registers are conventionally reserved to be used by rou
 The `af` register is set after each arithmetic instruction. Each of its bits are _flags_.
 They give the following indications on the operation that happened (starting from the strongest bit):
 
-| No. | Flag name       | Symbol | Description                                                                                   |
-| --- | --------------- | ------ | --------------------------------------------------------------------------------------------- |
-| 0   | Zero Flag       | ZF     | Result is equal to `0`                                                                        |
-| 1   | Carry Flag      | CF     | Result would be too large to fit in 32 bits                                                   |
-| 2   | Overflow Flag   | OF     | Result would be too large to fit in 32 bits using two's complement representation             |
-| 3   | Sign Flag       | SF     | Result's first bit is `1` (so it would be negative in two's complement representation)        |
-| 4   | Parity Flag     | PF     | Result's last bit is `1` (so it is odd in both unsigned and two's complement representations) |
-| 5   | Zero-Upper Flag | ZUF    | Result is smaller than `2^16` (so its upper bits are zeros)                                   |
-| 6   | Zero-Lower Flag | ZLF    | Result's lower bits are zeros                                                                 |
+| No. | Flag name       | Symbol | Description                                                                                    |
+| --- | --------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| 0   | Zero Flag       | ZF     | Result is equal to `0`                                                                         |
+| 1   | Carry Flag      | CF     | Result would be too large to fit in 32 bits                                                    |
+| 2   | Overflow Flag   | OF     | Result would be too large to fit in 32 bits using two's complement representation              |
+| 3   | Sign Flag       | SF     | Result's first bit is `1` (so it would be negative in two's complement representation)         |
+| 4   | Even Flag       | EF     | Result's last bit is `0` (so it is even in both unsigned and two's complement representations) |
+| 5   | Zero-Upper Flag | ZUF    | Result is smaller than `2^16` (so its upper bits are zeros)                                    |
+| 6   | Zero-Lower Flag | ZLF    | Result's lower bits are zeros                                                                  |
 
 A flag is called _set_ if its value is `1`.
 The other bits of this register are unused and so are always equal to `0`.
@@ -222,7 +222,7 @@ They cannot be re-declared manually.
 | `CF`  | `0x01` | Flag: Carry      |
 | `OF`  | `0x02` | Flag: Overflow   |
 | `SF`  | `0x03` | Flag: Sign       |
-| `PF`  | `0x04` | Flag: Parity     |
+| `EF`  | `0x04` | Flag: Even       |
 | `ZUF` | `0x05` | Flag: Zero-Upper |
 | `ZLF` | `0x06` | Flag: Zero-Lower |
 

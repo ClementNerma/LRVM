@@ -646,7 +646,7 @@ impl CPU {
             has_overflow,
             // Sign Flag
             (result >> 31) & 0b1 == 1,
-            // Parity Flag
+            // Even Flag
             result & 0b1 == 0,
             // Zero-Upper Flag
             result <= 0xFFFF,

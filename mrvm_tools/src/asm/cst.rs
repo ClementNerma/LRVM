@@ -8,8 +8,8 @@ pub const CF: u8 = 0x01;
 pub const OF: u8 = 0x02;
 /// Sign Flag
 pub const SF: u8 = 0x03;
-/// Parity Flag
-pub const PF: u8 = 0x04;
+/// Even Flag
+pub const EF: u8 = 0x04;
 /// Zero-Upper Flag
 pub const ZUF: u8 = 0x05;
 /// Zero-Lower Flag
