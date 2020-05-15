@@ -354,6 +354,7 @@ impl Instr {
     }
 
     /// Convert the instruction to LASM assembly
+    #[allow(clippy::cognitive_complexity)]
     pub fn to_lasm(self) -> String {
         match self {
             Self::Cpy(a, b) => match (a, b) {
@@ -361,21 +362,31 @@ impl Instr {
                 (_, RegOrLit2::Lit(0)) => format!("zro {}", a.to_lasm()),
                 (_, _) => format!("cpy {}, {}", a.to_lasm(), b.to_lasm())
             },
-            Self::Ex(a, b) => format!("ex {}, {}", a.to_lasm(), b.to_lasm()),
+
+            Self::Ex(a, b) =>
+                format!("ex {}, {}", a.to_lasm(), b.to_lasm()),
+
             Self::Add(a, b) => match b {
                 RegOrLit2::Lit(1) => format!("inc {}", a.to_lasm()),
                 _ => format!("add {}, {}", a.to_lasm(), b.to_lasm())
             },
+
             Self::Sub(a, b) => match b {
                 RegOrLit2::Lit(1) => format!("dec {}", a.to_lasm()),
                 _ => format!("sub {}, {}", a.to_lasm(), b.to_lasm())
             },
+
             Self::Mul(a, b) => match b {
                 RegOrLit2::Lit(0) => format!("zro {}", a.to_lasm()),
                 _ => format!("mul {}, {}", a.to_lasm(), b.to_lasm())
             },
-            Self::Div(a, b, RegOrLit1::Reg(c)) => format!("div {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::Mod(a, b, RegOrLit1::Reg(c)) => format!("mod {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+
+            Self::Div(a, b, RegOrLit1::Reg(c)) =>
+                format!("div {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+
+            Self::Mod(a, b, RegOrLit1::Reg(c)) =>
+                format!("mod {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+
             Self::Div(a, b, RegOrLit1::Lit(mode)) | Self::Mod(a, b, RegOrLit1::Lit(mode)) => format!(
                 "{} {}, {}, {}",
                 if matches!(self, Self::Div(_, _, _)) { "div" } else { "mod" },
@@ -386,21 +397,38 @@ impl Instr {
                     Err(()) => format!("{:#010b} ; Warning: invalid division mode", mode)
                 }
             ),
+
             Self::And(a, b) => match b {
                 RegOrLit2::Lit(0) => format!("zro {}", a.to_lasm()),
                 _ => format!("and {}, {}", a.to_lasm(), b.to_lasm())
             },
-            Self::Bor(a, b) => format!("bor {}, {}", a.to_lasm(), b.to_lasm()),
+
+            Self::Bor(a, b) =>
+                format!("bor {}, {}", a.to_lasm(), b.to_lasm()),
+
             Self::Xor(a, b) => match b {
                 RegOrLit2::Reg(a) => format!("zro {}", a.to_lasm()),
                 _ => format!("xor {}, {}", a.to_lasm(), b.to_lasm())
             },
-            Self::Shl(a, b) => format!("shl {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::Shr(a, b) => format!("shr {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::Cmp(a, b) => format!("cmp {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::Jpr(a) => format!("jpr {}", a.to_lasm_signed()), // Be aware of the ".to_lasm_signed()" here as JPR takes a signed argument
-            Self::Lsm(a) => format!("lsm {}", a.to_lasm()),
-            Self::Itr(a) => format!("itr {}", a.to_lasm()),
+
+            Self::Shl(a, b) =>
+                format!("shl {}, {}", a.to_lasm(), b.to_lasm()),
+
+            Self::Shr(a, b) =>
+                format!("shr {}, {}", a.to_lasm(), b.to_lasm()),
+
+            Self::Cmp(a, b) =>
+                format!("cmp {}, {}", a.to_lasm(), b.to_lasm()),
+
+            Self::Jpr(a) =>
+                format!("jpr {}", a.to_lasm_signed()), // Be aware of the ".to_lasm_signed()" here as JPR takes a signed argument
+
+            Self::Lsm(a) =>
+                format!("lsm {}", a.to_lasm()),
+
+            Self::Itr(a) =>
+                format!("itr {}", a.to_lasm()),
+
             Self::If(a) => match a {
                 RegOrLit1::Reg(reg) => format!("if {}", reg.to_lasm()),
                 RegOrLit1::Lit(lit) => match ArFlag::decode(lit) {
@@ -412,6 +440,7 @@ impl Instr {
                     Err(()) => format!("if {:#X} ; Warning: unknown flag", lit)
                 }
             },
+
             Self::IfN(a) => match a {
                 RegOrLit1::Reg(reg) => format!("ifn {}", reg.to_lasm()),
                 RegOrLit1::Lit(lit) => match ArFlag::decode(lit) {
@@ -423,6 +452,7 @@ impl Instr {
                     Err(()) => format!("ifn {:#X} ; Warning: unknown flag", lit)
                 }
             },
+
             Self::If2(a, b, c) => {
                 let mut warns = vec![];
 
@@ -479,24 +509,47 @@ impl Instr {
 
                 if warns.is_empty() { no_warn } else { format!("{} ; {}", no_warn, warns.join(", ")) }
             },
-            Self::Lsa(a, b, c) => format!("lsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::Lea(a, b, c) => format!("lea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::Wsa(a, b, c) => format!("wsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::Wea(a, b, c) => format!("wea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::Srm(a, b, c) => format!("srm {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
-            Self::Push(a) => format!("push {}", a.to_lasm()),
+
+            Self::Lsa(a, b, c) =>
+                format!("lsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+
+            Self::Lea(a, b, c) =>
+                format!("lea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+
+            Self::Wsa(a, b, c) =>
+                format!("wsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+
+            Self::Wea(a, b, c) =>
+                format!("wea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+
+            Self::Srm(a, b, c) =>
+                format!("srm {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+
+            Self::Push(a) =>
+                format!("push {}", a.to_lasm()),
+
             Self::Pop(a) => match a {
                 Reg::pc => "ret".to_string(),
                 _ => format!("pop {}", a.to_lasm())
             },
-            Self::Call(a) => format!("call {}", a.to_lasm()),
-            Self::Hwd(a, b, c) => format!("hwd {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm_with(|lit| match HwInfo::decode(lit) {
+
+            Self::Call(a) =>
+                format!("call {}", a.to_lasm()),
+
+            Self::Hwd(a, b, c) =>
+                format!("hwd {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm_with(|lit| match HwInfo::decode(lit) {
                 Ok(info) => info.to_lasm().to_string(),
                 Err(()) => format!("{:#X} ; Warning: unknown hardware information", lit)
             })),
-            Self::Cycles(a) => format!("cycles {}", a.to_lasm()),
-            Self::Halt() => "halt".to_string(),
-            Self::Reset(a) => format!("reset {}", a.to_lasm()),
+
+            Self::Cycles(a) =>
+                format!("cycles {}", a.to_lasm()),
+
+            Self::Halt() =>
+                "halt".to_string(),
+
+            Self::Reset(a) =>
+                format!("reset {}", a.to_lasm()),
         }
     }
 }
