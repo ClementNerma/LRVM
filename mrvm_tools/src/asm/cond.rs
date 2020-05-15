@@ -50,4 +50,9 @@ impl If2Cond {
             Self::Right => "RIGHT"
         }
     }
+
+    /// Convert the condition to its LASM representation
+    pub fn to_lasm(self) -> String {
+        format!("CMP_{}", self.name())
+    }
 }

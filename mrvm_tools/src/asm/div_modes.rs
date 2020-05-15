@@ -21,8 +21,8 @@ impl DivSignMode {
 
     pub fn from_mask(mask: u8) -> Result<Self, ()> {
         match mask {
-            mask if mask == cst::DIV_USG => Ok(Self::Unsigned),
-            mask if mask == cst::DIV_SIG => Ok(Self::Signed),
+            cst::DIV_USG => Ok(Self::Unsigned),
+            cst::DIV_SIG => Ok(Self::Signed),
             _ => Err(())
         }
     }
@@ -43,6 +43,13 @@ impl DivSignMode {
 
     pub fn to_mode(self) -> DivMode {
         DivMode::from(self, DivByZeroMode::default(), DivMinByLessOneMode::default())
+    }
+
+    pub fn to_lasm(self) -> &'static str {
+        match self {
+            Self::Unsigned => "DIV_USG",
+            Self::Signed => "DIV_SIG"
+        }
     }
 }
 
@@ -78,10 +85,10 @@ pub enum DivByZeroMode {
 impl DivByZeroMode {
     pub fn from_mask(mask: u8) -> Result<Self, ()> {
         match mask {
-            mask if mask == cst::DIV_ZRO_FRB => Ok(Self::Forbid),
-            mask if mask == cst::DIV_ZRO_MIN => Ok(Self::EqToMin),
-            mask if mask == cst::DIV_ZRO_ZRO => Ok(Self::EqToZero),
-            mask if mask == cst::DIV_ZRO_MAX => Ok(Self::EqToMin),
+            cst::DIV_ZRO_FRB => Ok(Self::Forbid),
+            cst::DIV_ZRO_MIN => Ok(Self::EqToMin),
+            cst::DIV_ZRO_ZRO => Ok(Self::EqToZero),
+            cst::DIV_ZRO_MAX => Ok(Self::EqToMin),
             _ => Err(())
         }
     }
@@ -106,6 +113,15 @@ impl DivByZeroMode {
 
     pub fn to_mode(self) -> DivMode {
         DivMode::from(DivSignMode::default(), self, DivMinByLessOneMode::default())
+    }
+
+    pub fn to_lasm(self) -> &'static str {
+        match self {
+            Self::Forbid => "DIV_ZRO_FRB",
+            Self::EqToMin => "DIV_ZRO_MIN",
+            Self::EqToZero => "DIV_ZRO_ZRO",
+            Self::EqToMax => "DIV_ZRO_MAX"
+        }
     }
 }
 
@@ -141,10 +157,10 @@ pub enum DivMinByLessOneMode {
 impl DivMinByLessOneMode {
     pub fn from_mask(mask: u8) -> Result<Self, ()> {
         match mask {
-            mask if mask == cst::DIV_MBO_FRB => Ok(Self::Forbid),
-            mask if mask == cst::DIV_MBO_MIN => Ok(Self::EqToMin),
-            mask if mask == cst::DIV_MBO_ZRO => Ok(Self::EqToZero),
-            mask if mask == cst::DIV_MBO_MAX => Ok(Self::EqToMin),
+            cst::DIV_MBO_FRB => Ok(Self::Forbid),
+            cst::DIV_MBO_MIN => Ok(Self::EqToMin),
+            cst::DIV_MBO_ZRO => Ok(Self::EqToZero),
+            cst::DIV_MBO_MAX => Ok(Self::EqToMax),
             _ => Err(())
         }
     }
@@ -169,6 +185,15 @@ impl DivMinByLessOneMode {
 
     pub fn to_mode(self) -> DivMode {
         DivMode::from(DivSignMode::default(), DivByZeroMode::default(), self)
+    }
+
+    pub fn to_lasm(self) -> &'static str {
+        match self {
+            Self::Forbid => "DIV_MBO_FRB",
+            Self::EqToMin => "DIV_MBO_MIN",
+            Self::EqToZero => "DIV_MBO_ZRO",
+            Self::EqToMax => "DIV_MBO_MAX"
+        }
     }
 }
 
@@ -242,6 +267,24 @@ impl DivMode {
 
     pub fn to_roc(self) -> RegOrLit1 {
         self.mode().into()
+    }
+
+    pub fn to_lasm(self) -> String {
+        let mut modes = vec![];
+        
+        if self.0 != DivSignMode::default() {
+            modes.push(self.0.to_lasm());
+        }
+
+        if self.1 != DivByZeroMode::default() {
+            modes.push(self.1.to_lasm());
+        }
+
+        if self.2 != DivMinByLessOneMode::default() {
+            modes.push(self.2.to_lasm());
+        }
+
+        if modes.is_empty() { "0".to_owned() } else { modes.join(" | ") }
     }
 }
 

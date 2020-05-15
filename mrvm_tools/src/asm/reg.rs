@@ -205,6 +205,11 @@ impl Reg {
     pub fn to_roc_2(self) -> RegOrLit2 {
         RegOrLit2::reg(self)
     }
+
+    /// Convert the register to LASM representation
+    pub fn to_lasm(self) -> &'static str {
+        self.name()
+    }
 }
 
 impl TryFrom<u8> for Reg {

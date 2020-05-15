@@ -77,7 +77,7 @@ impl Program {
 
     /// Encode the program to folded bytes (list of 4-bytes slices)
     pub fn to_folded_bytes(&self) -> Vec<[u8; 4]> {
-        self.0.iter().map(|instr| instr.encode()).collect()
+        self.instr().map(|instr| instr.encode()).collect()
     }
 
     /// Encode the program as a list of bytes
@@ -93,6 +93,16 @@ impl Program {
 
     /// Encode the progrma as a list of words
     pub fn encode_words(&self) -> Vec<u32> {
-        self.0.iter().map(|instr| instr.encode_word()).collect()
+        self.instr().map(|instr| instr.encode_word()).collect()
+    }
+
+    /// Convert the program to a LASM source code
+    pub fn to_lasm(&self) -> String {
+        self.to_lasm_lines().join("\n")
+    }
+
+    /// Convert each line of the program to its LASM source code
+    pub fn to_lasm_lines(&self) -> Vec<String> {
+        self.instr().map(|instr| instr.to_lasm()).collect()
     }
 }

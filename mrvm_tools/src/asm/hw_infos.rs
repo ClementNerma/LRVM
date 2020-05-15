@@ -26,7 +26,8 @@ pub enum HwInfo {
 }
 
 impl HwInfo {
-    pub fn from_code(code: u8) -> Result<Self, ()> {
+    /// Decode an hardware information code from its number
+    pub fn decode(code: u8) -> Result<Self, ()> {
         match code {
             0x00 => Ok(Self::Count),
             0x01 => Ok(Self::UIDUpper),
@@ -53,6 +54,7 @@ impl HwInfo {
         }
     }
 
+    /// Get the hardware information code as a number
     pub fn code(self) -> u8 {
         match self {
             Self::Count => 0x00,
@@ -76,6 +78,33 @@ impl HwInfo {
             Self::IsMapped => 0xA0,
             Self::MapStart => 0xA1,
             Self::MapEnd => 0xA2,
+        }
+    }
+
+    /// Convert the hardware information code to its LASM representation
+    pub fn to_lasm(self) -> &'static str {
+        match self {
+            Self::Count => "HWD_COUNT",
+            Self::UIDUpper => "HWD_UID_UPPER",
+            Self::UIDLower => "HWD_UID_LOWER",
+            Self::NameLength => "HWD_NAME_LEN",
+            Self::NameW1 => "HWD_NAME_W1",
+            Self::NameW2 => "HWD_NAME_W2",
+            Self::NameW3 => "HWD_NAME_W3",
+            Self::NameW4 => "HWD_NAME_W4",
+            Self::NameW5 => "HWD_NAME_W5",
+            Self::NameW6 => "HWD_NAME_W6",
+            Self::NameW7 => "HWD_NAME_W7",
+            Self::NameW8 => "HWD_NAME_W8",
+            Self::DevSize => "HWD_SIZE",
+            Self::Category => "HWD_CAT",
+            Self::Type => "HWD_TYPE",
+            Self::Model => "HWD_MODEL",
+            Self::DataUpper => "HWD_DATA_UPPER",
+            Self::DataLower => "HWD_DATA_LOWER",
+            Self::IsMapped => "HWD_IS_MAPPED",
+            Self::MapStart => "HWD_MAP_START",
+            Self::MapEnd => "HWD_MAP_END",
         }
     }
 }

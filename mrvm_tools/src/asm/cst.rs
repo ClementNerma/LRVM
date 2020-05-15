@@ -16,22 +16,24 @@ pub const ZUF: u8 = 0x05;
 pub const ZLF: u8 = 0x06;
 
 /// Unsigned division (mode)
-pub const DIV_USG: u8 = 0x10;
+pub const DIV_USG: u8 = 0;
 /// Signed division (mode)
-pub const DIV_SIG: u8 = 0x10;
+pub const DIV_SIG: u8 = 0b0001_0000;
+
 /// Forbid division by zero (mode)
-pub const DIV_ZRO_FRB: u8 = 0x00;
+pub const DIV_ZRO_FRB: u8 = 0;
 /// Make division by zero result in the minimum signed value (mode)
-pub const DIV_ZRO_MIN: u8 = 0x04;
+pub const DIV_ZRO_MIN: u8 = 0b0000_0100;
 /// Make division by zero result in zero (mode)
-pub const DIV_ZRO_ZRO: u8 = 0x08;
+pub const DIV_ZRO_ZRO: u8 = 0b0000_1000;
 /// Make division by zero result in the maximum signed value (mode)
-pub const DIV_ZRO_MAX: u8 = 0x0C;
+pub const DIV_ZRO_MAX: u8 = 0b0000_1100;
+
 /// Forbid overflowing division by -1 (mode)
-pub const DIV_MBO_FRB: u8 = 0x00;
+pub const DIV_MBO_FRB: u8 = 0;
 /// Make overflowing division by -1 result in the minimum signed value (mode)
-pub const DIV_MBO_MIN: u8 = 0x01;
+pub const DIV_MBO_MIN: u8 = 0b0000_0001;
 /// Make overflowing division by -1 result in zero (mode)
-pub const DIV_MBO_ZRO: u8 = 0x02;
+pub const DIV_MBO_ZRO: u8 = 0b0000_0010;
 /// Make overflowing division by -1 result in the maximum signed value (mode)
-pub const DIV_MBO_MAX: u8 = 0x03;
+pub const DIV_MBO_MAX: u8 = 0b0000_0011;

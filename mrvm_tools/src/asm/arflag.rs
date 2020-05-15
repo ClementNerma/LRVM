@@ -14,7 +14,7 @@ pub enum ArFlag {
 
 impl ArFlag {
     /// Decode an arithmetic flag from its code
-    pub fn from_code(code: u8) -> Result<Self, ()> {
+    pub fn decode(code: u8) -> Result<Self, ()> {
         match code {
             0x00 => Ok(Self::Zero),
             0x01 => Ok(Self::Carry),
@@ -65,13 +65,18 @@ impl ArFlag {
             Self::ZeroLower => "ZLF"
         }
     }
+
+    /// Convert the flag to its LASM representation
+    pub fn to_lasm(self) -> &'static str {
+        self.short_name()
+    }
 }
 
 impl TryFrom<u8> for ArFlag {
     type Error = ();
 
     fn try_from(code: u8) -> Result<Self, Self::Error> {
-        Self::from_code(code)
+        Self::decode(code)
     }
 }
 
