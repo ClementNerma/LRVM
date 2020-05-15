@@ -356,11 +356,24 @@ impl Instr {
     /// Convert the instruction to LASM assembly
     pub fn to_lasm(self) -> String {
         match self {
-            Self::Cpy(a, b) => format!("cpy {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Cpy(a, b) => match (a, b) {
+                (Reg::pc, _) => format!("jp {}", b.to_lasm()),
+                (_, RegOrLit2::Lit(0)) => format!("zro {}", a.to_lasm()),
+                (_, _) => format!("cpy {}, {}", a.to_lasm(), b.to_lasm())
+            },
             Self::Ex(a, b) => format!("ex {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::Add(a, b) => format!("add {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::Sub(a, b) => format!("sub {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::Mul(a, b) => format!("mul {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Add(a, b) => match b {
+                RegOrLit2::Lit(1) => format!("inc {}", a.to_lasm()),
+                _ => format!("add {}, {}", a.to_lasm(), b.to_lasm())
+            },
+            Self::Sub(a, b) => match b {
+                RegOrLit2::Lit(1) => format!("dec {}", a.to_lasm()),
+                _ => format!("sub {}, {}", a.to_lasm(), b.to_lasm())
+            },
+            Self::Mul(a, b) => match b {
+                RegOrLit2::Lit(0) => format!("zro {}", a.to_lasm()),
+                _ => format!("mul {}, {}", a.to_lasm(), b.to_lasm())
+            },
             Self::Div(a, b, RegOrLit1::Reg(c)) => format!("div {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
             Self::Mod(a, b, RegOrLit1::Reg(c)) => format!("mod {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
             Self::Div(a, b, RegOrLit1::Lit(mode)) | Self::Mod(a, b, RegOrLit1::Lit(mode)) => format!(
@@ -373,9 +386,15 @@ impl Instr {
                     Err(()) => format!("{:#010b} ; Warning: invalid division mode", mode)
                 }
             ),
-            Self::And(a, b) => format!("and {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::And(a, b) => match b {
+                RegOrLit2::Lit(0) => format!("zro {}", a.to_lasm()),
+                _ => format!("and {}, {}", a.to_lasm(), b.to_lasm())
+            },
             Self::Bor(a, b) => format!("bor {}, {}", a.to_lasm(), b.to_lasm()),
-            Self::Xor(a, b) => format!("xor {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Xor(a, b) => match b {
+                RegOrLit2::Reg(a) => format!("zro {}", a.to_lasm()),
+                _ => format!("xor {}, {}", a.to_lasm(), b.to_lasm())
+            },
             Self::Shl(a, b) => format!("shl {}, {}", a.to_lasm(), b.to_lasm()),
             Self::Shr(a, b) => format!("shr {}, {}", a.to_lasm(), b.to_lasm()),
             Self::Cmp(a, b) => format!("cmp {}, {}", a.to_lasm(), b.to_lasm()),
@@ -466,7 +485,10 @@ impl Instr {
             Self::Wea(a, b, c) => format!("wea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
             Self::Srm(a, b, c) => format!("srm {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
             Self::Push(a) => format!("push {}", a.to_lasm()),
-            Self::Pop(a) => format!("pop {}", a.to_lasm()),
+            Self::Pop(a) => match a {
+                Reg::pc => "ret".to_string(),
+                _ => format!("pop {}", a.to_lasm())
+            },
             Self::Call(a) => format!("call {}", a.to_lasm()),
             Self::Hwd(a, b, c) => format!("hwd {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm_with(|lit| match HwInfo::decode(lit) {
                 Ok(info) => info.to_lasm().to_string(),
