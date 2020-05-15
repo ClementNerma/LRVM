@@ -43,7 +43,7 @@ fn main() {
             if ex != 0 {
                 println!("Exception occurred while manually reading memory address {:#010X}: {}", addr, match AuxHwException::decode(ex) {
                     Ok(ex) => format!("{}", ex),
-                    Err(()) => "<unknown exception>".to_owned()
+                    Err(()) => "<unknown exception>".to_string()
                 });
             }
 
@@ -80,7 +80,7 @@ fn main() {
             println!("> Data     : {:#018X}", ((read(aux_addr + 0x38) as u64) << 32) + read(aux_addr + 0x3C) as u64);
 
             println!("> Mapping  : {}", match read(aux_addr + 0x40) {
-                0x0000_0000 => "<device is not mapped>".to_owned(),
+                0x0000_0000 => "<device is not mapped>".to_string(),
                 _ => format!("{:#010X} -> {:#010X}", read(aux_addr + 0x44), read(aux_addr + 0x48))
             });
         }

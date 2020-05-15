@@ -52,7 +52,7 @@ macro_rules! declare_val {
             /// Convert the value to its LASM representation
             pub fn to_lasm(self) -> String {
                 match self {
-                    Self::Reg(reg) => reg.name().to_owned(),
+                    Self::Reg(reg) => reg.name().to_string(),
                     Self::Lit(num) => format!("{:#X}", num)
                 }
             }
@@ -61,7 +61,7 @@ macro_rules! declare_val {
             /// Represent literals as signed numbers
             pub fn to_lasm_signed(self) -> String {
                 match self {
-                    Self::Reg(reg) => reg.name().to_owned(),
+                    Self::Reg(reg) => reg.name().to_string(),
                     Self::Lit(num) => match num as $inum {
                         num @ std::$inum::MIN..=-1 => format!("-{:#X}", -num),
                         num @ 0..=std::$inum::MAX => format!("{:#X}", num),
@@ -72,7 +72,7 @@ macro_rules! declare_val {
             /// Convert the value to its LASM representation, using a custom formatter for literals
             pub fn to_lasm_with(self, formatter: impl FnOnce($num) -> String) -> String {
                 match self {
-                    Self::Reg(reg) => reg.name().to_owned(),
+                    Self::Reg(reg) => reg.name().to_string(),
                     Self::Lit(num) => formatter(num)
                 }
             }

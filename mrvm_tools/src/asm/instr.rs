@@ -381,18 +381,18 @@ impl Instr {
             Self::Lsm(a) => format!("lsm {}", a.to_lasm()),
             Self::Itr(a) => format!("itr {}", a.to_lasm()),
             Self::If(a) => format!("if {}", a.to_lasm_with(|lit| match ArFlag::decode(lit) {
-                Ok(flag) => flag.to_lasm().to_owned(),
+                Ok(flag) => flag.to_lasm().to_string(),
                 Err(()) => format!("{:#X} ; Warning: unknown flag", lit)
             })),
             Self::IfN(a) => format!("ifn {}", a.to_lasm_with(|lit| match ArFlag::decode(lit) {
-                Ok(flag) => flag.to_lasm().to_owned(),
+                Ok(flag) => flag.to_lasm().to_string(),
                 Err(()) => format!("{:#X} ; Warning: unknown flag", lit)
             })),
             Self::If2(a, b, c) => {
                 let mut warns = vec![];
                 let mut decode_flag = |flag: RegOrLit1, warn: &'static str| -> String {
                     flag.to_lasm_with(|lit| match ArFlag::decode(lit) {
-                        Ok(flag) => flag.to_lasm().to_owned(),
+                        Ok(flag) => flag.to_lasm().to_string(),
                         Err(()) => {
                             warns.push(warn);
                             format!("{:#X}", lit)
@@ -411,7 +411,7 @@ impl Instr {
                             format!("{:#X}", lit)
                         }
                     }),
-                    if warns.is_empty() { "".to_owned() } else {
+                    if warns.is_empty() { "".to_string() } else {
                         format!("; Warning{}: {}", if warns.len() > 1 { "s" } else { "" }, warns.join(" ; "))
                     }
                 )
@@ -425,11 +425,11 @@ impl Instr {
             Self::Pop(a) => format!("pop {}", a.to_lasm()),
             Self::Call(a) => format!("call {}", a.to_lasm()),
             Self::Hwd(a, b, c) => format!("hwd {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm_with(|lit| match HwInfo::decode(lit) {
-                Ok(info) => info.to_lasm().to_owned(),
+                Ok(info) => info.to_lasm().to_string(),
                 Err(()) => format!("{:#X} ; Warning: unknown hardware information", lit)
             })),
             Self::Cycles(a) => format!("cycles {}", a.to_lasm()),
-            Self::Halt() => "halt".to_owned(),
+            Self::Halt() => "halt".to_string(),
             Self::Reset(a) => format!("reset {}", a.to_lasm()),
         }
     }

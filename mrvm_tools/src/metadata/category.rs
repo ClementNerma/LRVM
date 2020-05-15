@@ -67,7 +67,7 @@ impl fmt::Display for DeviceCategory {
             Self::Memory(m) => format!("Memory:{}", m),
             Self::Storage(s) => format!("Storage:{}", s),
             Self::PlatformSpecific(code) => format!("PlatformSpecific:(Code={:#010X})", code),
-            Self::Uncategorized() => "Uncategorized".to_owned()
+            Self::Uncategorized() => "Uncategorized".to_string()
         })
     }
 }

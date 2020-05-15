@@ -341,7 +341,7 @@ impl DivMode {
             modes.push(self.2.to_lasm());
         }
 
-        if modes.is_empty() { "0".to_owned() } else { modes.join(" | ") }
+        if modes.is_empty() { "0".to_string() } else { modes.join(" | ") }
     }
 }
 
