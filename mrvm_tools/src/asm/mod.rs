@@ -16,7 +16,7 @@ mod prog;
 pub use arflag::ArFlag;
 pub use reg::Reg;
 pub use val::{RegOrLit1, RegOrLit2};
-pub use div_modes::{DivSignMode, DivByZeroMode, DivMinByLessOneMode, DivMode};
+pub use div_modes::{DivSignMode, DivByZeroMode, DivOverflowMode, DivMode};
 pub use cond::If2Cond;
 pub use hw_infos::HwInfo;
 pub use instr::{Instr, InstrDecodingError};

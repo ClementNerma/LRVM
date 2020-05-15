@@ -15,6 +15,13 @@ pub const ZUF: u8 = 0x05;
 /// Zero-Lower Flag
 pub const ZLF: u8 = 0x06;
 
+/// Division sign mode mask
+pub const DIV_SIGN_MODE_MASK: u8 = 0b0001_0000;
+/// Division by zero mode mask
+pub const DIV_ZERO_MODE_MASK: u8 = 0b0000_1100;
+/// Overflowing division mode mask
+pub const DIV_OVFW_MODE_MASK: u8 = 0b0000_0011;
+
 /// Unsigned division (mode)
 pub const DIV_USG: u8 = 0;
 /// Signed division (mode)

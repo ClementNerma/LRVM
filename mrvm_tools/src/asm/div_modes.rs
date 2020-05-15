@@ -1,10 +1,35 @@
 //! Strongly-typed interfaces for division modes
 
 use std::convert::TryFrom;
+use std::fmt::Debug;
 use super::{cst, RegOrLit1};
 
+/// Division sub mode
+pub trait DivSubMode: Sized + Debug + Copy + Clone + PartialEq + Eq {
+    /// Sub-mode mask
+    const MASK: u8;
+
+    /// Decode the sub mode from a complete mode (e.g. decode the sign mode from the complete 8-bits division mode)
+    fn from_mode(mode: u8) -> Result<Self, ()> {
+        Self::decode(mode & Self::MASK)
+    }
+
+    /// Decode the sub mode
+    fn decode(sub_mode: u8) -> Result<Self, ()>;
+
+    /// Encode the sub mode
+    fn encode(self) -> u8;
+
+    /// Convert the sub mode to a full division mode.  
+    /// All default
+    fn to_mode(self) -> DivMode;
+
+    /// Convert the sub mode to its LASM representation (constant name)
+    fn to_lasm(self) -> &'static str;
+}
+
 /// Division sign
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DivSignMode {
     Unsigned,
     Signed
@@ -19,33 +44,37 @@ impl DivSignMode {
         }
     }
 
-    pub fn from_mask(mask: u8) -> Result<Self, ()> {
-        match mask {
-            cst::DIV_USG => Ok(Self::Unsigned),
-            cst::DIV_SIG => Ok(Self::Signed),
-            _ => Err(())
-        }
-    }
-
     pub fn is_signed(self) -> bool {
         match self {
             Self::Unsigned => false,
             Self::Signed => true
         }
     }
+}
 
-    pub fn mask(self) -> u8 {
+impl DivSubMode for DivSignMode {
+    const MASK: u8 = cst::DIV_SIGN_MODE_MASK;
+
+    fn decode(sub_mode: u8) -> Result<Self, ()> {
+        match sub_mode {
+            cst::DIV_USG => Ok(Self::Unsigned),
+            cst::DIV_SIG => Ok(Self::Signed),
+            _ => Err(())
+        }
+    }
+
+    fn encode(self) -> u8 {
         match self {
             Self::Unsigned => cst::DIV_USG,
             Self::Signed => cst::DIV_SIG
         }
     }
 
-    pub fn to_mode(self) -> DivMode {
-        DivMode::from(self, DivByZeroMode::default(), DivMinByLessOneMode::default())
+    fn to_mode(self) -> DivMode {
+        DivMode::from_sub_modes(self, DivByZeroMode::default(), DivOverflowMode::default())
     }
 
-    pub fn to_lasm(self) -> &'static str {
+    fn to_lasm(self) -> &'static str {
         match self {
             Self::Unsigned => "DIV_USG",
             Self::Signed => "DIV_SIG"
@@ -63,18 +92,18 @@ impl TryFrom<u8> for DivSignMode {
     type Error = ();
 
     fn try_from(mask: u8) -> Result<Self, Self::Error> {
-        Self::from_mask(mask)
+        Self::decode(mask)
     }
 }
 
 impl Into<u8> for DivSignMode {
     fn into(self) -> u8 {
-        self.mask()
+        self.encode()
     }
 }
 
-/// Mode for division by zero
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+/// Rule for division by zero
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DivByZeroMode {
     Forbid,
     EqToMin,
@@ -83,25 +112,6 @@ pub enum DivByZeroMode {
 }
 
 impl DivByZeroMode {
-    pub fn from_mask(mask: u8) -> Result<Self, ()> {
-        match mask {
-            cst::DIV_ZRO_FRB => Ok(Self::Forbid),
-            cst::DIV_ZRO_MIN => Ok(Self::EqToMin),
-            cst::DIV_ZRO_ZRO => Ok(Self::EqToZero),
-            cst::DIV_ZRO_MAX => Ok(Self::EqToMin),
-            _ => Err(())
-        }
-    }
-
-    pub fn mask(self) -> u8 {
-        match self {
-            Self::Forbid   => cst::DIV_ZRO_FRB,
-            Self::EqToMin  => cst::DIV_ZRO_MIN,
-            Self::EqToZero => cst::DIV_ZRO_ZRO,
-            Self::EqToMax  => cst::DIV_ZRO_MAX
-        }
-    }
-
     pub fn result(self) -> u32 {
         match self {
             Self::Forbid   => 0,
@@ -110,12 +120,35 @@ impl DivByZeroMode {
             Self::EqToMax  => std::i32::MAX as u32
         }
     }
+}
 
-    pub fn to_mode(self) -> DivMode {
-        DivMode::from(DivSignMode::default(), self, DivMinByLessOneMode::default())
+impl DivSubMode for DivByZeroMode {
+    const MASK: u8 = cst::DIV_ZERO_MODE_MASK;
+    
+    fn decode(sub_mode: u8) -> Result<Self, ()> {
+        match sub_mode {
+            cst::DIV_ZRO_FRB => Ok(Self::Forbid),
+            cst::DIV_ZRO_MIN => Ok(Self::EqToMin),
+            cst::DIV_ZRO_ZRO => Ok(Self::EqToZero),
+            cst::DIV_ZRO_MAX => Ok(Self::EqToMin),
+            _ => Err(())
+        }
     }
 
-    pub fn to_lasm(self) -> &'static str {
+    fn encode(self) -> u8 {
+        match self {
+            Self::Forbid   => cst::DIV_ZRO_FRB,
+            Self::EqToMin  => cst::DIV_ZRO_MIN,
+            Self::EqToZero => cst::DIV_ZRO_ZRO,
+            Self::EqToMax  => cst::DIV_ZRO_MAX
+        }
+    }
+
+    fn to_mode(self) -> DivMode {
+        DivMode::from_sub_modes(DivSignMode::default(), self, DivOverflowMode::default())
+    }
+
+    fn to_lasm(self) -> &'static str {
         match self {
             Self::Forbid => "DIV_ZRO_FRB",
             Self::EqToMin => "DIV_ZRO_MIN",
@@ -135,45 +168,26 @@ impl TryFrom<u8> for DivByZeroMode {
     type Error = ();
 
     fn try_from(mask: u8) -> Result<Self, Self::Error> {
-        Self::from_mask(mask)
+        Self::decode(mask)
     }
 }
 
 impl Into<u8> for DivByZeroMode {
     fn into(self) -> u8 {
-        self.mask()
+        self.encode()
     }
 }
 
-/// Mode for overflowing division by -1
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum DivMinByLessOneMode {
+/// Rule for overflowing division (divising minimum possible value by -1)
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DivOverflowMode {
     Forbid,
     EqToMin,
     EqToZero,
     EqToMax
 }
 
-impl DivMinByLessOneMode {
-    pub fn from_mask(mask: u8) -> Result<Self, ()> {
-        match mask {
-            cst::DIV_MBO_FRB => Ok(Self::Forbid),
-            cst::DIV_MBO_MIN => Ok(Self::EqToMin),
-            cst::DIV_MBO_ZRO => Ok(Self::EqToZero),
-            cst::DIV_MBO_MAX => Ok(Self::EqToMax),
-            _ => Err(())
-        }
-    }
-
-    pub fn mask(self) -> u8 {
-        match self {
-            Self::Forbid   => cst::DIV_MBO_FRB,
-            Self::EqToMin  => cst::DIV_MBO_MIN,
-            Self::EqToZero => cst::DIV_MBO_ZRO,
-            Self::EqToMax  => cst::DIV_MBO_MAX
-        }
-    }
-
+impl DivOverflowMode {
     pub fn result(self) -> u32 {
         match self {
             Self::Forbid   => 0,
@@ -182,12 +196,35 @@ impl DivMinByLessOneMode {
             Self::EqToMax  => std::i32::MAX as u32
         }
     }
+}
 
-    pub fn to_mode(self) -> DivMode {
-        DivMode::from(DivSignMode::default(), DivByZeroMode::default(), self)
+impl DivSubMode for DivOverflowMode {
+    const MASK: u8 = cst::DIV_OVFW_MODE_MASK;
+
+    fn decode(sub_mode: u8) -> Result<Self, ()> {
+        match sub_mode {
+            cst::DIV_MBO_FRB => Ok(Self::Forbid),
+            cst::DIV_MBO_MIN => Ok(Self::EqToMin),
+            cst::DIV_MBO_ZRO => Ok(Self::EqToZero),
+            cst::DIV_MBO_MAX => Ok(Self::EqToMax),
+            _ => Err(())
+        }
     }
 
-    pub fn to_lasm(self) -> &'static str {
+    fn encode(self) -> u8 {
+        match self {
+            Self::Forbid   => cst::DIV_MBO_FRB,
+            Self::EqToMin  => cst::DIV_MBO_MIN,
+            Self::EqToZero => cst::DIV_MBO_ZRO,
+            Self::EqToMax  => cst::DIV_MBO_MAX
+        }
+    }
+
+    fn to_mode(self) -> DivMode {
+        DivMode::from_sub_modes(DivSignMode::default(), DivByZeroMode::default(), self)
+    }
+
+    fn to_lasm(self) -> &'static str {
         match self {
             Self::Forbid => "DIV_MBO_FRB",
             Self::EqToMin => "DIV_MBO_MIN",
@@ -197,78 +234,98 @@ impl DivMinByLessOneMode {
     }
 }
 
-impl Default for DivMinByLessOneMode {
+impl Default for DivOverflowMode {
     fn default() -> Self {
         Self::Forbid
     }
 }
 
-impl TryFrom<u8> for DivMinByLessOneMode {
+impl TryFrom<u8> for DivOverflowMode {
     type Error = ();
 
     fn try_from(mask: u8) -> Result<Self, Self::Error> {
-        Self::from_mask(mask)
+        Self::decode(mask)
     }
 }
 
-impl Into<u8> for DivMinByLessOneMode {
+impl Into<u8> for DivOverflowMode {
     fn into(self) -> u8 {
-        self.mask()
+        self.encode()
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct DivMode(pub DivSignMode, pub DivByZeroMode, pub DivMinByLessOneMode);
+/// Division/modulus mode, required for the 'div' and 'mod' instructions
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub struct DivMode(pub DivSignMode, pub DivByZeroMode, pub DivOverflowMode);
 
 impl DivMode {
+    /// Get the default division mode:
+    /// - Perform unsigned division
+    /// - Forbid division by zero (results in exception)
+    /// - Forbid overflowing division (results in exception)
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn from(sign_mode: DivSignMode, zero_mode: DivByZeroMode, mbo_mode: DivMinByLessOneMode) -> Self {
-        Self(sign_mode, zero_mode, mbo_mode)
-    }
-
-    pub fn from_mode(mode: u8) -> Result<Self, ()> {
+    /// Decode a division mode
+    pub fn decode(mode: u8) -> Result<Self, ()> {
         Ok(Self(
-            DivSignMode::from_mask(mode & 0b0001_0000)?,
-            DivByZeroMode::from_mask(mode & 0b0000_1100)?,
-            DivMinByLessOneMode::from_mask(mode & 0b0000_0011)?
+            DivSignMode::from_mode(mode)?,
+            DivByZeroMode::from_mode(mode)?,
+            DivOverflowMode::from_mode(mode)?
         ))
     }
 
+    /// Get the division mode from its sub modes
+    pub fn from_sub_modes(sign_mode: DivSignMode, zero_mode: DivByZeroMode, mbo_mode: DivOverflowMode) -> Self {
+        Self(sign_mode, zero_mode, mbo_mode)
+    }
+
+    /// Get the sign mode
     pub fn sign_mode(self) -> DivSignMode {
         self.0
     }
 
+    /// Get the zero mode
     pub fn zro_mode(self) -> DivByZeroMode {
         self.1
     }
 
-    pub fn mbo_mode(self) -> DivMinByLessOneMode {
+    /// Get the overflow mode
+    pub fn mbo_mode(self) -> DivOverflowMode {
         self.2
     }
 
-    pub fn set_sign_mode(&mut self, mode: DivSignMode) {
+    /// Set the sign mode
+    pub fn with_sign_mode(mut self, mode: DivSignMode) -> Self {
         self.0 = mode;
+        self
     }
 
-    pub fn set_zro_mode(&mut self, mode: DivByZeroMode) {
+    /// Set the zero mode
+    pub fn with_zro_mode(mut self, mode: DivByZeroMode) -> Self {
         self.1 = mode;
+        self
     }
 
-    pub fn set_mbo_mode(&mut self, mode: DivMinByLessOneMode) {
+    /// Set the overflow mode
+    pub fn with_mbo_mode(mut self, mode: DivOverflowMode) -> Self {
         self.2 = mode;
+        self
     }
 
-    pub fn mode(self) -> u8 {
-        self.0.mask() | self.1.mask() | self.2.mask()
+    /// Encode the mode as a number
+    pub fn encode(self) -> u8 {
+        self.0.encode() | self.1.encode() | self.2.encode()
     }
 
-    pub fn to_roc(self) -> RegOrLit1 {
-        self.mode().into()
+    /// Convert the mode to a register-or-literal value
+    pub fn to_val(self) -> RegOrLit1 {
+        self.encode().into()
     }
 
+    /// Convert the mode to its LASM representation (e.g. 'DIV_MIN_ZRO | DIV_MBO_MAX').  
+    /// Sub modes that are set to their default value are not present in the returned string.
     pub fn to_lasm(self) -> String {
         let mut modes = vec![];
         
@@ -280,7 +337,7 @@ impl DivMode {
             modes.push(self.1.to_lasm());
         }
 
-        if self.2 != DivMinByLessOneMode::default() {
+        if self.2 != DivOverflowMode::default() {
             modes.push(self.2.to_lasm());
         }
 
@@ -292,12 +349,12 @@ impl TryFrom<u8> for DivMode {
     type Error = ();
 
     fn try_from(mode: u8) -> Result<Self, Self::Error> {
-        Self::from_mode(mode)
+        Self::decode(mode)
     }
 }
 
 impl Into<u8> for DivMode {
     fn into(self) -> u8 {
-        self.mode()
+        self.encode()
     }
 }
