@@ -47,7 +47,7 @@ fn re_assembling() {
 
     for i in 0..lasm.iter().count() {
         if lasm[i] != assembled[i] {
-            panic!("Assembed program differs from expected one.\nExpected: {}\nGot     : {}\nAt line {}.", assembled[i], lasm[i], i + 1);
+            panic!("Assembled program differs from expected one.\nExpected: {}\nGot     : {}\nAt line {}.", assembled[i], lasm[i], i + 1);
         }
     }
 }
