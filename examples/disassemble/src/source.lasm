@@ -1,3 +1,5 @@
+; This comment is here just to check it is ignored during assembling
+
 main:
     cpy a0, 0
     add a0, 0x10
