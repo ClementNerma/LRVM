@@ -292,7 +292,7 @@ The notation used to describe instructions is as follows:
 
 The "upper bits" of a register refer its 16 strongest bits, while its "lower bits" refer to its 16 weakest ones.
 
-The `{H}` notation after an instruction's name indicates it requires to be in supervisor mode (otherwise an exception is raised).
+The `{S}` notation after an instruction's name indicates it requires to be in supervisor mode (otherwise an exception is raised).
 
 #### Reading hardware informations
 
@@ -426,7 +426,7 @@ The control flow instructions allow to control the program's flow by changing th
   The number of bytes is interpreted using two's complement representation  
   **Affects** `pc`
 
-- `LSM [reg_addr | 2-bytes]` (Leave Supervisor Mode) {H} | opcode: `0x0F`  
+- `LSM [reg_addr | 2-bytes]` (Leave Supervisor Mode) {S} | opcode: `0x0F`  
   Jump at the provided address and disable the supervisor mode just after  
   Jumping by assigning to `pc` and then disabling manually the supervisor mode would result in a page fault when the MMU is enabled,
   as the second assignment instruction's address could not be read due to userland privileges.  
@@ -531,14 +531,14 @@ The memory instructions allow to manipulate the memory:
 
 These instructions allow to control how the processor behave or to get informations about it:
 
-- `CYCLES reg_dest` (CYCLES) {H} | opcode: `0x1D`  
+- `CYCLES reg_dest` (CYCLES) {S} | opcode: `0x1D`  
   Copy the number of cycles performed since the CPU awoken in the provided registry  
   **Affects** `reg_dest`
 
-- `HALT` (HALT) {H} | opcode: `0x1E`  
+- `HALT` (HALT) {S} | opcode: `0x1E`  
   Halt the processor
 
-- `RESET [reg_mode | 1-byte]` (RESET) {H} | opcode: `0x1F`  
+- `RESET [reg_mode | 1-byte]` (RESET) {S} | opcode: `0x1F`  
   The mode is split in two bytes to indicate reset informations for the processor and for the auxiliary components.
 
   Strongest byte:
