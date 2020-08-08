@@ -39,7 +39,7 @@ fn re_assembling() {
     if lasm.len() != assembled.len() {
         panic!(
             "Assembled code is {} than expected.\nExpected:\n\n{}\n\nGot:\n\n{}",
-            if lasm.len() > assembled.len() { "greater" } else { "smaller" },
+            if lasm.len() > assembled.len() { "longer" } else { "smaller" },
             assembled.join("\n"),
             lasm.join("\n")
         );
