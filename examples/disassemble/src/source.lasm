@@ -17,7 +17,7 @@ main:
     ifleft ZF, EF
     call test3
 
-    if2 EF, ZF, cmp_xor
+    if2 EF, ZF, CMP_XOR
     call test4
 
     halt
