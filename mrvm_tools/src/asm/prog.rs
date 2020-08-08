@@ -31,7 +31,12 @@ impl Program {
 
     /// Prepend a set of instructions at the beginning of the program
     pub fn prepend_all(&mut self, instr: impl AsRef<[Instr]>) -> &mut Self {
-        self.0.splice(0..0, instr.as_ref().iter().copied());
+        let instr = instr.as_ref();
+
+        let tail = self.0.len() - instr.len();
+        self.0.extend(instr);
+        self.0[instr.len()..].rotate_left(tail);
+
         self
     }
 
