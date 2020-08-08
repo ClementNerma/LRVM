@@ -1,0 +1,49 @@
+{
+    "name": "mrvm-lasm",
+    "displayName": "MRVM Lightweight Assembly (LASM) language",
+    "description": "Syntax highlighting for MRVM's Lightweight Assembly (LASM) language",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ClementNerma/RustVM.git"
+    },
+    "publisher": "clement-nerma",
+    "version": "0.1.0",
+    "engines": {
+        "vscode": "^1.42.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "lasm",
+                "aliases": [
+                    "Lasm",
+                    "LASM"
+                ],
+                "extensions": [
+                    "lasm"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "lasm",
+                "scopeName": "source.lasm",
+                "path": "./syntaxes/lasm.tmLanguage.json"
+            },
+            {
+                "scopeName": "markdown.lasm.codeblock",
+                "path": "./syntaxes/lasm.md.json",
+                "injectTo": [
+                    "text.html.markdown"
+                ],
+                "embeddedLanguages": {
+                    "meta.embedded.block.lasm": "lasm"
+                }
+            }
+        ]
+    }
+}

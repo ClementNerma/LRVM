@@ -1,0 +1,151 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "LASM",
+  "patterns": [
+    {
+      "name": "string.quoted.double",
+      "begin": "\"",
+      "end": "\""
+    },
+    {
+      "match": ";.*$",
+      "name": "comment.line"
+    },
+    {
+      "match": "^\\s*([a-zA-Z0-9_]+:)\\s*$",
+      "captures": {
+        "1": {
+          "name": "entity.name.function"
+        }
+      }
+    },
+    {
+      "match": "^\\s*(call)\\s+([a-zA-Z0-9_]+)\\s*$",
+      "captures": {
+        "1": {
+          "name": "keyword"
+        },
+        "2": {
+          "name": "entity.name.function"
+        }
+      }
+    },
+    {
+      "name": "constant.numeric",
+      "match": "\\b(\\-)?(\\d+)\\b"
+    },
+    {
+      "name": "constant.numeric",
+      "match": "\\b(\\-)?(0b[01]+|0o[01234567]+|(?:0d)?\\d+|0x[\\dabcdefABCDEF]+)\\b"
+    },
+    {
+      "match": "^\\s*(cpy|ex|zro)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(add|sub|mul|div|mod|inc|dec)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(and|bor|xor|shl|shr)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(cmp)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(jpr|lsm|itr|jp)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(if|ifn|if2)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(if)(eq|nq|gt|ge|le|ls)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(if)(and|xor|nor|nand|left|right)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(lsa|lea|wsa|wea|srm|push|pop|call|ret)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(hwd)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "^\\s*(cycles|halt|reset)\\b",
+      "name": "keyword"
+    },
+    {
+      "match": "\\b(a0|a1|a2|a3|a4|a5|a6|a7)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(c0|c1)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(ac0|ac1|ac2)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(rr0|rr1|rr2|rr3|rr4|rr5|rr6|rr7)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(avr)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(pc)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(af)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(ssp|usp)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(et|era)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "\\b(ev|mtt|pda|smt)\\b",
+      "name": "variable.name"
+    },
+    {
+      "match": "(?i)\\b(ZF|CF|OF|SF|EF|ZUF|ZLF)\\b",
+      "name": "constant.other"
+    },
+    {
+      "match": "(?i)\\b(DIV_USG|DIV_SIG|DIV_ZRO_FRB|DIV_ZRO_MIN|DIV_ZRO_ZRO|DIV_ZRO_MAX|DIV_OFW_FRB|DIV_OFW_MIN|DIV_OFW_ZRO|DIV_OFW_MAX)\\b",
+      "name": "constant.other"
+    },
+    {
+      "match": "(?i)\\b(CMP_OR|CMP_AND|CMP_XOR|CMP_NOR|CMP_NAND|CMP_LEFT|CMP_RIGHT)\\b",
+      "name": "constant.other"
+    },
+    {
+      "match": "(?i)\\b(HWD_COUNT|HWD_UID_UPPER|HWD_UID_LOWER|HWD_NAME_LEN|HWD_NAME_W1|HWD_NAME_W2|HWD_NAME_W3|HWD_NAME_W4|HWD_NAME_W5|HWD_NAME_W6|HWD_NAME_W7|HWD_NAME_W8|HWD_SIZE|HWD_CAT|HWD_TYPE|HWD_MODEL|HWD_DATA_UPPER|HWD_DATA_LOWER|HWD_IS_MAPPED|HWD_MAP_START|HWD_MAP_END)\\b",
+      "name": "constant.other"
+    },
+    {
+      "match": "[+\\-\\*\\/]",
+      "name": "keyword.operator.arithmetic"
+    },
+    {
+      "match": ",",
+      "name": "keyword.operator.relational"
+    }
+  ],
+  "scopeName": "source.lasm"
+}

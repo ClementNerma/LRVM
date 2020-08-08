@@ -50,6 +50,19 @@ main:
 
 This program adds `1` to the `a0` register until it reaches `10`, then it halts the processor.
 
+### Syntax highlighting
+
+You can install the [Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=clement-nerma.mrvm-lasm) to get syntax highlighting for MRVM's [Lightweight Assembly (LASM) language](docs/Architecture.md#processor-instructions).
+
+Or you can build the sources from the [`vscode-lasm`](vscode-lasm/) directory:
+
+```shell
+cd vscode-lang
+vsce package
+code --install-extension mrvm-lasm-*.vsix
+# Enjoy!
+```
+
 ## Examples
 
 Examples can be found in the [`examples/`](examples/) directory.
