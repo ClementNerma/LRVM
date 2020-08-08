@@ -10,13 +10,13 @@ div a1, a0, DIV_ZRO_MIN
 sub a2, ac2
 cmp a1, 0x0
 ifeq
-call 0x40
-ifle
 call 0x44
+ifle
+call 0x48
 ifleft ZF, EF
-call 0x4C
+call 0x50
 ifxor EF, ZF
-call 0x54
+call 0x58
 halt
 ret
 add a0, a1
