@@ -5,6 +5,6 @@ name = "hw_detect"
 version = "0.1.0"
 
 [dependencies]
-rand = "*"
+rand = "0.7.3"
 mrvm_aux = { path = "../../mrvm_aux" }
 mrvm_tools = { path = "../../mrvm_tools" }
