@@ -41,8 +41,6 @@ impl FlashMem {
     /// Create a new flash memory component from an existing storage and a larger size.
     /// The storage's extended part will be zeroed.
     pub fn from_with_size(storage: Vec<u32>, size: u32, hw_id: u64) -> Self {
-        let size: u32 = size.try_into().expect("Storage's length cannot be larger than 2^32 words");
-
         Self {
             storage,
             size,
