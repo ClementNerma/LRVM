@@ -7,7 +7,7 @@
         "url": "https://github.com/ClementNerma/RustVM.git"
     },
     "publisher": "clement-nerma",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "engines": {
         "vscode": "^1.42.0"
     },
@@ -19,7 +19,6 @@
             {
                 "id": "lasm",
                 "aliases": [
-                    "Lasm",
                     "LASM"
                 ],
                 "extensions": [
