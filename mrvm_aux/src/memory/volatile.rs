@@ -33,7 +33,7 @@ impl VolatileMem {
     /// Create a new volatile memory component from the provided storage
     /// Returns an error message if the capacity is too large for the running CPU architecture.
     pub fn from(storage: Vec<u32>, hw_id: u64) -> Result<Self, &'static str> {
-        let size: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
+        let size: u32 = storage.len().try_into().map_err(|_| "Volatile memory's length cannot be larger than 2^32 words")?;
 
         Ok(Self {
             storage,
@@ -45,7 +45,7 @@ impl VolatileMem {
     /// Create a new volatile memory component from the provided storage and with a larger size than its storage
     /// Returns an error message in case of fail
     pub fn from_with_size(mut storage: Vec<u32>, size: u32, hw_id: u64) -> Result<Self, &'static str> {
-        let _: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
+        let _: u32 = storage.len().try_into().map_err(|_| "Volatile memory's length cannot be larger than 2^32 words")?;
         let _: usize = size.try_into().map_err(|_| "Volatile memory size cannot exceed your CPU architecture's supported size")?;
 
         if storage.len() > size as usize {
