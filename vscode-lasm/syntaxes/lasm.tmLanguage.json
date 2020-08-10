@@ -20,6 +20,10 @@
       }
     },
     {
+      "match": "^\\s*(#)(str|d8|d16|d32)(?=\\s|$)",
+      "name": "support.function.builtin"
+    },
+    {
       "match": "^\\s*(call|jp)\\s+(\\.?[a-zA-Z0-9_]+)\\s*$",
       "captures": {
         "1": {
