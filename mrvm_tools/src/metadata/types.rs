@@ -134,13 +134,13 @@ impl fmt::Display for KeyboardType {
 #[non_exhaustive]
 #[derive(Copy, Clone, Debug)]
 pub enum MemoryType {
-    Volatile
+    RAM
 }
 
 impl MemoryType {
     pub fn decode(code: u32) -> Result<Self, ()> {
         match code {
-            0x0000_0100 => Ok(Self::Volatile),
+            0x0000_0100 => Ok(Self::RAM),
 
             _ => Err(())
         }
@@ -148,7 +148,7 @@ impl MemoryType {
 
     pub fn code(self) -> u32 {
         match self {
-            Self::Volatile => 0x0000_0100
+            Self::RAM => 0x0000_0100
         }
     }
 
@@ -170,7 +170,7 @@ impl Into<DeviceCategory> for MemoryType {
 impl fmt::Display for MemoryType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match self {
-            Self::Volatile => "Volatile"
+            Self::RAM => "RAM"
         })
     }
 }

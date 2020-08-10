@@ -1,7 +1,7 @@
 use rand::Rng;
 use mrvm::board::{MotherBoard, Bus};
 use mrvm_aux::storage::BootROM;
-use mrvm_aux::memory::VolatileMem;
+use mrvm_aux::volatile_mem::RAM;
 use mrvm_aux::display::BufferedDisplay;
 use mrvm_tools::lasm::assemble_words;
 
@@ -17,7 +17,7 @@ fn main() {
 
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
         ), rng.gen()).unwrap())

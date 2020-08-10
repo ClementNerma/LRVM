@@ -1,39 +1,39 @@
-//! The volatile memory component offers a simple volatile memory that resets with the motherboard.
-//! See [`VolatileMem`] for more details.
+//! The RAM component offers a simple RAM that resets with the motherboard.
+//! See [`RAM`] for more details.
 
 use std::convert::TryInto;
 use mrvm::board::Bus;
 use mrvm_tools::metadata::{DeviceMetadata, MemoryType};
 
-/// The volatile memor component offers a simple non-persistent storage.
+/// The RAM component offers a simple non-persistent storage.
 /// When it receives a RESET request from the motherboard, all the storage is zeroed.
-pub struct VolatileMem {
+pub struct RAM {
     storage: Vec<u32>,
     size: u32,
     hw_id: u64
 }
 
-impl VolatileMem {
-    /// Create a new volatile memory component
+impl RAM {
+    /// Create a new RAM component
     /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
     pub fn new(size: u32, hw_id: u64) -> Result<Self, &'static str> {
         if size == 0 {
-            Err("Volatile memory's size cannot be 0")
+            Err("RAM's size cannot be 0")
         } else if size % 4 != 0 {
-            Err("Volatile memory's size must be a multiple of 4 bytes")
+            Err("RAM's size must be a multiple of 4 bytes")
         } else {
             Ok(Self {
-                storage: vec![0; size.try_into().map_err(|_| "Volatile memory size cannot exceed your CPU architecture's supported size")?],
+                storage: vec![0; size.try_into().map_err(|_| "RAM size cannot exceed your CPU architecture's supported size")?],
                 size: size / 4,
                 hw_id
             })
         }
     }
 
-    /// Create a new volatile memory component from the provided storage
+    /// Create a new RAM component from the provided storage
     /// Returns an error message if the capacity is too large for the running CPU architecture.
     pub fn from(storage: Vec<u32>, hw_id: u64) -> Result<Self, &'static str> {
-        let size: u32 = storage.len().try_into().map_err(|_| "Volatile memory's length cannot be larger than 2^32 words")?;
+        let size: u32 = storage.len().try_into().map_err(|_| "RAM's length cannot be larger than 2^32 words")?;
 
         Ok(Self {
             storage,
@@ -42,22 +42,22 @@ impl VolatileMem {
         })
     }
 
-    /// Create a new volatile memory component from the provided storage and with a larger size than its storage
+    /// Create a new RAM component from the provided storage and with a larger size than its storage
     /// Returns an error message in case of fail
     pub fn from_with_size(mut storage: Vec<u32>, size: u32, hw_id: u64) -> Result<Self, &'static str> {
-        let _: u32 = storage.len().try_into().map_err(|_| "Volatile memory's length cannot be larger than 2^32 words")?;
-        let _: usize = size.try_into().map_err(|_| "Volatile memory size cannot exceed your CPU architecture's supported size")?;
+        let _: u32 = storage.len().try_into().map_err(|_| "RAM's length cannot be larger than 2^32 words")?;
+        let _: usize = size.try_into().map_err(|_| "RAM size cannot exceed your CPU architecture's supported size")?;
 
         if storage.len() > size as usize {
-            return Err("Volatile memory's size cannot be lower than its initial storage's size");
+            return Err("RAM's size cannot be lower than its initial storage's size");
         }
 
         if size == 0 {
-            return Err("Volatile memory's size cannot be 0");
+            return Err("RAM's size cannot be 0");
         }
 
         if size % 4 != 0 {
-            return Err("Volatile memory's size must be a multiple of 4 bytes");
+            return Err("RAM's size must be a multiple of 4 bytes");
         }
 
         let size = size / 4;
@@ -71,22 +71,22 @@ impl VolatileMem {
         })
     }
 
-    /// Get the volatile memory's size
+    /// Get the RAM's size
     pub fn size(&self) -> u32 {
         self.size
     }
 }
 
-impl Bus for VolatileMem {
+impl Bus for RAM {
     fn name(&self) -> &'static str {
-        "Volatile Memory"
+        "RAM"
     }
 
     fn metadata(&self) -> [u32; 8] {
         DeviceMetadata::new(
             self.hw_id,
             self.size * 4,
-            MemoryType::Volatile.into(),
+            MemoryType::RAM.into(),
             None,
             None
         ).encode()

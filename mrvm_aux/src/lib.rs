@@ -6,7 +6,7 @@
 #![allow(clippy::len_without_is_empty)]
 
 pub mod storage;
-pub mod memory;
+pub mod volatile_mem;
 pub mod display;
 pub mod keyboard;
 pub mod time;

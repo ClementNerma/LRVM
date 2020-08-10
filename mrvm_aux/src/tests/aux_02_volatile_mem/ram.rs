@@ -1,17 +1,17 @@
 use mrvm_tools::asm::{Program, Instr, ExtInstr};
 use crate::storage::BootROM;
-use crate::memory::VolatileMem;
+use crate::volatile_mem::RAM;
 use mrvm_tools::debug::{exec_vm, RunConfig};
 
 #[test]
-fn volatile_mem() {
+fn ram() {
     let mut program = Program::from(ExtInstr::WriteAddrLit(0x1000, 0x01234567).to_instr());
     program.append_all(ExtInstr::WriteAddrLit(0x1008, 0x89ABCDEF).to_instr());
     program.append(Instr::Halt());
 
     let (mut vm, state) = exec_vm(vec![
         Box::new(BootROM::with_size(program.encode_words(), 0x1000, 0x0).unwrap()),
-        Box::new(VolatileMem::new(0x1000, 0x1).unwrap())
+        Box::new(RAM::new(0x1000, 0x1).unwrap())
     ], &RunConfig::halt_on_ex());
     
     if state.ex.is_some() {

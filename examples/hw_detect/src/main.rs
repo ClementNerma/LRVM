@@ -1,7 +1,7 @@
 
 use rand::Rng;
 use mrvm_aux::storage::BootROM;
-use mrvm_aux::memory::VolatileMem;
+use mrvm_aux::volatile_mem::RAM;
 use mrvm_tools::lasm::assemble_words;
 use mrvm_tools::bytes::words_to_bytes;
 use mrvm_tools::metadata::DeviceCategory;
@@ -23,9 +23,9 @@ fn main() {
         // BootROM containing the program's machine code
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
         // RAM that will contain informations about each detected components
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         // RAM that will be used for the stack
-        Box::new(VolatileMem::new(0x20, rng.gen()).unwrap())
+        Box::new(RAM::new(0x20, rng.gen()).unwrap())
     ], &RunConfig::halt_on_ex()).0;
 
     // We read the memory from inside this handler as the mapped memory object cannot be moved out of the motherboard instance.
