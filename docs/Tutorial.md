@@ -55,14 +55,14 @@ We'll also need a writable memory to store informations, as the BootROM is read-
 use rand::Rng;
 use mrvm::board::{MotherBoard, Bus};
 use mrvm_aux::storage::BootROM;
-use mrvm_aux::memory::VolatileMem;
+use volatile_mem::RAM;
 
 fn main() {
     let mut rng = rand::thread_rng();
 
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap())
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap())
     ];
 
     let motherboard = MotherBoard::new(components);
@@ -75,7 +75,7 @@ Finally, we'll add a small display component called a _buffered display_. The co
 use rand::Rng;
 use mrvm::board::{MotherBoard, Bus};
 use mrvm_aux::storage::BootROM;
-use mrvm_aux::memory::VolatileMem;
+use volatile_mem::RAM;
 use mrvm_aux::display::BufferedDisplay;
 
 fn main() {
@@ -83,7 +83,7 @@ fn main() {
 
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
         ), rng.gen()).unwrap())
@@ -305,7 +305,7 @@ fn main() {
 
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
         ), rng.gen()).unwrap())
@@ -379,7 +379,7 @@ fn main() {
 
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
         ), rng.gen()).unwrap())
@@ -450,7 +450,7 @@ And our BootROM is ready! The final code is:
 use rand::Rng;
 use mrvm::board::{MotherBoard, Bus};
 use mrvm_aux::storage::BootROM;
-use mrvm_aux::memory::VolatileMem;
+use volatile_mem::RAM;
 use mrvm_aux::display::BufferedDisplay;
 use mrvm_tools::lasm::assemble_words;
 
@@ -462,7 +462,7 @@ fn main() {
 
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
         ), rng.gen()).unwrap())
@@ -520,7 +520,7 @@ Here is the final code:
 use rand::Rng;
 use mrvm::board::{MotherBoard, Bus};
 use mrvm_aux::storage::BootROM;
-use mrvm_aux::memory::VolatileMem;
+use volatile_mem::RAM;
 use mrvm_aux::display::BufferedDisplay;
 use mrvm_tools::lasm::assemble_words;
 
@@ -536,7 +536,7 @@ fn main() {
 
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
         ), rng.gen()).unwrap())
@@ -596,7 +596,7 @@ fn main() {
     // ...
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
         ), rng.gen()).unwrap())
@@ -622,7 +622,7 @@ fn main() {
     // ...
     let mut motherboard = prepare_vm(vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
         ), rng.gen()).unwrap())
@@ -689,7 +689,7 @@ We now have the following code:
 ```rust
 use rand::Rng;
 use mrvm_aux::storage::BootROM;
-use mrvm_aux::memory::VolatileMem;
+use volatile_mem::RAM;
 use mrvm_aux::display::BufferedDisplay;
 use mrvm_tools::lasm::assemble_words;
 use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
@@ -706,7 +706,7 @@ fn main() {
 
     let mut motherboard = prepare_vm(vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
         ), rng.gen()).unwrap())
@@ -733,7 +733,7 @@ fn main() {
 
     let mut motherboard = prepare_vm(vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
         ), rng.gen()).unwrap())
@@ -756,7 +756,7 @@ fn main() {
 
     exec_vm(vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
         ), rng.gen()).unwrap())
@@ -777,7 +777,7 @@ fn main() {
 
     let components: Vec<Box<dyn Bus>> = vec![
         Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(VolatileMem::new(0x1000, rng.gen()).unwrap()),
+        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
         ), rng.gen()).unwrap())
