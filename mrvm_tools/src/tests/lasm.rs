@@ -1,6 +1,6 @@
 use crate::lasm;
 
-static DEMO_ASM: &'static str = include_str!("demo.lasm");
+static DEMO_ASM: &str = include_str!("demo.lasm");
 
 #[test]
 fn lasm_test() {

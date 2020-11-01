@@ -4,7 +4,7 @@ use mrvm_tools::asm::{ExtInstr, Instr, Program, Reg};
 use mrvm_tools::debug::{exec_vm, RunConfig};
 use std::sync::{Arc, Mutex};
 
-static PLACEHOLDER_KEYB_INPUT: &'static str = "Placeholder keyboard input";
+static PLACEHOLDER_KEYB_INPUT: &str = "Placeholder keyboard input";
 
 fn keyb_prog(input_end_addr: u32) -> Program {
     let mut prog = Program::from(ExtInstr::SetReg(Reg::ac0, input_end_addr).to_instr());

@@ -31,10 +31,10 @@ ret
 #[test]
 fn re_assembling() {
     let lasm = EXPECTED_LASM.to_string();
-    let lasm = lasm.trim().split("\n").collect::<Vec<_>>();
+    let lasm = lasm.trim().split('\n').collect::<Vec<_>>();
 
     let assembled = re_assemble(SOURCE);
-    let assembled = assembled.trim().split("\n").collect::<Vec<_>>();
+    let assembled = assembled.trim().split('\n').collect::<Vec<_>>();
 
     if lasm.len() != assembled.len() {
         panic!(
