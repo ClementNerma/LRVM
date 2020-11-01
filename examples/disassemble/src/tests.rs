@@ -1,4 +1,4 @@
-use super::{SOURCE, re_assemble};
+use super::{re_assemble, SOURCE};
 
 static EXPECTED_LASM: &str = "
 zro a0
@@ -35,11 +35,15 @@ fn re_assembling() {
 
     let assembled = re_assemble(SOURCE);
     let assembled = assembled.trim().split("\n").collect::<Vec<_>>();
-    
+
     if lasm.len() != assembled.len() {
         panic!(
             "Assembled code is {} than expected.\nExpected:\n\n{}\n\nGot:\n\n{}",
-            if lasm.len() > assembled.len() { "longer" } else { "smaller" },
+            if lasm.len() > assembled.len() {
+                "longer"
+            } else {
+                "smaller"
+            },
             assembled.join("\n"),
             lasm.join("\n")
         );

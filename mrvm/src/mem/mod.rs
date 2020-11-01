@@ -1,5 +1,5 @@
-mod mem;
 mod mappings;
+mod mem;
 
-pub use mem::*;
 pub use mappings::*;
+pub use mem::*;

@@ -21,7 +21,7 @@ pub enum AuxHwException {
     /// A physical read error occurred.
     /// If none other exception code matches the type of error you want to raise, use this one as a fallback.
     GenericPhysicalReadError,
-    
+
     /// Tried to read a non-readable address of the component.
     MemoryNotReadable,
 
@@ -53,14 +53,14 @@ impl AuxHwException {
 
             0x10 => Ok(Self::UnknownOperation(data_or_err?)),
             0x11 => Ok(Self::UnsupportedOperation),
-            
+
             0x20 => Ok(Self::GenericPhysicalReadError),
             0x21 => Ok(Self::MemoryNotReadable),
 
             0x30 => Ok(Self::GenericPhysicalWriteError),
             0x31 => Ok(Self::MemoryNotWritable),
 
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
@@ -114,19 +114,23 @@ impl Into<u16> for AuxHwException {
 
 impl fmt::Display for AuxHwException {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::UnknownError => "Unknown error".to_string(),
-            Self::UnspecifiedSyncError => "Unspecified synchronization error".to_string(),
-            Self::TimeSynchronizationError => "Time synchronization error".to_string(),
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::UnknownError => "Unknown error".to_string(),
+                Self::UnspecifiedSyncError => "Unspecified synchronization error".to_string(),
+                Self::TimeSynchronizationError => "Time synchronization error".to_string(),
 
-            Self::UnknownOperation(op) => format!("Unknown operation {:#004X}", op),
-            Self::UnsupportedOperation => "Unsupported operation".to_string(),
+                Self::UnknownOperation(op) => format!("Unknown operation {:#004X}", op),
+                Self::UnsupportedOperation => "Unsupported operation".to_string(),
 
-            Self::GenericPhysicalReadError => "Generic physical read error".to_string(),
-            Self::MemoryNotReadable => "This memory address is not readable".to_string(),
+                Self::GenericPhysicalReadError => "Generic physical read error".to_string(),
+                Self::MemoryNotReadable => "This memory address is not readable".to_string(),
 
-            Self::GenericPhysicalWriteError => "Generic physical write error".to_string(),
-            Self::MemoryNotWritable => "This memory address is not writable".to_string()
-        })
+                Self::GenericPhysicalWriteError => "Generic physical write error".to_string(),
+                Self::MemoryNotWritable => "This memory address is not writable".to_string(),
+            }
+        )
     }
 }

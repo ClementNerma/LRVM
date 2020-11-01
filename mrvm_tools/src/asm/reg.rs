@@ -1,6 +1,6 @@
+use super::{RegOrLit1, RegOrLit2};
 use std::convert::TryFrom;
 use std::fmt;
-use super::{RegOrLit1, RegOrLit2};
 
 /// CPU register
 #[allow(non_camel_case_types)]
@@ -38,7 +38,7 @@ pub enum Reg {
     ev,
     mtt,
     pda,
-    smt
+    smt,
 }
 
 impl Reg {
@@ -77,23 +77,23 @@ impl Reg {
             0x1D => Ok(Self::mtt),
             0x1E => Ok(Self::pda),
             0x1F => Ok(Self::smt),
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
     /// Decode a register from its name
     pub fn from_name(name: &str) -> Result<Self, ()> {
         match name {
-            "a0"  => Ok(Self::a0),
-            "a1"  => Ok(Self::a1),
-            "a2"  => Ok(Self::a2),
-            "a3"  => Ok(Self::a3),
-            "a4"  => Ok(Self::a4),
-            "a5"  => Ok(Self::a5),
-            "a6"  => Ok(Self::a6),
-            "a7"  => Ok(Self::a7),
-            "c0"  => Ok(Self::c0),
-            "c1"  => Ok(Self::c1),
+            "a0" => Ok(Self::a0),
+            "a1" => Ok(Self::a1),
+            "a2" => Ok(Self::a2),
+            "a3" => Ok(Self::a3),
+            "a4" => Ok(Self::a4),
+            "a5" => Ok(Self::a5),
+            "a6" => Ok(Self::a6),
+            "a7" => Ok(Self::a7),
+            "c0" => Ok(Self::c0),
+            "c1" => Ok(Self::c1),
             "ac0" => Ok(Self::ac0),
             "ac1" => Ok(Self::ac1),
             "ac2" => Ok(Self::ac2),
@@ -106,33 +106,33 @@ impl Reg {
             "rr6" => Ok(Self::rr6),
             "rr7" => Ok(Self::rr7),
             "avr" => Ok(Self::avr),
-            "af"  => Ok(Self::af),
-            "pc"  => Ok(Self::pc),
+            "af" => Ok(Self::af),
+            "pc" => Ok(Self::pc),
             "ssp" => Ok(Self::ssp),
             "usp" => Ok(Self::usp),
-            "et"  => Ok(Self::et),
+            "et" => Ok(Self::et),
             "era" => Ok(Self::era),
-            "ev"  => Ok(Self::ev),
+            "ev" => Ok(Self::ev),
             "mtt" => Ok(Self::mtt),
             "pda" => Ok(Self::pda),
             "smt" => Ok(Self::smt),
-            _     => Err(())
+            _ => Err(()),
         }
     }
 
     /// Get the register's code
     pub fn code(self) -> u8 {
         match self {
-            Self::a0  => 0x00,
-            Self::a1  => 0x01,
-            Self::a2  => 0x02,
-            Self::a3  => 0x03,
-            Self::a4  => 0x04,
-            Self::a5  => 0x05,
-            Self::a6  => 0x06,
-            Self::a7  => 0x07,
-            Self::c0  => 0x08,
-            Self::c1  => 0x09,
+            Self::a0 => 0x00,
+            Self::a1 => 0x01,
+            Self::a2 => 0x02,
+            Self::a3 => 0x03,
+            Self::a4 => 0x04,
+            Self::a5 => 0x05,
+            Self::a6 => 0x06,
+            Self::a7 => 0x07,
+            Self::c0 => 0x08,
+            Self::c1 => 0x09,
             Self::ac0 => 0x0A,
             Self::ac1 => 0x0B,
             Self::ac2 => 0x0C,
@@ -145,32 +145,32 @@ impl Reg {
             Self::rr6 => 0x13,
             Self::rr7 => 0x14,
             Self::avr => 0x15,
-            Self::pc  => 0x16,
-            Self::af  => 0x17,
+            Self::pc => 0x16,
+            Self::af => 0x17,
             Self::ssp => 0x18,
             Self::usp => 0x19,
-            Self::et  => 0x1A,
+            Self::et => 0x1A,
             Self::era => 0x1B,
-            Self::ev  => 0x1C,
+            Self::ev => 0x1C,
             Self::mtt => 0x1D,
             Self::pda => 0x1E,
-            Self::smt => 0x1F
+            Self::smt => 0x1F,
         }
     }
-    
+
     /// Get the register's name
     pub fn name(self) -> &'static str {
         match self {
-            Self::a0  => "a0",
-            Self::a1  => "a1",
-            Self::a2  => "a2",
-            Self::a3  => "a3",
-            Self::a4  => "a4",
-            Self::a5  => "a5",
-            Self::a6  => "a6",
-            Self::a7  => "a7",
-            Self::c0  => "c0",
-            Self::c1  => "c1",
+            Self::a0 => "a0",
+            Self::a1 => "a1",
+            Self::a2 => "a2",
+            Self::a3 => "a3",
+            Self::a4 => "a4",
+            Self::a5 => "a5",
+            Self::a6 => "a6",
+            Self::a7 => "a7",
+            Self::c0 => "c0",
+            Self::c1 => "c1",
             Self::ac0 => "ac0",
             Self::ac1 => "ac1",
             Self::ac2 => "ac2",
@@ -183,16 +183,16 @@ impl Reg {
             Self::rr6 => "rr6",
             Self::rr7 => "rr7",
             Self::avr => "avr",
-            Self::pc  => "pc",
-            Self::af  => "af",
+            Self::pc => "pc",
+            Self::af => "af",
             Self::ssp => "ssp",
             Self::usp => "usp",
-            Self::et  => "et",
+            Self::et => "et",
             Self::era => "era",
-            Self::ev  => "ev",
+            Self::ev => "ev",
             Self::mtt => "mtt",
             Self::pda => "pda",
-            Self::smt => "smt"
+            Self::smt => "smt",
         }
     }
 

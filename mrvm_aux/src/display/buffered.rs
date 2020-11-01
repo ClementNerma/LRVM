@@ -1,12 +1,12 @@
 //! The buffered display component offers a simple UTF-8 display system.
 //! See [`BufferedDisplay`] for more details.
 
-use std::convert::TryInto;
-use std::str::{from_utf8, Utf8Error};
 use mrvm::board::Bus;
 use mrvm_tools::bytes::words_to_bytes;
-use mrvm_tools::metadata::{DeviceMetadata, DisplayType};
 use mrvm_tools::exceptions::AuxHwException;
+use mrvm_tools::metadata::{DeviceMetadata, DisplayType};
+use std::convert::TryInto;
+use std::str::{from_utf8, Utf8Error};
 
 pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, Vec<u8>)>;
 
@@ -23,7 +23,7 @@ pub struct BufferedDisplay {
     buffer: Vec<u32>,
     words: u32,
     handler: Box<dyn FnMut(DecodedStr)>,
-    hw_id: u64
+    hw_id: u64,
 }
 
 impl BufferedDisplay {
@@ -31,9 +31,14 @@ impl BufferedDisplay {
     /// The provided capacity must be a multiple of 4, and 4 bytes will be substracted for handling the action code.
     /// This means a capacity of 64 bytes will allow 60 bytes of data or 15 words.
     /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
-    pub fn new(capacity: u32, handler: Box<dyn FnMut(DecodedStr)>, hw_id: u64) -> Result<Self, &'static str> {
-        let _: usize = capacity.try_into()
-            .map_err(|_| "Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)")?;
+    pub fn new(
+        capacity: u32,
+        handler: Box<dyn FnMut(DecodedStr)>,
+        hw_id: u64,
+    ) -> Result<Self, &'static str> {
+        let _: usize = capacity.try_into().map_err(|_| {
+            "Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)"
+        })?;
 
         if capacity == 0 {
             return Err("Buffered display's capacity cannot be 0");
@@ -49,7 +54,7 @@ impl BufferedDisplay {
             buffer: vec![0; (capacity - 1) as usize],
             words: capacity - 1,
             handler,
-            hw_id
+            hw_id,
         })
     }
 }
@@ -65,8 +70,9 @@ impl Bus for BufferedDisplay {
             self.words * 4 + 4,
             DisplayType::Buffered.into(),
             None,
-            None
-        ).encode()
+            None,
+        )
+        .encode()
     }
 
     fn read(&mut self, _addr: u32, ex: &mut u16) -> u32 {
@@ -79,23 +85,23 @@ impl Bus for BufferedDisplay {
 
         if addr < self.words {
             self.buffer[addr as usize] = word;
-            return
+            return;
         }
 
         match word {
             0xAA => {
                 let bytes = words_to_bytes(&self.buffer);
                 (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.clone())))
-            },
+            }
 
             0xBB => {
                 let bytes = words_to_bytes(&self.buffer);
                 (self.handler)(Ok(&String::from_utf8_lossy(&bytes)))
-            },
+            }
 
             0xFF => self.reset(),
 
-            code => *ex = AuxHwException::UnknownOperation(code as u8).into()
+            code => *ex = AuxHwException::UnknownOperation(code as u8).into(),
         }
     }
 

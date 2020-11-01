@@ -1,14 +1,14 @@
 //! The persistent memory component offers a simple non-volatile storage that persists on the disk.
 //! See [`PersistentMem`] for more details.
 
-use std::cmp::Ordering;
-use std::fs::{File, OpenOptions};
-use std::path::Path;
-use std::io::{Result as IOResult, Read, Write, Seek, SeekFrom};
-use std::convert::TryInto;
 use mrvm::board::Bus;
-use mrvm_tools::metadata::{DeviceMetadata, StorageType};
 use mrvm_tools::exceptions::AuxHwException;
+use mrvm_tools::metadata::{DeviceMetadata, StorageType};
+use std::cmp::Ordering;
+use std::convert::TryInto;
+use std::fs::{File, OpenOptions};
+use std::io::{Read, Result as IOResult, Seek, SeekFrom, Write};
+use std::path::Path;
 
 /// The persistent memory component contains a read-only or writable, persistent storage that does not reset with the motherboard.
 /// It uses a real file to store its data and is perfect for storing data that persists after the VM is destroyed.
@@ -17,7 +17,7 @@ pub struct PersistentMem {
     size: u32,
     real_size: u32,
     writable: bool,
-    hw_id: u64
+    hw_id: u64,
 }
 
 impl PersistentMem {
@@ -25,8 +25,11 @@ impl PersistentMem {
     fn open(path: impl AsRef<Path>, writable: bool, hw_id: u64) -> IOResult<Self> {
         let handler = OpenOptions::new().read(true).write(writable).open(path)?;
 
-        let unaligned_real_size: u32 = handler.metadata()?.len()
-            .try_into().expect("Cannot open files larger than 4 GB due to 32-bit addressing mode");
+        let unaligned_real_size: u32 = handler
+            .metadata()?
+            .len()
+            .try_into()
+            .expect("Cannot open files larger than 4 GB due to 32-bit addressing mode");
 
         let real_size = (unaligned_real_size / 4) * 4;
 
@@ -34,14 +37,16 @@ impl PersistentMem {
             println!("Warning: opened unaligned file as aligned (rounded size to nearest lower multiple of 4 bytes)");
         }
 
-        let _: usize = real_size.try_into().expect("Persistent memory size must not exceed your CPU architecture (e.g. 32-bit size)");
+        let _: usize = real_size.try_into().expect(
+            "Persistent memory size must not exceed your CPU architecture (e.g. 32-bit size)",
+        );
 
         Ok(Self {
             size: real_size,
             real_size,
             handler,
             writable,
-            hw_id
+            hw_id,
         })
     }
 
@@ -87,17 +92,18 @@ impl Bus for PersistentMem {
             self.size * 4,
             StorageType::Persistent.into(),
             None,
-            None
-        ).encode()
+            None,
+        )
+        .encode()
     }
 
     fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
         if addr >= self.real_size {
-           return 0
+            return 0;
         }
-        
+
         let mut buffer = [0; 4];
-        
+
         if self.handler.seek(SeekFrom::Start(addr.into())).is_err() {
             *ex = AuxHwException::GenericPhysicalReadError.into();
             return 0;
@@ -120,5 +126,5 @@ impl Bus for PersistentMem {
         }
     }
 
-    fn reset(&mut self) { }
+    fn reset(&mut self) {}
 }

@@ -9,7 +9,7 @@ pub enum ArFlag {
     Sign,
     Even,
     ZeroUpper,
-    ZeroLower
+    ZeroLower,
 }
 
 impl ArFlag {
@@ -23,7 +23,7 @@ impl ArFlag {
             0x04 => Ok(Self::Even),
             0x05 => Ok(Self::ZeroUpper),
             0x06 => Ok(Self::ZeroLower),
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
@@ -36,7 +36,7 @@ impl ArFlag {
             Self::Sign => 0x03,
             Self::Even => 0x04,
             Self::ZeroUpper => 0x05,
-            Self::ZeroLower => 0x06
+            Self::ZeroLower => 0x06,
         }
     }
 
@@ -49,7 +49,7 @@ impl ArFlag {
             Self::Sign => "Sign",
             Self::Even => "Even",
             Self::ZeroUpper => "ZeroUpper",
-            Self::ZeroLower => "ZeroLower"
+            Self::ZeroLower => "ZeroLower",
         }
     }
 
@@ -62,7 +62,7 @@ impl ArFlag {
             Self::Sign => "SF",
             Self::Even => "EF",
             Self::ZeroUpper => "ZUF",
-            Self::ZeroLower => "ZLF"
+            Self::ZeroLower => "ZLF",
         }
     }
 

@@ -3,34 +3,38 @@
 //!
 //! The motherboard can also emulate a reset button through the [`reset`] function which propagates the even through all connected [`Bus`].
 
-use std::sync::{Arc, Mutex};
+use super::{Bus, HardwareBridge};
 use crate::cpu::CPU;
 use crate::mem::MappedMemory;
-use super::{Bus, HardwareBridge};
+use std::sync::{Arc, Mutex};
 
 /// Virtual motherboard
 pub struct MotherBoard {
     /// Auxiliary components connected to the motherboard
     aux: Vec<Arc<Mutex<Box<dyn Bus>>>>,
     /// Central Processing Unit (CPU)
-    cpu: CPU
+    cpu: CPU,
 }
 
 impl MotherBoard {
     /// Create a new motherboard with a set of components
-    pub fn new(components: impl IntoIterator<Item=Box<dyn Bus>>) -> Self {
-        let aux = components.into_iter()
+    pub fn new(components: impl IntoIterator<Item = Box<dyn Bus>>) -> Self {
+        let aux = components
+            .into_iter()
             .map(|cp| Arc::new(Mutex::new(cp)))
             .collect::<Vec<_>>();
 
-        assert!(aux.len() <= std::u32::MAX as usize, "Cannot connect more than 2^32 components!");
+        assert!(
+            aux.len() <= std::u32::MAX as usize,
+            "Cannot connect more than 2^32 components!"
+        );
 
         // Instanciate the memory
         let mem = MappedMemory::new(HardwareBridge::new(aux.clone()));
 
         Self {
             cpu: CPU::new(HardwareBridge::new(aux.clone()), mem),
-            aux
+            aux,
         }
     }
 

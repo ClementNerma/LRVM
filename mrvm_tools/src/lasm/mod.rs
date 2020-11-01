@@ -1,9 +1,9 @@
 //! MRVM uses an assembly language called LASM (Lightweight Assembly).
 //! This module allows to assemble LASM source code through the [CustomAsm](https://github.com/hlorenzi/customasm) library.
 
-use customasm::{FileServerMock, AssemblerState, RcReport};
-use crate::asm::{Program, InstrDecodingError};
+use crate::asm::{InstrDecodingError, Program};
 use crate::bytes::bytes_to_words;
+use customasm::{AssemblerState, FileServerMock, RcReport};
 
 static CUSTOMASM_HEADER: &str = include_str!("customasm.def");
 
@@ -20,16 +20,16 @@ pub fn assemble(source: &str) -> Result<Vec<u8>, String> {
 
     let report = RcReport::new();
 
-    let assemble = |report: RcReport, fileserver: &FileServerMock, filename: &str| -> Result<Vec<u8>, ()>
-	{
-		let mut asm = AssemblerState::new();
-		asm.process_file(report.clone(), fileserver, filename)?;
-		asm.wrapup(report)?;
-		
-		let output = asm.get_binary_output();
-		Ok(output.generate_binary(0, output.len()))
-    };
-    
+    let assemble =
+        |report: RcReport, fileserver: &FileServerMock, filename: &str| -> Result<Vec<u8>, ()> {
+            let mut asm = AssemblerState::new();
+            asm.process_file(report.clone(), fileserver, filename)?;
+            asm.wrapup(report)?;
+
+            let output = asm.get_binary_output();
+            Ok(output.generate_binary(0, output.len()))
+        };
+
     assemble(report.clone(), &fileserver, "src.lasm").map_err(|_| {
         let mut err = vec![];
         report.print_all(&mut err, &fileserver);

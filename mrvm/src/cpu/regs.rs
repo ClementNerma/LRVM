@@ -46,7 +46,7 @@ pub struct Registers {
     pub pda: u32,
 
     /// Supervisor Mode Toggler
-    pub smt: u32
+    pub smt: u32,
 }
 
 impl Registers {

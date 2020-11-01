@@ -1,6 +1,6 @@
-use std::fmt;
 use super::cst;
-use super::{Reg, RegOrLit1, RegOrLit2, ArFlag, If2Cond, HwInfo, DivMode};
+use super::{ArFlag, DivMode, HwInfo, If2Cond, Reg, RegOrLit1, RegOrLit2};
+use std::fmt;
 
 /// Native assembly instruction
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -80,8 +80,16 @@ impl Instr {
             0x03 => Ok(Self::Add(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
             0x04 => Ok(Self::Sub(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
             0x05 => Ok(Self::Mul(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
-            0x06 => Ok(Self::Div(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x07 => Ok(Self::Mod(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x06 => Ok(Self::Div(
+                arg_reg(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg_or_lit_1(3)?,
+            )),
+            0x07 => Ok(Self::Mod(
+                arg_reg(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg_or_lit_1(3)?,
+            )),
             0x08 => Ok(Self::And(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
             0x09 => Ok(Self::Bor(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
             0x0A => Ok(Self::Xor(arg_reg(1)?, arg_reg_or_lit_2(2)?)),
@@ -93,16 +101,44 @@ impl Instr {
             0x10 => Ok(Self::Itr(arg_reg_or_lit_1(1)?)),
             0x11 => Ok(Self::If(arg_reg_or_lit_1(1)?)),
             0x12 => Ok(Self::IfN(arg_reg_or_lit_1(1)?)),
-            0x13 => Ok(Self::If2(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x14 => Ok(Self::Lsa(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x15 => Ok(Self::Lea(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x16 => Ok(Self::Wsa(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x17 => Ok(Self::Wea(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
-            0x18 => Ok(Self::Srm(arg_reg_or_lit_1(1)?, arg_reg_or_lit_1(2)?, arg_reg(3)?)),
+            0x13 => Ok(Self::If2(
+                arg_reg_or_lit_1(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg_or_lit_1(3)?,
+            )),
+            0x14 => Ok(Self::Lsa(
+                arg_reg(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg_or_lit_1(3)?,
+            )),
+            0x15 => Ok(Self::Lea(
+                arg_reg_or_lit_1(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg_or_lit_1(3)?,
+            )),
+            0x16 => Ok(Self::Wsa(
+                arg_reg_or_lit_1(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg_or_lit_1(3)?,
+            )),
+            0x17 => Ok(Self::Wea(
+                arg_reg_or_lit_1(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg_or_lit_1(3)?,
+            )),
+            0x18 => Ok(Self::Srm(
+                arg_reg_or_lit_1(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg(3)?,
+            )),
             0x19 => Ok(Self::Push(arg_reg_or_lit_2(1)?)),
             0x1A => Ok(Self::Pop(arg_reg(1)?)),
             0x1B => Ok(Self::Call(arg_reg_or_lit_2(1)?)),
-            0x1C => Ok(Self::Hwd(arg_reg(1)?, arg_reg_or_lit_1(2)?, arg_reg_or_lit_1(3)?)),
+            0x1C => Ok(Self::Hwd(
+                arg_reg(1)?,
+                arg_reg_or_lit_1(2)?,
+                arg_reg_or_lit_1(3)?,
+            )),
             0x1D => Ok(Self::Cycles(arg_reg(1)?)),
             0x1E => Ok(Self::Halt()),
             0x1F => Ok(Self::Reset(arg_reg_or_lit_1(1)?)),
@@ -322,7 +358,7 @@ impl Instr {
                 regs!(a.is_reg());
                 push!(regs_or_lit a);
                 0x1F
-            },
+            }
         };
 
         assert!(
@@ -360,74 +396,74 @@ impl Instr {
             Self::Cpy(a, b) => match (a, b) {
                 (Reg::pc, _) => format!("jp {}", b.to_lasm()),
                 (_, RegOrLit2::Lit(0)) => format!("zro {}", a.to_lasm()),
-                (_, _) => format!("cpy {}, {}", a.to_lasm(), b.to_lasm())
+                (_, _) => format!("cpy {}, {}", a.to_lasm(), b.to_lasm()),
             },
 
-            Self::Ex(a, b) =>
-                format!("ex {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Ex(a, b) => format!("ex {}, {}", a.to_lasm(), b.to_lasm()),
 
             Self::Add(a, b) => match b {
                 RegOrLit2::Lit(1) => format!("inc {}", a.to_lasm()),
-                _ => format!("add {}, {}", a.to_lasm(), b.to_lasm())
+                _ => format!("add {}, {}", a.to_lasm(), b.to_lasm()),
             },
 
             Self::Sub(a, b) => match b {
                 RegOrLit2::Lit(1) => format!("dec {}", a.to_lasm()),
-                _ => format!("sub {}, {}", a.to_lasm(), b.to_lasm())
+                _ => format!("sub {}, {}", a.to_lasm(), b.to_lasm()),
             },
 
             Self::Mul(a, b) => match b {
                 RegOrLit2::Lit(0) => format!("zro {}", a.to_lasm()),
-                _ => format!("mul {}, {}", a.to_lasm(), b.to_lasm())
+                _ => format!("mul {}, {}", a.to_lasm(), b.to_lasm()),
             },
 
-            Self::Div(a, b, RegOrLit1::Reg(c)) =>
-                format!("div {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Div(a, b, RegOrLit1::Reg(c)) => {
+                format!("div {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm())
+            }
 
-            Self::Mod(a, b, RegOrLit1::Reg(c)) =>
-                format!("mod {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Mod(a, b, RegOrLit1::Reg(c)) => {
+                format!("mod {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm())
+            }
 
-            Self::Div(a, b, RegOrLit1::Lit(mode)) | Self::Mod(a, b, RegOrLit1::Lit(mode)) => format!(
-                "{} {}, {}, {}",
-                if matches!(self, Self::Div(_, _, _)) { "div" } else { "mod" },
-                a.to_lasm(),
-                b.to_lasm(),
-                match DivMode::decode(mode) {
-                    Ok(mode) => mode.to_lasm(),
-                    Err(()) => format!("{:#010b} ; Warning: invalid division mode", mode)
-                }
-            ),
+            Self::Div(a, b, RegOrLit1::Lit(mode)) | Self::Mod(a, b, RegOrLit1::Lit(mode)) => {
+                format!(
+                    "{} {}, {}, {}",
+                    if matches!(self, Self::Div(_, _, _)) {
+                        "div"
+                    } else {
+                        "mod"
+                    },
+                    a.to_lasm(),
+                    b.to_lasm(),
+                    match DivMode::decode(mode) {
+                        Ok(mode) => mode.to_lasm(),
+                        Err(()) => format!("{:#010b} ; Warning: invalid division mode", mode),
+                    }
+                )
+            }
 
             Self::And(a, b) => match b {
                 RegOrLit2::Lit(0) => format!("zro {}", a.to_lasm()),
-                _ => format!("and {}, {}", a.to_lasm(), b.to_lasm())
+                _ => format!("and {}, {}", a.to_lasm(), b.to_lasm()),
             },
 
-            Self::Bor(a, b) =>
-                format!("bor {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Bor(a, b) => format!("bor {}, {}", a.to_lasm(), b.to_lasm()),
 
             Self::Xor(a, b) => match b {
                 RegOrLit2::Reg(a) => format!("zro {}", a.to_lasm()),
-                _ => format!("xor {}, {}", a.to_lasm(), b.to_lasm())
+                _ => format!("xor {}, {}", a.to_lasm(), b.to_lasm()),
             },
 
-            Self::Shl(a, b) =>
-                format!("shl {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Shl(a, b) => format!("shl {}, {}", a.to_lasm(), b.to_lasm()),
 
-            Self::Shr(a, b) =>
-                format!("shr {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Shr(a, b) => format!("shr {}, {}", a.to_lasm(), b.to_lasm()),
 
-            Self::Cmp(a, b) =>
-                format!("cmp {}, {}", a.to_lasm(), b.to_lasm()),
+            Self::Cmp(a, b) => format!("cmp {}, {}", a.to_lasm(), b.to_lasm()),
 
-            Self::Jpr(a) =>
-                format!("jpr {}", a.to_lasm_signed()), // Be aware of the ".to_lasm_signed()" here as JPR takes a signed argument
+            Self::Jpr(a) => format!("jpr {}", a.to_lasm_signed()), // Be aware of the ".to_lasm_signed()" here as JPR takes a signed argument
 
-            Self::Lsm(a) =>
-                format!("lsm {}", a.to_lasm()),
+            Self::Lsm(a) => format!("lsm {}", a.to_lasm()),
 
-            Self::Itr(a) =>
-                format!("itr {}", a.to_lasm()),
+            Self::Itr(a) => format!("itr {}", a.to_lasm()),
 
             Self::If(a) => match a {
                 RegOrLit1::Reg(reg) => format!("if {}", reg.to_lasm()),
@@ -435,10 +471,10 @@ impl Instr {
                     Ok(flag) => match flag {
                         ArFlag::Zero => "ifeq".to_string(),
                         ArFlag::Carry => "ifls".to_string(),
-                        _ => format!("if {}", flag.to_lasm())
+                        _ => format!("if {}", flag.to_lasm()),
                     },
-                    Err(()) => format!("if {:#X} ; Warning: unknown flag", lit)
-                }
+                    Err(()) => format!("if {:#X} ; Warning: unknown flag", lit),
+                },
             },
 
             Self::IfN(a) => match a {
@@ -447,109 +483,123 @@ impl Instr {
                     Ok(flag) => match flag {
                         ArFlag::Zero => "ifnq".to_string(),
                         ArFlag::Carry => "ifge".to_string(),
-                        _ => format!("ifn {}", flag.to_lasm())
+                        _ => format!("ifn {}", flag.to_lasm()),
                     },
-                    Err(()) => format!("ifn {:#X} ; Warning: unknown flag", lit)
-                }
+                    Err(()) => format!("ifn {:#X} ; Warning: unknown flag", lit),
+                },
             },
 
             Self::If2(a, b, c) => {
                 let mut warns = vec![];
 
-                enum Pos { Left, Right }
+                enum Pos {
+                    Left,
+                    Right,
+                }
 
                 let mut decode_flag = |flag: RegOrLit1, pos: Pos| -> String {
-                    flag.to_lasm_with(|lit|
+                    flag.to_lasm_with(|lit| {
                         ArFlag::decode(lit)
                             .map(|lit| lit.to_lasm().to_string())
                             .unwrap_or_else(|()| {
-                                warns.push(match pos { Pos::Left => "invalid left flag", Pos::Right => "invalid right flag" });
+                                warns.push(match pos {
+                                    Pos::Left => "invalid left flag",
+                                    Pos::Right => "invalid right flag",
+                                });
                                 format!("{:#004X}", lit)
                             })
-                    )
+                    })
                 };
 
                 let no_warn = match (a, b, c) {
-                    (_, _, RegOrLit1::Lit(cond)) => {
-                        match If2Cond::decode(cond) {
-                            Ok(If2Cond::Nor) if matches!(a, RegOrLit1::Lit(cst::ZF)) && matches!(b, RegOrLit1::Lit(cst::CF)) => "ifgt".to_string(),
-                            Ok(If2Cond::Or) if matches!(a, RegOrLit1::Lit(cst::ZF)) && matches!(b, RegOrLit1::Lit(cst::CF)) => "ifle".to_string(),
+                    (_, _, RegOrLit1::Lit(cond)) => match If2Cond::decode(cond) {
+                        Ok(If2Cond::Nor)
+                            if matches!(a, RegOrLit1::Lit(cst::ZF))
+                                && matches!(b, RegOrLit1::Lit(cst::CF)) =>
+                        {
+                            "ifgt".to_string()
+                        }
+                        Ok(If2Cond::Or)
+                            if matches!(a, RegOrLit1::Lit(cst::ZF))
+                                && matches!(b, RegOrLit1::Lit(cst::CF)) =>
+                        {
+                            "ifle".to_string()
+                        }
 
-                            Ok(cond) => format!(
-                                "{} {}, {}",
-                                match cond {
-                                    If2Cond::Or => "ifor",
-                                    If2Cond::And => "ifand",
-                                    If2Cond::Xor => "ifxor",
-                                    If2Cond::Nor => "ifnor",
-                                    If2Cond::Nand => "ifnand",
-                                    If2Cond::Left => "ifleft",
-                                    If2Cond::Right => "ifright"
-                                },
-                                decode_flag(a, Pos::Left),
-                                decode_flag(b, Pos::Right)
-                            ),
-                            
-                            Err(()) => {
-                                let a = decode_flag(a, Pos::Left);
-                                let b = decode_flag(b, Pos::Right);
-                                warns.push("invalid condition");
-                                format!("if2 {}, {}, {:#004X}", a, b, cond)
-                            }
+                        Ok(cond) => format!(
+                            "{} {}, {}",
+                            match cond {
+                                If2Cond::Or => "ifor",
+                                If2Cond::And => "ifand",
+                                If2Cond::Xor => "ifxor",
+                                If2Cond::Nor => "ifnor",
+                                If2Cond::Nand => "ifnand",
+                                If2Cond::Left => "ifleft",
+                                If2Cond::Right => "ifright",
+                            },
+                            decode_flag(a, Pos::Left),
+                            decode_flag(b, Pos::Right)
+                        ),
+
+                        Err(()) => {
+                            let a = decode_flag(a, Pos::Left);
+                            let b = decode_flag(b, Pos::Right);
+                            warns.push("invalid condition");
+                            format!("if2 {}, {}, {:#004X}", a, b, cond)
                         }
                     },
-                    (RegOrLit1::Reg(a), RegOrLit1::Reg(b), RegOrLit1::Reg(c)) => format!("if2 {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+                    (RegOrLit1::Reg(a), RegOrLit1::Reg(b), RegOrLit1::Reg(c)) => {
+                        format!("if2 {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm())
+                    }
                     (_, _, RegOrLit1::Reg(cond)) => format!(
                         "if2 {}, {}, {}",
                         decode_flag(a, Pos::Left),
                         decode_flag(b, Pos::Right),
                         cond.to_lasm()
-                    )
+                    ),
                 };
 
-                if warns.is_empty() { no_warn } else { format!("{} ; {}", no_warn, warns.join(", ")) }
-            },
+                if warns.is_empty() {
+                    no_warn
+                } else {
+                    format!("{} ; {}", no_warn, warns.join(", "))
+                }
+            }
 
-            Self::Lsa(a, b, c) =>
-                format!("lsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Lsa(a, b, c) => format!("lsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
 
-            Self::Lea(a, b, c) =>
-                format!("lea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Lea(a, b, c) => format!("lea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
 
-            Self::Wsa(a, b, c) =>
-                format!("wsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Wsa(a, b, c) => format!("wsa {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
 
-            Self::Wea(a, b, c) =>
-                format!("wea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Wea(a, b, c) => format!("wea {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
 
-            Self::Srm(a, b, c) =>
-                format!("srm {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
+            Self::Srm(a, b, c) => format!("srm {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm()),
 
-            Self::Push(a) =>
-                format!("push {}", a.to_lasm()),
+            Self::Push(a) => format!("push {}", a.to_lasm()),
 
             Self::Pop(a) => match a {
                 Reg::pc => "ret".to_string(),
-                _ => format!("pop {}", a.to_lasm())
+                _ => format!("pop {}", a.to_lasm()),
             },
 
-            Self::Call(a) =>
-                format!("call {}", a.to_lasm()),
+            Self::Call(a) => format!("call {}", a.to_lasm()),
 
-            Self::Hwd(a, b, c) =>
-                format!("hwd {}, {}, {}", a.to_lasm(), b.to_lasm(), c.to_lasm_with(|lit| match HwInfo::decode(lit) {
-                Ok(info) => info.to_lasm().to_string(),
-                Err(()) => format!("{:#X} ; Warning: unknown hardware information", lit)
-            })),
+            Self::Hwd(a, b, c) => format!(
+                "hwd {}, {}, {}",
+                a.to_lasm(),
+                b.to_lasm(),
+                c.to_lasm_with(|lit| match HwInfo::decode(lit) {
+                    Ok(info) => info.to_lasm().to_string(),
+                    Err(()) => format!("{:#X} ; Warning: unknown hardware information", lit),
+                })
+            ),
 
-            Self::Cycles(a) =>
-                format!("cycles {}", a.to_lasm()),
+            Self::Cycles(a) => format!("cycles {}", a.to_lasm()),
 
-            Self::Halt() =>
-                "halt".to_string(),
+            Self::Halt() => "halt".to_string(),
 
-            Self::Reset(a) =>
-                format!("reset {}", a.to_lasm()),
+            Self::Reset(a) => format!("reset {}", a.to_lasm()),
         }
     }
 }

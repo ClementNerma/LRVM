@@ -26,5 +26,10 @@ pub fn bytes_to_words(bytes: impl AsRef<[u8]>) -> Vec<u32> {
 
 /// Convert a list of words to a list of bytes
 pub fn words_to_bytes(bytes: impl AsRef<[u32]>) -> Vec<u8> {
-    bytes.as_ref().iter().map(|word| word.to_be_bytes().to_vec()).flatten().collect()
+    bytes
+        .as_ref()
+        .iter()
+        .map(|word| word.to_be_bytes().to_vec())
+        .flatten()
+        .collect()
 }

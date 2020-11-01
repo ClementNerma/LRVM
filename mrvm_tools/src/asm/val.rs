@@ -6,7 +6,7 @@ macro_rules! declare_val {
         #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
         pub enum $typename {
             Reg(Reg),
-            Lit($num)
+            Lit($num),
         }
 
         impl $typename {
@@ -29,7 +29,7 @@ macro_rules! declare_val {
             pub fn is_reg(self) -> bool {
                 match self {
                     Self::Reg(_) => true,
-                    Self::Lit(_) => false
+                    Self::Lit(_) => false,
                 }
             }
 
@@ -37,7 +37,7 @@ macro_rules! declare_val {
             pub fn is_lit(self) -> bool {
                 match self {
                     Self::Reg(_) => false,
-                    Self::Lit(_) => true
+                    Self::Lit(_) => true,
                 }
             }
 
@@ -45,7 +45,7 @@ macro_rules! declare_val {
             pub fn value(self) -> $num {
                 match self {
                     Self::Reg(reg) => reg.code().into(),
-                    Self::Lit(num) => num
+                    Self::Lit(num) => num,
                 }
             }
 
@@ -53,7 +53,7 @@ macro_rules! declare_val {
             pub fn to_lasm(self) -> String {
                 match self {
                     Self::Reg(reg) => reg.name().to_string(),
-                    Self::Lit(num) => format!("{:#X}", num)
+                    Self::Lit(num) => format!("{:#X}", num),
                 }
             }
 
@@ -65,7 +65,7 @@ macro_rules! declare_val {
                     Self::Lit(num) => match num as $inum {
                         num @ std::$inum::MIN..=-1 => format!("-{:#X}", -num),
                         num @ 0..=std::$inum::MAX => format!("{:#X}", num),
-                    }
+                    },
                 }
             }
 
@@ -73,7 +73,7 @@ macro_rules! declare_val {
             pub fn to_lasm_with(self, formatter: impl FnOnce($num) -> String) -> String {
                 match self {
                     Self::Reg(reg) => reg.name().to_string(),
-                    Self::Lit(num) => formatter(num)
+                    Self::Lit(num) => formatter(num),
                 }
             }
         }
@@ -101,7 +101,7 @@ macro_rules! declare_val {
                 Self::signed_lit(lit)
             }
         }
-    }
+    };
 }
 
 declare_val!(RegOrLit1, u8, i8);

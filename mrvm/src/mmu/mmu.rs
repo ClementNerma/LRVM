@@ -1,23 +1,29 @@
-use crate::mem::MappedMemory;
 use crate::cpu::Registers;
+use crate::mem::MappedMemory;
 
 /// Memory Management Unit (MMU)
 #[derive(Default)]
-pub struct MMU { }
+pub struct MMU {}
 
 pub enum EntryDecodingResult {
     Decoded(u32),
     PassThrough,
     PermissionNotSet,
-    HwException(u16)
+    HwException(u16),
 }
 
 impl MMU {
     pub fn new() -> Self {
-        Self { }
+        Self {}
     }
 
-    pub fn decode_entry(&mut self, mem: &mut MappedMemory, regs: &Registers, entry_addr: u32, action: MemAction) -> EntryDecodingResult {
+    pub fn decode_entry(
+        &mut self,
+        mem: &mut MappedMemory,
+        regs: &Registers,
+        entry_addr: u32,
+        action: MemAction,
+    ) -> EntryDecodingResult {
         // Exception receiver
         let mut ex = 0;
 
@@ -39,9 +45,9 @@ impl MMU {
 
         // 2. Determine the shift for the provided type of action
         let action_shift = match action {
-            MemAction::Read  => 2,
+            MemAction::Read => 2,
             MemAction::Write => 1,
-            MemAction::Exec  => 0,
+            MemAction::Exec => 0,
         };
 
         // 3. Check if the permission bit is set
@@ -54,7 +60,13 @@ impl MMU {
         }
     }
 
-    pub fn translate(&mut self, mem: &mut MappedMemory, regs: &Registers, v_addr: u32, action: MemAction) -> Result<u32, Option<u16>> {
+    pub fn translate(
+        &mut self,
+        mem: &mut MappedMemory,
+        regs: &Registers,
+        v_addr: u32,
+        action: MemAction,
+    ) -> Result<u32, Option<u16>> {
         // Skip this if the MMU is disabled
         if regs.mtt == 0 {
             return Ok(v_addr);
@@ -71,7 +83,7 @@ impl MMU {
             EntryDecodingResult::Decoded(value) => value,
             EntryDecodingResult::PassThrough => return Ok(v_addr),
             EntryDecodingResult::PermissionNotSet => return Err(None),
-            EntryDecodingResult::HwException(ex) => return Err(Some(ex))
+            EntryDecodingResult::HwException(ex) => return Err(Some(ex)),
         };
 
         // Get the address of the virtual page
@@ -85,7 +97,7 @@ impl MMU {
             EntryDecodingResult::Decoded(value) => value,
             EntryDecodingResult::PassThrough => return Ok(v_addr),
             EntryDecodingResult::PermissionNotSet => return Err(None),
-            EntryDecodingResult::HwException(ex) => return Err(Some(ex))
+            EntryDecodingResult::HwException(ex) => return Err(Some(ex)),
         };
 
         // Translate the virtual address into a physical one
@@ -98,5 +110,5 @@ impl MMU {
 pub enum MemAction {
     Read,
     Write,
-    Exec
+    Exec,
 }

@@ -1,4 +1,3 @@
-
 /// A single component mapping.
 #[derive(Debug, Clone)]
 pub struct Mapping {
@@ -9,7 +8,7 @@ pub struct Mapping {
     /// Mapping start address
     pub addr: u32,
     /// Mapping length
-    pub size: u32
+    pub size: u32,
 }
 
 impl Mapping {
@@ -29,7 +28,7 @@ pub enum MappingError {
     NullOrNegAddressRange,
     AlreadyMapped,
     NullBusSize,
-    AddressOverlaps(Mapping)
+    AddressOverlaps(Mapping),
 }
 
 /// Mapping range
@@ -38,7 +37,7 @@ pub struct MappingRange {
     /// Start address
     pub start_addr: u32,
     /// End address
-    pub end_addr: u32
+    pub end_addr: u32,
 }
 
 /// Status of a continguous mapping
@@ -47,7 +46,7 @@ pub struct ContiguousMappingStatus {
     /// Range of the mapping in case of success, or ID of the faulty components if the mapping failed
     pub mapping: Result<MappingRange, Vec<usize>>,
     /// List of auxiliary components mapping (succeeded or failed)
-    pub aux_mapping: Vec<AuxMappingStatus>
+    pub aux_mapping: Vec<AuxMappingStatus>,
 }
 
 /// Mapping status of a single auxiliary component
@@ -60,5 +59,5 @@ pub struct AuxMappingStatus {
     /// Auxiliary component's generic name
     pub aux_name: String,
     /// Mapping result
-    pub aux_mapping: Result<MappingRange, MappingError>
+    pub aux_mapping: Result<MappingRange, MappingError>,
 }

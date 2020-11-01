@@ -1,5 +1,4 @@
 /// Virtual motherboard-related structures.
-
 mod board;
 mod bus;
 mod hwb;

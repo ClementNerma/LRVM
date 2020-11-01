@@ -2,14 +2,13 @@
 
 #![forbid(unsafe_code)]
 #![deny(unused_must_use)]
-
 #![allow(clippy::len_without_is_empty)]
 
-pub mod storage;
-pub mod volatile_mem;
 pub mod display;
 pub mod keyboard;
+pub mod storage;
 pub mod time;
+pub mod volatile_mem;
 
 #[cfg(test)]
 mod tests;

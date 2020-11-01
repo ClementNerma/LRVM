@@ -2,16 +2,15 @@
 
 #![forbid(unsafe_code)]
 #![deny(unused_must_use)]
-
 #![allow(clippy::module_inception)]
 #![allow(clippy::wrong_self_convention)]
 
 pub mod asm;
-pub mod lasm;
 pub mod bytes;
-pub mod metadata;
-pub mod exceptions;
 pub mod debug;
+pub mod exceptions;
+pub mod lasm;
+pub mod metadata;
 
 #[cfg(test)]
 mod tests;

@@ -1,10 +1,10 @@
 //! The BootROM component offers a simple read-only storage.
 //! See [`BootROM`] for more details.
 
-use std::convert::TryInto;
 use mrvm::board::Bus;
-use mrvm_tools::metadata::{DeviceMetadata, StorageType};
 use mrvm_tools::exceptions::AuxHwException;
+use mrvm_tools::metadata::{DeviceMetadata, StorageType};
+use std::convert::TryInto;
 
 /// The BootROM component contains a read-only storage that is initialized during its creation.
 /// All write requests are invalid but read requests are valid (reading outside initialization storage will return '0x00000000').
@@ -13,27 +13,33 @@ pub struct BootROM {
     storage: Vec<u32>,
     len: u32,
     size: u32,
-    hw_id: u64
+    hw_id: u64,
 }
 
 impl BootROM {
     /// Create a new BootROM component
     /// Returns an error message if the capacity is too large for the running CPU architecture.
     pub fn new(storage: Vec<u32>, hw_id: u64) -> Result<Self, &'static str> {
-        let len: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
+        let len: u32 = storage
+            .len()
+            .try_into()
+            .map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
 
         Ok(Self {
             storage,
             len,
             size: len,
-            hw_id
+            hw_id,
         })
     }
 
     /// Create a new BootROM component larger than its storage
     /// Returns an error message in case of fail
     pub fn with_size(storage: Vec<u32>, size: u32, hw_id: u64) -> Result<Self, &'static str> {
-        let len: u32 = storage.len().try_into().map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
+        let len: u32 = storage
+            .len()
+            .try_into()
+            .map_err(|_| "Storage's length cannot be larger than 2^32 words")?;
 
         if storage.len() > size as usize {
             return Err("Flash memory's size cannot be lower than its initial storage's size");
@@ -51,7 +57,7 @@ impl BootROM {
             storage,
             len,
             size: size / 4,
-            hw_id
+            hw_id,
         })
     }
 
@@ -77,8 +83,9 @@ impl Bus for BootROM {
             self.size * 4,
             StorageType::Readonly.into(),
             None,
-            None
-        ).encode()
+            None,
+        )
+        .encode()
     }
 
     fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
@@ -95,5 +102,5 @@ impl Bus for BootROM {
         *ex = AuxHwException::MemoryNotWritable.into();
     }
 
-    fn reset(&mut self) { }
+    fn reset(&mut self) {}
 }

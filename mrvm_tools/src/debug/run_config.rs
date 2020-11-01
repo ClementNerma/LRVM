@@ -1,4 +1,3 @@
-
 /// VM runner configuration to use with 'run_vm' or 'exec_vm' from 'mrvm_tools::debug'
 #[derive(Debug, Clone)]
 pub struct RunConfig {
@@ -6,7 +5,7 @@ pub struct RunConfig {
     pub halt_on_exception: bool,
     pub print_cycles: bool,
     pub print_exceptions: bool,
-    pub print_finish: bool
+    pub print_finish: bool,
 }
 
 impl RunConfig {
@@ -91,7 +90,7 @@ impl Default for RunConfig {
             halt_on_exception: false,
             print_cycles: false,
             print_exceptions: true,
-            print_finish: true
+            print_finish: true,
         }
     }
 }

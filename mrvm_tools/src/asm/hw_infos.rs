@@ -1,4 +1,3 @@
-
 /// Hardware information number
 #[derive(Debug, Copy, Clone)]
 pub enum HwInfo {
@@ -50,7 +49,7 @@ impl HwInfo {
             0xA0 => Ok(Self::IsMapped),
             0xA1 => Ok(Self::MapStart),
             0xA2 => Ok(Self::MapEnd),
-            _ => Err(())
+            _ => Err(()),
         }
     }
 

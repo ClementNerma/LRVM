@@ -2,15 +2,15 @@
 //! See [`NumberDisplay`] for more details.
 
 use mrvm::board::Bus;
-use mrvm_tools::metadata::{DeviceMetadata, DisplayType};
 use mrvm_tools::exceptions::AuxHwException;
+use mrvm_tools::metadata::{DeviceMetadata, DisplayType};
 
 /// The number display is a very simple 1-byte long and write-only component.  
 /// When a word is written to its unique address, it calls the handler provided during the component's creation with the said word.  
 /// This allows to simply output a number to debug for instance.
 pub struct NumberDisplay {
     hw_id: u64,
-    handler: Box<dyn FnMut(u32)>
+    handler: Box<dyn FnMut(u32)>,
 }
 
 impl NumberDisplay {
@@ -24,7 +24,7 @@ impl NumberDisplay {
     pub fn new_println(hw_id: u64) -> Self {
         Self {
             hw_id,
-            handler: Box::new(|num| println!("[number display] {:#010X}", num))
+            handler: Box::new(|num| println!("[number display] {:#010X}", num)),
         }
     }
 }
@@ -47,5 +47,5 @@ impl Bus for NumberDisplay {
         (self.handler)(word);
     }
 
-    fn reset(&mut self) { }
+    fn reset(&mut self) {}
 }

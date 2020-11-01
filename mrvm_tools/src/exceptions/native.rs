@@ -1,6 +1,6 @@
-use std::fmt;
 use crate::asm::Reg;
 use crate::exceptions::AuxHwException;
+use std::fmt;
 
 /// Describe a native exception
 pub enum NativeException {
@@ -21,7 +21,7 @@ pub enum NativeException {
     UnknownHardwareInformationCode(u8),
     ComponentNotMapped(u16),
     HardwareException(AuxHwException),
-    Interruption(u8)
+    Interruption(u8),
 }
 
 impl NativeException {
@@ -35,9 +35,9 @@ impl NativeException {
     /// If it's `false`, the error indicates to have happened in userland mode.
     pub fn decode_with_mode(ex: u32) -> Result<(Self, bool), ()> {
         let bytes = ex.to_be_bytes();
-        
+
         let code = bytes[1];
-        let associated = u16::from_be_bytes([ bytes[2], bytes[3] ]);
+        let associated = u16::from_be_bytes([bytes[2], bytes[3]]);
 
         Ok((Self::decode_parts(code, Some(associated))?, bytes[0] != 0))
     }
@@ -51,7 +51,9 @@ impl NativeException {
             0x02 => Ok(Self::UnknownRegister(data_or_err? as u8)),
             0x03 => Ok(Self::ReadProtectedRegister(data_or_err? as u8)),
             0x04 => Ok(Self::WriteProtectedRegister(data_or_err? as u8)),
-            0x05 => Ok(Self::UnalignedMemoryAddress { unalignment: data_or_err? as u8 }),
+            0x05 => Ok(Self::UnalignedMemoryAddress {
+                unalignment: data_or_err? as u8,
+            }),
             0x06 => Ok(Self::MMURefusedRead(data_or_err?)),
             0x07 => Ok(Self::MMURefusedWrite(data_or_err?)),
             0x08 => Ok(Self::MMURefusedExec(data_or_err?)),
@@ -63,10 +65,12 @@ impl NativeException {
             0x10 => Ok(Self::UnknownComponentID(data_or_err?)),
             0x11 => Ok(Self::UnknownHardwareInformationCode(data_or_err? as u8)),
             0x12 => Ok(Self::ComponentNotMapped(data_or_err?)),
-            0xA0 => Ok(Self::HardwareException(AuxHwException::decode(data_or_err?)?)),
+            0xA0 => Ok(Self::HardwareException(AuxHwException::decode(
+                data_or_err?,
+            )?)),
             0xF0 => Ok(Self::Interruption(data_or_err? as u8)),
 
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
@@ -132,25 +136,55 @@ impl NativeException {
 
 impl fmt::Display for NativeException {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::UnknownOpCode(opcode) => format!("Unknown opcode {:#004X}", opcode),
-            Self::UnknownRegister(reg_id) => format!("Unknown register code {:#004X}", reg_id),
-            Self::ReadProtectedRegister(reg_id) => format!("Register {} cannot be read in this mode", Reg::from_code(*reg_id).unwrap()),
-            Self::WriteProtectedRegister(reg_id) => format!("Register {} cannot be written in this mode", Reg::from_code(*reg_id).unwrap()),
-            Self::UnalignedMemoryAddress { unalignment } => format!("Unaligned memory address (alignment is {})", unalignment),
-            Self::MMURefusedRead(addr_lower) => format!("Address cannot be read in this mode (address' weakest bits are {:#006X})", addr_lower),
-            Self::MMURefusedWrite(addr_lower) => format!("Address cannot be written in this mode (address' weakest bits are {:#006X})", addr_lower),
-            Self::MMURefusedExec(addr_lower) => format!("Address cannot be executed in this mode (address' weakest bits are {:#006X})", addr_lower),
-            Self::SupervisorReservedInstruction(opcode) => format!("Instruction with opcode {:#004X} cannot be run in userland mode", opcode),
-            Self::DivisionOrModByZero => "Cannot perform a division or modulus by zero".to_string(),
-            Self::OverflowingDivOrMod => "Cannot perform an overflowing division or modulus".to_string(),
-            Self::InvalidCondFlag(flag) => format!("Invalid IF/IF2 flag provided: {:#004X}", flag),
-            Self::InvalidCondMode(mode) => format!("Invalid IF2 condition mode provided: {:#004X}", mode),
-            Self::UnknownComponentID(id_lower) => format!("Unknown component ID (weakest bits are {:#006X})", id_lower),
-            Self::UnknownHardwareInformationCode(code) => format!("Unknown hardware information code {:#004X}", code),
-            Self::ComponentNotMapped(id_lower) => format!("Component with ID {:#004X} is not mapped", id_lower),
-            Self::HardwareException(hw_ex) => format!("Hardware exception occurred: {}", hw_ex),
-            Self::Interruption(code) => format!("Interruption (code {:#004X})", code),
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::UnknownOpCode(opcode) => format!("Unknown opcode {:#004X}", opcode),
+                Self::UnknownRegister(reg_id) => format!("Unknown register code {:#004X}", reg_id),
+                Self::ReadProtectedRegister(reg_id) => format!(
+                    "Register {} cannot be read in this mode",
+                    Reg::from_code(*reg_id).unwrap()
+                ),
+                Self::WriteProtectedRegister(reg_id) => format!(
+                    "Register {} cannot be written in this mode",
+                    Reg::from_code(*reg_id).unwrap()
+                ),
+                Self::UnalignedMemoryAddress { unalignment } =>
+                    format!("Unaligned memory address (alignment is {})", unalignment),
+                Self::MMURefusedRead(addr_lower) => format!(
+                    "Address cannot be read in this mode (address' weakest bits are {:#006X})",
+                    addr_lower
+                ),
+                Self::MMURefusedWrite(addr_lower) => format!(
+                    "Address cannot be written in this mode (address' weakest bits are {:#006X})",
+                    addr_lower
+                ),
+                Self::MMURefusedExec(addr_lower) => format!(
+                    "Address cannot be executed in this mode (address' weakest bits are {:#006X})",
+                    addr_lower
+                ),
+                Self::SupervisorReservedInstruction(opcode) => format!(
+                    "Instruction with opcode {:#004X} cannot be run in userland mode",
+                    opcode
+                ),
+                Self::DivisionOrModByZero =>
+                    "Cannot perform a division or modulus by zero".to_string(),
+                Self::OverflowingDivOrMod =>
+                    "Cannot perform an overflowing division or modulus".to_string(),
+                Self::InvalidCondFlag(flag) =>
+                    format!("Invalid IF/IF2 flag provided: {:#004X}", flag),
+                Self::InvalidCondMode(mode) =>
+                    format!("Invalid IF2 condition mode provided: {:#004X}", mode),
+                Self::UnknownComponentID(id_lower) =>
+                    format!("Unknown component ID (weakest bits are {:#006X})", id_lower),
+                Self::UnknownHardwareInformationCode(code) =>
+                    format!("Unknown hardware information code {:#004X}", code),
+                Self::ComponentNotMapped(id_lower) =>
+                    format!("Component with ID {:#004X} is not mapped", id_lower),
+                Self::HardwareException(hw_ex) => format!("Hardware exception occurred: {}", hw_ex),
+                Self::Interruption(code) => format!("Interruption (code {:#004X})", code),
+            }
+        )
     }
 }
