@@ -3,7 +3,9 @@
 
 use crate::asm::{InstrDecodingError, Program};
 use crate::bytes::bytes_to_words;
-use customasm::{AssemblerState, FileServerMock, RcReport};
+use customasm::asm::Assembler;
+use customasm::diagn::RcReport;
+use customasm::util::FileServerMock;
 
 static CUSTOMASM_HEADER: &str = include_str!("customasm.def");
 
@@ -18,17 +20,16 @@ pub fn assemble(source: &str) -> Result<Vec<u8>, String> {
     fileserver.add("header.lasm", CUSTOMASM_HEADER);
     fileserver.add("src.lasm", src);
 
-    let report = RcReport::new();
-
     let assemble =
         |report: RcReport, fileserver: &FileServerMock, filename: &str| -> Result<Vec<u8>, ()> {
-            let mut asm = AssemblerState::new();
-            asm.process_file(report.clone(), fileserver, filename)?;
-            asm.wrapup(report)?;
+            let mut asm = Assembler::new();
+            asm.register_file(filename);
+            let output = asm.assemble(report, fileserver, 10)?;
 
-            let output = asm.get_binary_output();
-            Ok(output.generate_binary(0, output.len()))
+            Ok(output.binary.format_binary())
         };
+
+    let report = RcReport::new();
 
     assemble(report.clone(), &fileserver, "src.lasm").map_err(|_| {
         let mut err = vec![];

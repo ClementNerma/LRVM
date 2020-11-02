@@ -41,8 +41,9 @@ dependencies = [
 
 [[package]]
 name = "customasm"
-version = "0.10.7"
-source = "git+https://github.com/hlorenzi/customasm.git#5f0a9e8afbade47e02c3c000339eccb611d034e3"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98381e7184becd468964115b4d0c602fa9d9b431068c43f574df295979ce7ccd"
 dependencies = [
  "getopts",
  "num-bigint",
