@@ -8,7 +8,8 @@ The main features are:
 - MMIO emulation for mapping components into memory ;
 - MMU emulation for translation virtual addresses into physical ones and managing userland permissions ;
 - Supervisor/userland mode ;
-- A very simple and friendly API
+- A very simple and friendly API ;
+- Debugging tools such as a full-powered assembler and disassembler
 
 It is split into several crates:
 
