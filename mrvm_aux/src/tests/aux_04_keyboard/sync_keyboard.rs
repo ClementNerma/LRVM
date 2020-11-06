@@ -19,6 +19,7 @@ fn sync_keyboard() {
     let mut prog = keyb_prog(0x1100 - 0x04);
     prog.append(Instr::Halt());
 
+    #[allow(clippy::mutex_atomic)]
     let received_req = Arc::new(Mutex::new(false));
     let received_req_closure = Arc::clone(&received_req);
 

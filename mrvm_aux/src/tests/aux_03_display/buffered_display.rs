@@ -44,6 +44,7 @@ fn buffered_display() {
     let mut prog = display_prog("Hello world!", 0x1000, 0x1100 - 0x04).unwrap();
     prog.append(Instr::Halt());
 
+    #[allow(clippy::mutex_atomic)]
     let received_msg = Arc::new(Mutex::new(false));
     let received_msg_closure = Arc::clone(&received_msg);
 
