@@ -16,7 +16,7 @@ use std::convert::TryInto;
 pub struct SyncLineKeyboard {
     buffer: Vec<u32>,
     words: u32,
-    handler: Box<dyn FnMut() -> Result<String, ()>>,
+    handler: Box<dyn FnMut() -> String>,
     hw_id: u64,
 }
 
@@ -27,7 +27,7 @@ impl SyncLineKeyboard {
     /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
     pub fn new(
         capacity: u32,
-        handler: Box<dyn FnMut() -> Result<String, ()>>,
+        handler: Box<dyn FnMut() -> String>,
         hw_id: u64,
     ) -> Result<Self, &'static str> {
         let _: usize = capacity.try_into().map_err(|_| {
@@ -89,7 +89,7 @@ impl Bus for SyncLineKeyboard {
                     let mut byte_index = 0;
                     let mut pos = 0;
 
-                    for byte in (self.handler)().unwrap().bytes() {
+                    for byte in (self.handler)().bytes() {
                         word += (byte as u32) << ((3 - byte_index) * 8);
 
                         if byte_index == 3 {

@@ -33,7 +33,7 @@ fn sync_char() {
                         assert!(!*received_req, "Received a keyboard request twice");
                         *received_req = true;
 
-                        Ok(PLACEHOLDER_KEYB_INPUT)
+                        PLACEHOLDER_KEYB_INPUT
                     }),
                     0x1,
                 )

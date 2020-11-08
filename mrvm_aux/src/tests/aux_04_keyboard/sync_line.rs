@@ -34,7 +34,7 @@ fn sync_line() {
                         assert!(!*received_req, "Received a keyboard request twice");
                         *received_req = true;
 
-                        Ok(String::from(PLACEHOLDER_KEYB_INPUT))
+                        PLACEHOLDER_KEYB_INPUT.to_owned()
                     }),
                     0x1,
                 )

@@ -14,16 +14,13 @@ use mrvm_tools::metadata::{DeviceMetadata, KeyboardType};
 /// The buffer is guaranteed to contain a valid UTF-8 character.
 pub struct SyncCharKeyboard {
     buffer: char,
-    handler: Box<dyn FnMut() -> Result<char, ()>>,
+    handler: Box<dyn FnMut() -> char>,
     hw_id: u64,
 }
 
 impl SyncCharKeyboard {
     /// Create a synchronous character keyboard component.
-    pub fn new(
-        handler: Box<dyn FnMut() -> Result<char, ()>>,
-        hw_id: u64,
-    ) -> Result<Self, &'static str> {
+    pub fn new(handler: Box<dyn FnMut() -> char>, hw_id: u64) -> Result<Self, &'static str> {
         Ok(Self {
             buffer: 0 as char,
             handler,
@@ -65,7 +62,7 @@ impl Bus for SyncCharKeyboard {
             *ex = 0x31 << 8;
         } else if addr == 4 {
             match word {
-                0xAA => self.buffer = (self.handler)().unwrap(),
+                0xAA => self.buffer = (self.handler)(),
                 0xFF => self.reset(),
                 code => *ex = AuxHwException::UnknownOperation(code as u8).into(),
             }
