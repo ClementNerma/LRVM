@@ -6,6 +6,7 @@ pub struct RunConfig {
     pub print_cycles: bool,
     pub print_exceptions: bool,
     pub print_finish: bool,
+    pub newline_on_finish: bool,
 }
 
 impl RunConfig {
@@ -66,6 +67,12 @@ impl RunConfig {
         self
     }
 
+    /// Set if the runner should print a newline when the VM halts.
+    pub fn with_newline_on_finish(mut self, print: bool) -> Self {
+        self.newline_on_finish = print;
+        self
+    }
+
     /// Enable all display informations.
     pub fn be_verbose(mut self) -> Self {
         self.print_cycles = true;
@@ -91,6 +98,7 @@ impl Default for RunConfig {
             print_cycles: false,
             print_exceptions: true,
             print_finish: true,
+            newline_on_finish: false,
         }
     }
 }

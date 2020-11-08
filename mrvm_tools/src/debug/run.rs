@@ -91,6 +91,10 @@ pub fn run_vm(cpu: &mut CPU, config: RunConfig) -> StoppedState {
     };
 
     if config.print_finish {
+        if config.newline_on_finish {
+            println!();
+        }
+
         println!("[mrvm] {}", prettify_stop(&state));
     }
 
