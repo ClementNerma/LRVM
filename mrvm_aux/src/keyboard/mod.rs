@@ -1,3 +1,3 @@
-mod sync;
+mod sync_line;
 
-pub use sync::SyncKeyboard;
+pub use sync_line::SyncLineKeyboard;

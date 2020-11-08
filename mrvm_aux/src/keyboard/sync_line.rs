@@ -1,5 +1,5 @@
-//! The synchronous keyboard component offers a simple UTF-8 input system.
-//! See [`SyncKeyboard`] for more details.
+//! The synchronous line keyboard component offers a simple UTF-8 line reading system.
+//! See [`SyncLineKeyboard`] for more details.
 
 use mrvm::board::Bus;
 use mrvm_tools::exceptions::AuxHwException;
@@ -13,14 +13,14 @@ use std::convert::TryInto;
 /// * `0xFF`: clear the buffer's content
 ///
 /// The buffer is guaranteed to contain valid UTF-8 data.
-pub struct SyncKeyboard {
+pub struct SyncLineKeyboard {
     buffer: Vec<u32>,
     words: u32,
     handler: Box<dyn FnMut() -> Result<String, ()>>,
     hw_id: u64,
 }
 
-impl SyncKeyboard {
+impl SyncLineKeyboard {
     /// Create a synchronous keyboard component.
     /// The provided capacity must be a multiple of 4, and 4 bytes will be substracted for handling the action code.
     /// This means a capacity of 64 bytes will allow 60 bytes of data or 15 words.
@@ -53,16 +53,16 @@ impl SyncKeyboard {
     }
 }
 
-impl Bus for SyncKeyboard {
+impl Bus for SyncLineKeyboard {
     fn name(&self) -> &'static str {
-        "Synchronous Keyboard"
+        "Synchronous Line Keyboard"
     }
 
     fn metadata(&self) -> [u32; 8] {
         DeviceMetadata::new(
             self.hw_id,
             self.words * 4 + 4,
-            KeyboardType::ReadlineSynchronous.into(),
+            KeyboardType::ReadLineSynchronous.into(),
             None,
             None,
         )

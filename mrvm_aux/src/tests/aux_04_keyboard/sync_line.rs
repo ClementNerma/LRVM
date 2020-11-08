@@ -1,4 +1,4 @@
-use crate::keyboard::SyncKeyboard;
+use crate::keyboard::SyncLineKeyboard;
 use crate::storage::BootROM;
 use mrvm_tools::asm::{ExtInstr, Instr, Program, Reg};
 use mrvm_tools::debug::{exec_vm, RunConfig};
@@ -15,7 +15,7 @@ fn keyb_prog(input_end_addr: u32) -> Program {
 }
 
 #[test]
-fn sync_keyboard() {
+fn sync_line() {
     let mut prog = keyb_prog(0x1100 - 0x04);
     prog.append(Instr::Halt());
 
@@ -27,7 +27,7 @@ fn sync_keyboard() {
         vec![
             Box::new(BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
             Box::new(
-                SyncKeyboard::new(
+                SyncLineKeyboard::new(
                     0x100,
                     Box::new(move || {
                         let mut received_req = received_req_closure.lock().unwrap();

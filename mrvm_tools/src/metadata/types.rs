@@ -98,13 +98,13 @@ impl fmt::Display for DisplayType {
 #[non_exhaustive]
 #[derive(Copy, Clone, Debug)]
 pub enum KeyboardType {
-    ReadlineSynchronous,
+    ReadLineSynchronous,
 }
 
 impl KeyboardType {
     pub fn decode(code: u32) -> Result<Self, ()> {
         match code {
-            0x0000_0100 => Ok(Self::ReadlineSynchronous),
+            0x0000_1000 => Ok(Self::ReadLineSynchronous),
 
             _ => Err(()),
         }
@@ -112,7 +112,7 @@ impl KeyboardType {
 
     pub fn code(self) -> u32 {
         match self {
-            Self::ReadlineSynchronous => 0x0000_0100,
+            Self::ReadLineSynchronous => 0x0000_1000,
         }
     }
 
@@ -137,7 +137,7 @@ impl fmt::Display for KeyboardType {
             f,
             "{}",
             match self {
-                Self::ReadlineSynchronous => "Readline synchronous",
+                Self::ReadLineSynchronous => "Read line synchronous",
             }
         )
     }
