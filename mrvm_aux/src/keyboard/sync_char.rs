@@ -20,12 +20,12 @@ pub struct SyncCharKeyboard {
 
 impl SyncCharKeyboard {
     /// Create a synchronous character keyboard component.
-    pub fn new(handler: Box<dyn FnMut() -> char>, hw_id: u64) -> Result<Self, &'static str> {
-        Ok(Self {
+    pub fn new(handler: Box<dyn FnMut() -> char>, hw_id: u64) -> Self {
+        Self {
             buffer: 0 as char,
             handler,
             hw_id,
-        })
+        }
     }
 }
 

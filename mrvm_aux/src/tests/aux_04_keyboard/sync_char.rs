@@ -26,19 +26,16 @@ fn sync_char() {
     let (mut vm, state) = exec_vm(
         vec![
             Box::new(BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
-            Box::new(
-                SyncCharKeyboard::new(
-                    Box::new(move || {
-                        let mut received_req = received_req_closure.lock().unwrap();
-                        assert!(!*received_req, "Received a keyboard request twice");
-                        *received_req = true;
+            Box::new(SyncCharKeyboard::new(
+                Box::new(move || {
+                    let mut received_req = received_req_closure.lock().unwrap();
+                    assert!(!*received_req, "Received a keyboard request twice");
+                    *received_req = true;
 
-                        PLACEHOLDER_KEYB_INPUT
-                    }),
-                    0x1,
-                )
-                .unwrap(),
-            ),
+                    PLACEHOLDER_KEYB_INPUT
+                }),
+                0x1,
+            )),
         ],
         RunConfig::halt_on_ex(),
     );

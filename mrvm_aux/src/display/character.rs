@@ -14,11 +14,8 @@ pub struct CharDisplay {
 
 impl CharDisplay {
     /// Create a character display component.
-    pub fn new(
-        handler: Box<dyn FnMut(Result<char, u32>)>,
-        hw_id: u64,
-    ) -> Result<Self, &'static str> {
-        Ok(Self { handler, hw_id })
+    pub fn new(handler: Box<dyn FnMut(Result<char, u32>)>, hw_id: u64) -> Self {
+        Self { handler, hw_id }
     }
 }
 

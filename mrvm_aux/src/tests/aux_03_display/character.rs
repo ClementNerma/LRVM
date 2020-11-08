@@ -20,28 +20,25 @@ fn buffered_display() {
     let (_, state) = exec_vm(
         vec![
             Box::new(BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
-            Box::new(
-                CharDisplay::new(
-                    Box::new(move |msg| {
-                        let mut received_msg = received_msg_closure.lock().unwrap();
+            Box::new(CharDisplay::new(
+                Box::new(move |msg| {
+                    let mut received_msg = received_msg_closure.lock().unwrap();
 
-                        assert!(
-                            !*received_msg,
-                            "Received a message twice (second message: {})",
-                            msg.map(String::from)
-                                .unwrap_or_else(|_| String::from("<Invalid UTF-8 character>"))
-                        );
+                    assert!(
+                        !*received_msg,
+                        "Received a message twice (second message: {})",
+                        msg.map(String::from)
+                            .unwrap_or_else(|_| String::from("<Invalid UTF-8 character>"))
+                    );
 
-                        let msg = msg.expect("Invalid UTF-8 character received");
+                    let msg = msg.expect("Invalid UTF-8 character received");
 
-                        assert_eq!(msg, 'Z', "Invalid character received: {}", msg);
+                    assert_eq!(msg, 'Z', "Invalid character received: {}", msg);
 
-                        *received_msg = true;
-                    }),
-                    0x1,
-                )
-                .unwrap(),
-            ),
+                    *received_msg = true;
+                }),
+                0x1,
+            )),
         ],
         RunConfig::halt_on_ex(),
     );
