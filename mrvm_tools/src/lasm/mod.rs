@@ -2,7 +2,7 @@
 //! This module allows to assemble LASM source code through the [CustomAsm](https://github.com/hlorenzi/customasm) library.
 
 use crate::asm::{InstrDecodingError, Program};
-use crate::bytes::bytes_to_words;
+use crate::bytes::{bytes_to_words, words_to_bytes};
 use customasm::asm::Assembler;
 use customasm::diagn::RcReport;
 use customasm::util::FileServerMock;
@@ -48,4 +48,16 @@ pub fn assemble_words(source: &str) -> Result<Vec<u32>, String> {
 /// May fail because Program::decode() may fail if for instance there is raw data in the assembled program (strings for instance)
 pub fn assemble_prog(source: &str) -> Result<Result<Program, (usize, InstrDecodingError)>, String> {
     Ok(Program::decode(assemble(source)?))
+}
+
+/// Disassemble a machine code to LASM source code
+/// May fail because Program::decode() may fail if for instance there is raw data in the assembled program (strings for instance)
+pub fn disassemble(code: &[u8]) -> Result<String, (usize, InstrDecodingError)> {
+    Ok(Program::decode(code)?.to_lasm())
+}
+
+/// Disassemble a machine code (encoded with words) to LASM source code
+/// May fail because Program::decode() may fail if for instance there is raw data in the assembled program (strings for instance)
+pub fn disassemble_words(code: &[u32]) -> Result<String, (usize, InstrDecodingError)> {
+    Ok(Program::decode(words_to_bytes(code))?.to_lasm())
 }
