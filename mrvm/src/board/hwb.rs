@@ -101,6 +101,11 @@ impl HardwareBridge {
     /// If the `ex` reference contains a non-zero value when this function returns, the component raised an exception
     /// with the provided code and data.
     pub fn read(&mut self, aux_id: usize, addr: u32, ex: &mut u16) -> Option<u32> {
+        assert!(
+            addr % 4 == 0,
+            "Hardware bridge does not support reading from unaligned addresses"
+        );
+
         self.aux
             .get(aux_id)
             .map(|aux| aux.shared_bus.lock().unwrap().read(addr, ex))
@@ -110,6 +115,11 @@ impl HardwareBridge {
     /// If the `ex` reference contains a non-zero value when this function returns, the component raised an exception
     /// with the provided code and data.
     pub fn write(&mut self, aux_id: usize, addr: u32, word: u32, ex: &mut u16) -> Option<()> {
+        assert!(
+            addr % 4 == 0,
+            "Hardware bridge does not support writing to unaligned addresses"
+        );
+
         self.aux
             .get(aux_id)
             .map(|aux| aux.shared_bus.lock().unwrap().write(addr, word, ex))
