@@ -47,6 +47,7 @@ impl fmt::Display for ClockType {
 #[derive(Copy, Clone, Debug)]
 pub enum DisplayType {
     Number,
+    Character,
     Buffered,
 }
 
@@ -54,6 +55,7 @@ impl DisplayType {
     pub fn decode(code: u32) -> Result<Self, ()> {
         match code {
             0x0000_0001 => Ok(Self::Number),
+            0x0000_0010 => Ok(Self::Character),
             0x0000_0100 => Ok(Self::Buffered),
 
             _ => Err(()),
@@ -63,6 +65,7 @@ impl DisplayType {
     pub fn code(self) -> u32 {
         match self {
             Self::Number => 0x0000_0001,
+            Self::Character => 0x0000_0010,
             Self::Buffered => 0x0000_0100,
         }
     }
@@ -89,6 +92,7 @@ impl fmt::Display for DisplayType {
             "{}",
             match self {
                 Self::Number => "Number",
+                Self::Character => "Character",
                 Self::Buffered => "Buffered",
             }
         )

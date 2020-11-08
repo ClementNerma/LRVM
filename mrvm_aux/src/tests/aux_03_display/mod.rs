@@ -1,1 +1,2 @@
-pub mod buffered_display;
+pub mod buffered;
+pub mod character;

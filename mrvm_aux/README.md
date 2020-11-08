@@ -6,6 +6,7 @@ The `mrvm_aux` crate contains a collection of common auxiliary components:
 - [`storage::BootROM`](src/storage/bootrom.rs) is a read-only persistent storage meant to contain a program's code and data
 - [`storage::FlashMem`](src/storage/flash.rs) is a writable persistent memory
 - [`storage::PersistentMem`](src/storage/persistent.rs) is a persistent memory that is read from and written to a file in order to keep the data alive after your program stops
+- [`display::CharDisplay`](src/display/character.rs) is a simple character-based display triggered by writing an UTF-8 character code to its only address
 - [`display::BufferedDisplay`](src/display/buffered.rs) is a simple buffer-backed display that is triggered by writing an action code to its last writable address
 - [`keyboard::SyncCharKeyboard`](src/keyboard/sync_char.rs) is a simple character-backed synchronous keyboard that is triggered by writing an action code to its last writable address
 - [`keyboard::SyncLineKeyboard`](src/keyboard/sync_line.rs) is a simple buffer-backed synchronous keyboard that is triggered by writing an action code to its last writable address
