@@ -115,8 +115,10 @@ We will copy the message's bytes, one by one, to the display's buffer. This mean
 ```asm
 message:
     #d "Hello, world!"
-    #d32 0
+    #d64 0
 ```
+
+Here, we put two words of zeroes, as the first one may be unaligned with our message.
 
 To copy the bytes, we'll need to write the message's address in the CPU's registers:
 
@@ -288,7 +290,7 @@ main:
 
 message:
     #d "Hello, world!"
-    #d32 0
+    #d64 0
 ```
 
 Hurray! Now it's time to run it!
@@ -676,7 +678,7 @@ If the VM halts normally, we will get a message like:
 [mrvm] Cycle 0x00000025: CPU halted at address 0x00000030
 ```
 
-But if one happens (let's say we replace the `halt` instruction by a `#d32 0x00`, which gives an invalid opcode of `0x00`), we'll get something like:
+But if one happens (let's say we replace the `halt` instruction by a `#d64 0x00`, which gives an invalid opcode of `0x00`), we'll get something like:
 
 ```
 [mrvm] Cycle 0x00000025: CPU halted at address 0x00000030 because of exception in supervisor mode: Unknown opcode 0x00
