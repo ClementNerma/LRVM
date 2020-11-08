@@ -66,7 +66,7 @@ code --install-extension mrvm-lasm-*.vsix
 
 ## Examples
 
-Examples can be found in the [`examples/`](examples/) directory.
+Examples can be found in the [`examples/`](examples/README.md) directory.
 
 ## Testing
 
