@@ -45,12 +45,13 @@ impl Bus for SyncCharKeyboard {
         .encode()
     }
 
-    fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
+    fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
         let addr = addr / 4;
 
         if addr == 0 {
             self.buffer as u32
         } else if addr == 4 {
+            *ex = AuxHwException::MemoryNotReadable.into();
             0
         } else {
             unreachable!() // Safety guarantee
