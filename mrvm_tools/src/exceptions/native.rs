@@ -151,7 +151,7 @@ impl fmt::Display for NativeException {
                     Reg::from_code(*reg_id).unwrap()
                 ),
                 Self::UnalignedMemoryAddress { unalignment } =>
-                    format!("Unaligned memory address (alignment is {})", unalignment),
+                    format!("Unaligned memory address (unalignment is {})", unalignment),
                 Self::MMURefusedRead(addr_lower) => format!(
                     "Address cannot be read in this mode (address' weakest bits are {:#006X})",
                     addr_lower
