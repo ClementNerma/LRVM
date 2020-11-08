@@ -101,20 +101,20 @@ MRVM uses a small assembly language called LASM (Lightweight Assembly). We'll st
 
 So, we first need to encode the message in our program. A first method is to check what bytes `Hello, world!` is made of and write these bytes directly in our assembly program. But that's tricky, and we'll not be able to change this message easily later.
 
-So we'll use a simple directive called `#str`, provided by the assembling library MRVM uses under the hood, [CustomASM](https://github.com/hlorenzi/customasm).
+So we'll use a simple directive called `#d`, provided by the assembling library MRVM uses under the hood, [CustomASM](https://github.com/hlorenzi/customasm).
 
 Let's make a label that contains the message:
 
 ```asm
 message:
-    #str "Hello, world!"
+    #d "Hello, world!"
 ```
 
 We will copy the message's bytes, one by one, to the display's buffer. This means we also need to know _when_ we reached the end of the message. The easiest way is to simply put a `0x00000000` value at the end of the message:
 
 ```asm
 message:
-    #str "Hello, world!"
+    #d "Hello, world!"
     #d32 0
 ```
 
@@ -287,7 +287,7 @@ main:
     halt
 
 message:
-    #str "Hello, world!"
+    #d "Hello, world!"
     #d32 0
 ```
 
