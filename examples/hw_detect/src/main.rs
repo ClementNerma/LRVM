@@ -27,7 +27,7 @@ fn main() {
             // RAM that will be used for the stack
             Box::new(RAM::new(0x20, rng.gen()).unwrap()),
         ],
-        &RunConfig::halt_on_ex(),
+        RunConfig::halt_on_ex(),
     )
     .0;
 

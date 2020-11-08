@@ -36,6 +36,6 @@ fn main() {
                 0x3,
             )),
         ],
-        &RunConfig::halt_on_ex(),
+        RunConfig::halt_on_ex(),
     );
 }

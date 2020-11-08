@@ -7,6 +7,6 @@ fn main() {
 
     exec_vm(
         vec![Box::new(BootROM::new(program, 0x0).unwrap())],
-        &RunConfig::new(),
+        RunConfig::new(),
     );
 }

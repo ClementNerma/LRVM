@@ -24,6 +24,6 @@ fn main() {
                 rng.gen(),
             )),
         ],
-        &RunConfig::halt_on_ex(),
+        RunConfig::halt_on_ex(),
     );
 }

@@ -41,7 +41,7 @@ fn sync_keyboard() {
                 .unwrap(),
             ),
         ],
-        &RunConfig::halt_on_ex(),
+        RunConfig::halt_on_ex(),
     );
 
     if state.ex.is_some() {

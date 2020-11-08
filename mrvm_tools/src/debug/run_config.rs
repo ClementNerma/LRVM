@@ -1,5 +1,5 @@
 /// VM runner configuration to use with 'run_vm' or 'exec_vm' from 'mrvm_tools::debug'
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct RunConfig {
     pub cycles_limit: Option<u32>,
     pub halt_on_exception: bool,

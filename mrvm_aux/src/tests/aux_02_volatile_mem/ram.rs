@@ -14,7 +14,7 @@ fn ram() {
             Box::new(BootROM::with_size(program.encode_words(), 0x1000, 0x0).unwrap()),
             Box::new(RAM::new(0x1000, 0x1).unwrap()),
         ],
-        &RunConfig::halt_on_ex(),
+        RunConfig::halt_on_ex(),
     );
 
     if state.ex.is_some() {
