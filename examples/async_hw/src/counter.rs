@@ -1,15 +1,15 @@
+use mrvm::board::Bus;
+use mrvm_tools::exceptions::AuxHwException;
+use mrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
-use mrvm::board::Bus;
-use mrvm_tools::metadata::{DeviceMetadata, DeviceCategory};
-use mrvm_tools::exceptions::AuxHwException;
 
 /// A 1-word-long component that contains a readable counter.  
 /// The counter is incremented each second, asynchronously.
 pub struct AsyncCounter {
     hw_id: u64,
-    counter: Arc<RwLock<u32>>
+    counter: Arc<RwLock<u32>>,
 }
 
 impl AsyncCounter {
@@ -17,14 +17,15 @@ impl AsyncCounter {
         let counter = Arc::new(RwLock::new(0));
         let thread_counter = Arc::clone(&counter);
 
-        thread::spawn(move || {
-            loop {
-                thread::sleep(Duration::from_millis(1000));
-                *(thread_counter.write().unwrap()) += 1;
-            }
+        thread::spawn(move || loop {
+            thread::sleep(Duration::from_millis(1000));
+            *(thread_counter.write().unwrap()) += 1;
         });
 
-        Self { hw_id, counter: Arc::clone(&counter) }
+        Self {
+            hw_id,
+            counter: Arc::clone(&counter),
+        }
     }
 }
 
