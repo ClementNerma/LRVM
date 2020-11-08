@@ -52,12 +52,18 @@ pub fn assemble_prog(source: &str) -> Result<Result<Program, (usize, InstrDecodi
 
 /// Disassemble a machine code to LASM source code
 /// May fail because Program::decode() may fail if for instance there is raw data in the assembled program (strings for instance)
-pub fn disassemble(code: &[u8]) -> Result<String, (usize, InstrDecodingError)> {
-    Ok(Program::decode(code)?.to_lasm())
+pub fn disassemble(
+    code: &[u8],
+    annotate_instr_addr: bool,
+) -> Result<String, (usize, InstrDecodingError)> {
+    Ok(Program::decode(code)?.to_lasm(annotate_instr_addr))
 }
 
 /// Disassemble a machine code (encoded with words) to LASM source code
 /// May fail because Program::decode() may fail if for instance there is raw data in the assembled program (strings for instance)
-pub fn disassemble_words(code: &[u32]) -> Result<String, (usize, InstrDecodingError)> {
-    Ok(Program::decode(words_to_bytes(code))?.to_lasm())
+pub fn disassemble_words(
+    code: &[u32],
+    annotate_instr_addr: bool,
+) -> Result<String, (usize, InstrDecodingError)> {
+    Ok(Program::decode(words_to_bytes(code))?.to_lasm(annotate_instr_addr))
 }

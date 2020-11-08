@@ -102,12 +102,28 @@ impl Program {
     }
 
     /// Convert the program to a LASM source code
-    pub fn to_lasm(&self) -> String {
-        self.to_lasm_lines().join("\n")
+    pub fn to_lasm(&self, annotate_instr_addr: bool) -> String {
+        if !annotate_instr_addr {
+            self.to_lasm_lines()
+        } else {
+            self.to_lasm_lines_annotated()
+        }
+        .join("\n")
     }
 
     /// Convert each line of the program to its LASM source code
     pub fn to_lasm_lines(&self) -> Vec<String> {
         self.instr().map(|instr| instr.to_lasm()).collect()
+    }
+
+    /// Convert each line of the program to its LASM source code with relative instructions address
+    pub fn to_lasm_lines_annotated(&self) -> Vec<String> {
+        let mut counter = 0;
+        self.instr()
+            .map(|instr| {
+                counter += 4;
+                format!("{:#010X}: {}", counter, instr.to_lasm())
+            })
+            .collect()
     }
 }

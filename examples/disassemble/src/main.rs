@@ -24,7 +24,7 @@ pub fn re_assemble(source: &str) -> String {
 
     println!("> Converting decoded program to LASM code...");
 
-    decoded.to_lasm()
+    decoded.to_lasm(false)
 }
 
 fn main() {

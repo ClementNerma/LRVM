@@ -69,6 +69,6 @@ impl ExtInstr {
 
     /// Convert the extended instruction to a LASM source code
     pub fn to_lasm(&self) -> String {
-        Program::from(self.to_instr()).to_lasm()
+        Program::from(self.to_instr()).to_lasm(false)
     }
 }
