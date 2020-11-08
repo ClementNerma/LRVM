@@ -1,10 +1,10 @@
-use std::fmt;
 use super::DeviceCategory;
+use std::fmt;
 
 #[non_exhaustive]
 #[derive(Copy, Clone, Debug)]
 pub enum ClockType {
-    Realtime
+    Realtime,
 }
 
 impl ClockType {
@@ -12,13 +12,13 @@ impl ClockType {
         match code {
             0x0000_0001 => Ok(Self::Realtime),
 
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
     pub fn code(self) -> u32 {
         match self {
-            Self::Realtime => 0x0000_0001
+            Self::Realtime => 0x0000_0001,
         }
     }
 
@@ -33,9 +33,13 @@ impl ClockType {
 
 impl fmt::Display for ClockType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::Realtime => "Realtime"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Realtime => "Realtime",
+            }
+        )
     }
 }
 
@@ -43,7 +47,7 @@ impl fmt::Display for ClockType {
 #[derive(Copy, Clone, Debug)]
 pub enum DisplayType {
     Number,
-    Buffered
+    Buffered,
 }
 
 impl DisplayType {
@@ -52,14 +56,14 @@ impl DisplayType {
             0x0000_0001 => Ok(Self::Number),
             0x0000_0100 => Ok(Self::Buffered),
 
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
     pub fn code(self) -> u32 {
         match self {
             Self::Number => 0x0000_0001,
-            Self::Buffered => 0x0000_0100
+            Self::Buffered => 0x0000_0100,
         }
     }
 
@@ -80,17 +84,21 @@ impl Into<DeviceCategory> for DisplayType {
 
 impl fmt::Display for DisplayType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::Number => "Number",
-            Self::Buffered => "Buffered"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Number => "Number",
+                Self::Buffered => "Buffered",
+            }
+        )
     }
 }
 
 #[non_exhaustive]
 #[derive(Copy, Clone, Debug)]
 pub enum KeyboardType {
-    ReadlineSynchronous
+    ReadlineSynchronous,
 }
 
 impl KeyboardType {
@@ -98,13 +106,13 @@ impl KeyboardType {
         match code {
             0x0000_0100 => Ok(Self::ReadlineSynchronous),
 
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
     pub fn code(self) -> u32 {
         match self {
-            Self::ReadlineSynchronous => 0x0000_0100
+            Self::ReadlineSynchronous => 0x0000_0100,
         }
     }
 
@@ -125,16 +133,20 @@ impl Into<DeviceCategory> for KeyboardType {
 
 impl fmt::Display for KeyboardType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::ReadlineSynchronous => "Readline synchronous"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::ReadlineSynchronous => "Readline synchronous",
+            }
+        )
     }
 }
 
 #[non_exhaustive]
 #[derive(Copy, Clone, Debug)]
 pub enum MemoryType {
-    RAM
+    RAM,
 }
 
 impl MemoryType {
@@ -142,13 +154,13 @@ impl MemoryType {
         match code {
             0x0000_0100 => Ok(Self::RAM),
 
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
     pub fn code(self) -> u32 {
         match self {
-            Self::RAM => 0x0000_0100
+            Self::RAM => 0x0000_0100,
         }
     }
 
@@ -169,9 +181,13 @@ impl Into<DeviceCategory> for MemoryType {
 
 impl fmt::Display for MemoryType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::RAM => "RAM"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::RAM => "RAM",
+            }
+        )
     }
 }
 
@@ -180,7 +196,7 @@ impl fmt::Display for MemoryType {
 pub enum StorageType {
     Readonly,
     Flash,
-    Persistent
+    Persistent,
 }
 
 impl StorageType {
@@ -190,7 +206,7 @@ impl StorageType {
             0x0000_0011 => Ok(Self::Flash),
             0x0000_0021 => Ok(Self::Persistent),
 
-            _ => Err(())
+            _ => Err(()),
         }
     }
 
@@ -198,7 +214,7 @@ impl StorageType {
         match self {
             Self::Readonly => 0x0000_0100,
             Self::Flash => 0x0000_0011,
-            Self::Persistent => 0x0000_0021
+            Self::Persistent => 0x0000_0021,
         }
     }
 
@@ -219,10 +235,14 @@ impl Into<DeviceCategory> for StorageType {
 
 impl fmt::Display for StorageType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::Readonly => "Readonly",
-            Self::Flash => "Flash",
-            Self::Persistent => "Persistent"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Readonly => "Readonly",
+                Self::Flash => "Flash",
+                Self::Persistent => "Persistent",
+            }
+        )
     }
 }
