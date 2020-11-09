@@ -19,14 +19,6 @@ impl NumberDisplay {
     pub fn new(handler: Box<dyn FnMut(u32)>, hw_id: u64) -> Self {
         Self { hw_id, handler }
     }
-
-    /// Create a number display that pretty-prints the received numbers in hexadecimal.
-    pub fn new_println(hw_id: u64) -> Self {
-        Self {
-            hw_id,
-            handler: Box::new(|num| println!("[number display] {:#010X}", num)),
-        }
-    }
 }
 
 impl Bus for NumberDisplay {
