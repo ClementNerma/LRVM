@@ -226,8 +226,8 @@
     srm {lit_addr:  u8}, {reg_add: reg}, {reg_swap: reg} => ((0x17 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_swap[7:0]
     srm {lit_addr:  u8}, {lit_add:  u8}, {reg_swap: reg} => ((0x17 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_swap[7:0]
 
-    push {reg_value: reg} => ((0x19 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ 0x00 @ 0x00
-    push {lit_value: u16} => ((0x19 << 3) + 0b000)[7:0] @ reg_addr[15:8] @ reg_addr[7:0] @ 0x00
+    push {reg_value: reg} => ((0x19 << 3) + 0b100)[7:0] @ reg_value[7:0] @ 0x00 @ 0x00
+    push {lit_value: u16} => ((0x19 << 3) + 0b000)[7:0] @ lit_value[15:8] @ lit_value[7:0] @ 0x00
 
     pop  {reg_dest: reg} => ((0x1A << 3) + 0b100)[7:0] @ reg_dest[7:0] @ 0x00 @ 0x00
 
