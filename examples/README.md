@@ -17,3 +17,4 @@ There are also a few advanced examples:
 | Example name              | Description                                                                             |
 | ------------------------- | --------------------------------------------------------------------------------------- |
 | [`hw_detect`](hw_detect/) | Detect dynamically all components connected to the motherboard and mapped in the memory |
+| [`brainfuck`](brainfuck/) | A complete BrainFuck interpreter with detailed errors output                            |

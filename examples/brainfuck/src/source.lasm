@@ -1,0 +1,433 @@
+; Brainfuck interpreter (complete)
+;
+; Memory            : 1024 cells (32 bits each)
+; I/O               : supported
+; Errors handling   : detailed output
+; Max. nested loops : 1021
+
+main:
+    ; Set the stack's address
+    cpy ssp, 0x2000
+
+    ; Display the welcome message
+    cpy rr6, welcome
+    call print
+
+    ; Make the user input their BrainFuck program
+    call read_line
+
+    ; Display the 'running' message
+    cpy rr6, running
+    call print
+
+    ; Run the program
+    cpy rr0, 0x4000
+    cpy rr1, 0x2000
+    call interpret_bf
+
+    ; Display the goodbye message
+    cpy rr6, goodbye
+    call print
+
+    ; Stop
+    halt
+
+; Display a null-terminated string located at address 'rr6'
+print:
+    cpy rr7, 0x3000
+
+.cpy_bytes:
+    lea rr6
+
+    cmp avr, 0
+    ifeq
+    jp .trigger_disp
+
+    wea rr7
+
+    add rr6, 0x4
+    add rr7, 0x4
+
+    jp .cpy_bytes
+
+.trigger_disp:
+    cpy avr, 0x4000 - 0x4
+    wsa avr, 0, 0xAA
+    wsa avr, 0, 0xFF
+    ret
+
+; Read a line from the keyboard
+read_line:
+    cpy rr7, 0x5000 - 0x4
+    wsa rr7, 0, 0xAA ; trigger input
+    ret
+
+; Read a single character to 'avr'
+read_char:
+    cpy rr7, 0x5004
+    wsa rr7, 0, 0xAA ; trigger input
+    cpy rr7, 0x5000
+    lea rr7 ; read input
+    ret
+
+; Display a single character from 'avr'
+print_char:
+    cpy rr7, 0x5008
+    wea rr7
+    ret
+
+; Display an integer from 'avr'
+print_hex:
+    cpy rr7, 0x500C
+    wea rr7
+    ret
+
+; Display a decimal integer from 'avr'
+print_dec:
+    cpy rr7, 0x5014
+    wea rr7
+    ret
+
+; Interpret a null-terminated or line-break-terminated BrainFuck program
+; Starting from address in 'rr0'
+; With memory starting from address in 'rr1'
+interpret_bf:
+    ;   rr0    ; program address
+    ;   rr1    ; program memory
+    cpy rr2, 0 ; char number in program
+    cpy rr3, 0 ; number of opened loops
+    ;   a0     ; current instruction
+
+    sub rr2, 1 ; will be increment when getting the first character
+
+.main:
+    call .next_char
+
+    ; end if instruction character is NULL
+    cmp a0, 0
+    ifeq
+    jp .complete
+
+    ; handle line breaks as well
+    cmp a0, 13
+    ifeq
+    jp .complete
+
+    ; [DEBUG] print the character which is going to be interpreted
+    ; cpy avr, a0
+    ; cpy rr5, rr0
+    ; call print_char
+    ; cpy rr0, rr5
+
+    jp .interpret
+
+; When the program is finished
+.complete:
+    ; ensure all loops have been closed
+    cmp rr3, 0
+    ifeq
+    ret
+
+    ; else, exit with an error
+    cpy rr5, err_not_closed_loop_before_count
+    call pre_error
+    
+    cpy avr, rr3
+    call print_dec
+
+    cpy rr6, err_not_closed_loop_after_count
+    call print
+
+    pop avr
+    inc avr
+    call print_dec
+
+    call post_error
+
+    halt
+
+; Get the next character and store it in 'a0'
+.next_char:
+    ; increment the character counter
+    inc rr2
+
+    ; load the word containing the current instruction character in rr4
+    ; address: rr0 + (rr2 - (rr2 % 4))
+    ;        = rr0 + rr2 - (rr2 % 4)
+    cpy avr, rr0
+    add avr, rr2
+
+    cpy rr7, rr2
+    mod rr7, 4
+
+    sub avr, rr7
+
+    lsa a0, avr
+
+    ; get the character index in the retrieved word
+    ; index: rr2 % 4
+    cpy avr, rr2
+    mod avr, 4
+
+    ; get the character's byte
+    ;       word << (8 * index)
+    ; then: word >> 24
+    mul avr, 8
+    shl a0, avr
+    shr a0, 24
+
+    ret
+
+; character to interpret is in 'a0'
+.interpret:
+    cmp a0, ">"
+    ifeq
+    jp .more
+
+    cmp a0, "<"
+    ifeq
+    jp .less
+
+    cmp a0, "+"
+    ifeq
+    jp .plus
+
+    cmp a0, "-"
+    ifeq
+    jp .minus
+
+    cmp a0, "."
+    ifeq
+    jp .dot
+
+    cmp a0, ","
+    ifeq
+    jp .comma
+
+    cmp a0, "["
+    ifeq
+    jp .open_bracket
+
+    cmp a0, "]"
+    ifeq
+    jp .close_bracket
+
+    ; display an error message and halt
+    cpy rr5, err_unknown_char
+    call pre_error
+    cpy avr, "'"
+    call print_char
+    cpy avr, a0
+    call print_char
+    cpy avr, "'"
+    call print_char
+    cpy avr, " "
+    call print_char
+    cpy avr, "("
+    call print_char
+    cpy avr, a0
+    call print_hex
+    cpy avr, ")"
+    call print_char
+    call post_error
+    halt
+
+.more:
+    inc rr1
+    jp .main
+
+.less:
+    dec rr1
+    jp .main
+
+.plus:
+    lea rr1
+    inc avr
+    wea rr1
+    jp .main
+
+.minus:
+    lea rr1
+    dec avr
+    wea rr1
+    jp .main
+
+.dot:
+    lea rr1
+    call print_char
+    jp .main
+
+.comma:
+    call read_char
+    wea rr1
+    jp .main
+
+.open_bracket:
+    ; increase the number of opened loops
+    inc rr3
+
+    ; go to matching close bracket if current memory cell is equal to 0
+    lea rr1
+    cmp avr, 0
+    ifeq
+    jp .open_bracket_skip
+
+    push rr2
+    jp .main
+
+.open_bracket_skip:
+    call .next_char
+    cmp a0, "]"
+    ifnq
+    jpr 0xC
+
+    dec rr3 ; mark the loop as closed
+    jp .main
+
+    cmp a0, 0
+    jp .complete
+
+    cmp a0, 13
+    ifeq
+    jp .complete
+
+    jp .open_bracket_skip
+
+.close_bracket:
+    ; ensure a loop was opened before
+    cmp rr3, 0
+    ifeq
+    jp .close_bracket_error
+
+    ; decrease the number of opened brackets
+    dec rr3
+
+    ; go to matching open bracket if current memory cell is not equal to 0
+    lea rr1
+    cmp avr, 0
+    ifnq
+    jp .close_bracket_goto_matching
+
+    ; else, just get rid of the loop
+    pop avr
+
+    jp .main
+
+.close_bracket_goto_matching:
+    ; go to matching opened bracket
+    pop rr2
+    dec rr2
+
+    jp .main
+
+.close_bracket_error:
+    cpy rr5, err_no_opened_loop
+    call pre_error
+    call post_error
+    halt
+
+; ============================================== ;
+; =================== ERRORS =================== ;
+; ============================================== ;
+
+; Display the header of an error message
+; Character number must be in 'rr2'
+; Pointer to message must be in 'rr5'
+pre_error:
+    cpy rr6, error_pre_char_num
+    call print
+
+    cpy avr, rr2
+    inc avr
+    call print_dec
+
+    cpy rr6, error_post_char_num
+    call print
+
+    cpy rr6, rr5
+    call print
+    ret
+
+; Display the footer of all error messages
+post_error:
+    cpy rr6, error_post_msg
+    call print
+    ret
+
+; =============================================== ;
+; =================== STRINGS =================== ;
+; =============================================== ;
+;
+; NOTE: Messages have additional, variable padding as a temporary fix
+;       for a bug with label alignments caused by a third-party library
+
+; Welcome message
+welcome:
+    #d "\n"
+    #d "=== Welcome to the BrainFuck interpreter! ==="
+    #d "\n\n"
+    #d "Please type your BrainFuck program here:"
+    #d "\n\n"
+    #d16 0
+    #d32 0
+
+; Running message
+running:
+    #d "\n"
+    #d "=> Now running your program..."
+    #d "\n\n"
+    #d24 0
+    #d32 0
+
+; Error message (part 1)
+error_pre_char_num:
+    #d "\n"
+    #d "===> ERROR: At character "
+    #d16 0
+    #d32 0
+
+; Error message (part 2)
+error_post_char_num:
+    #d "\n"
+    #d "     "
+    #d16 0
+    #d32 0
+
+; Error message (part 3)
+error_post_msg:
+    #d "\n\n"
+    #d "Now exiting after error."
+    #d "\n"
+    #d8 0
+    #d32 0
+
+; Error: unknown character
+err_unknown_char:
+    #d "Unknown symbol "
+    #d8 0
+    #d32 0
+
+; Error: no opened loop
+err_no_opened_loop:
+    #d "No loop opened, cannot close one."
+    #d24 0
+    #d32 0
+
+; Error: >= 1 loop not closed
+err_not_closed_loop_before_count:
+    #d "Program exited before closing all loops: "
+    #d24 0
+    #d32 0
+
+err_not_closed_loop_after_count:
+    #d " were not closed, last one at character "
+    #d32 0
+    #d32 0
+
+; Goodbye message
+goodbye:
+    #d "\n\n"
+    #d "=== Goodbye! ==="
+    #d "\n"
+    #d8 0 ; Temporary fix for CustomAsm's bug with #labelalign directive
+    #d64 0

@@ -8,5 +8,6 @@ members = [
     "examples/elapsed_time",
     "examples/hw_detect",
     "examples/async_hw",
-    "examples/disassemble"
+    "examples/disassemble",
+    "examples/brainfuck"
 ]
