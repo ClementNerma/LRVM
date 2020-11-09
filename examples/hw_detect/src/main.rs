@@ -1,3 +1,4 @@
+use mrvm::mem::MappedMemory;
 use mrvm_aux::storage::BootROM;
 use mrvm_aux::volatile_mem::RAM;
 use mrvm_tools::bytes::words_to_bytes;
@@ -6,6 +7,94 @@ use mrvm_tools::exceptions::AuxHwException;
 use mrvm_tools::lasm::assemble_words;
 use mrvm_tools::metadata::DeviceCategory;
 use rand::Rng;
+
+struct Component {
+    uid: u64,
+    name: String,
+    size: u32,
+    cat_type: Result<DeviceCategory, u64>,
+    model: u32,
+    data: u64,
+    mapping: Option<(u32, u32)>,
+}
+
+/// Decode a component from the detection program  
+/// Returns an error message in case of error
+fn decode_component(mem: &mut MappedMemory, aux_addr: u32) -> Result<Component, String> {
+    // This function reads an address in the memory and handles exceptions.
+    // If an exception occurrs, it tries to decode it to show a human-readable error instead of an exception code.
+    let mut read = move |addr: u32| {
+        let mut ex = 0;
+        let word = mem.read(addr, &mut ex);
+
+        // Handle exceptions
+        if ex != 0 {
+            return Err(format!(
+                "Exception occurred while manually reading memory address {:#010X}: {}",
+                addr,
+                match AuxHwException::decode(ex) {
+                    Ok(ex) => format!("{}", ex),
+                    Err(()) => "<unknown exception>".to_string(),
+                },
+            ));
+        }
+
+        Ok(word)
+    };
+
+    // Get the component's unique identifier
+    let uid = ((read(aux_addr)? as u64) << 32) + read(aux_addr + 0x04)? as u64;
+
+    // Get the component's name
+    let name = String::from_utf8_lossy(&words_to_bytes(&[
+        read(aux_addr + 0x08)?,
+        read(aux_addr + 0x0C)?,
+        read(aux_addr + 0x10)?,
+        read(aux_addr + 0x14)?,
+        read(aux_addr + 0x18)?,
+        read(aux_addr + 0x1C)?,
+        read(aux_addr + 0x20)?,
+        read(aux_addr + 0x24)?,
+    ]))
+    .to_string();
+
+    // Get the component's size
+    let size = read(aux_addr + 0x28)?;
+
+    // Get and decode the component's category
+    let cat_type = {
+        let code = ((read(aux_addr + 0x2C)? as u64) << 32) + read(aux_addr + 0x30)? as u64;
+        DeviceCategory::decode(code).map_err(|()| code)
+    };
+
+    // Get the component's model
+    let model = read(aux_addr + 0x34)?;
+
+    // Get the component's associated data
+    let data = ((read(aux_addr + 0x38)? as u64) << 32) + read(aux_addr + 0x3C)? as u64;
+
+    // Get the component's mapping if it's mapped in the memory
+    let mapping = {
+        let mapping = read(aux_addr + 0x40)?;
+
+        if mapping == 0x0000_0000 {
+            None
+        } else {
+            Some((read(aux_addr + 0x44)?, read(aux_addr + 0x48)?))
+        }
+    };
+
+    // Success!
+    Ok(Component {
+        uid,
+        name,
+        size,
+        cat_type,
+        model,
+        data,
+        mapping,
+    })
+}
 
 fn main() {
     println!("> Assembling LASM code...");
@@ -32,34 +121,25 @@ fn main() {
     .0;
 
     // We read the memory from inside this handler as the mapped memory object cannot be moved out of the motherboard instance.
-    motherboard.map(|mem| {
+    motherboard.map(|mut mem| {
         // Address of the data RAM
         let ram_addr = 0x1000;
 
-        // This function reads an address in the memory and handles exceptions.
-        // If an exception occurrs, it tries to decode it to show a human-readable error instead of an exception code.
-        let mut read = move |addr: u32| {
-            let mut ex = 0;
-            let word = mem.read(addr, &mut ex);
-
-            // Handle exceptions
-            if ex != 0 {
-                println!(
-                    "Exception occurred while manually reading memory address {:#010X}: {}",
-                    addr,
-                    match AuxHwException::decode(ex) {
-                        Ok(ex) => format!("{}", ex),
-                        Err(()) => "<unknown exception>".to_string(),
-                    }
-                );
-            }
-
-            word
-        };
-
         // The first word in the data RAM contains the number of components
         // See the source LASM file in this directory to know the exact memory structure of the data RAM
-        let components = read(ram_addr);
+        let mut ex = 0;
+        let components = mem.read(ram_addr, &mut ex);
+
+        if ex != 0 {
+            panic!(
+                "Exception occurred while manually reading getting components count at memory address {:#010X}: {}",
+                ram_addr,
+                match AuxHwException::decode(ex) {
+                    Ok(ex) => format!("{}", ex),
+                    Err(()) => "<unknown exception>".to_string(),
+                },
+            )
+        }
 
         // Decode informations on each component
         for aux_id in 0..components {
@@ -72,52 +152,26 @@ fn main() {
                 aux_addr
             );
 
-            println!(
-                "> UID      : {:#018X}",
-                ((read(aux_addr) as u64) << 32) + read(aux_addr + 0x04) as u64
-            );
+            let component = decode_component(&mut mem, aux_addr).unwrap_or_else(|err| panic!("{}", err));
 
-            println!(
-                "> Name     : {}",
-                String::from_utf8_lossy(&words_to_bytes(&[
-                    read(aux_addr + 0x08),
-                    read(aux_addr + 0x0C),
-                    read(aux_addr + 0x10),
-                    read(aux_addr + 0x14),
-                    read(aux_addr + 0x18),
-                    read(aux_addr + 0x1C),
-                    read(aux_addr + 0x20),
-                    read(aux_addr + 0x24)
-                ]))
-            );
-
-            println!("> Size     : {:#010X} (bytes)", read(aux_addr + 0x28));
-
-            let cat_type = ((read(aux_addr + 0x2C) as u64) << 32) + read(aux_addr + 0x30) as u64;
+            println!("> UID      : {:#018X}", component.uid);
+            println!("> Name     : {}", component.name);
+            println!("> Size     : {:#010X} (bytes)", component.size);
             println!(
                 "> Category : {}",
-                match DeviceCategory::decode(cat_type) {
-                    Ok(cat) => format!("{}", cat),
-                    Err(_) => format!("<unknown> ({:#018X})", cat_type),
+                match component.cat_type {
+                    Ok(cat_type) => format!("{}", cat_type),
+                    Err(code) => format!("<unknown> ({:#018X})", code),
                 }
             );
-
-            println!("> Model    : {:#010X}", read(aux_addr + 0x34));
-
-            println!(
-                "> Data     : {:#018X}",
-                ((read(aux_addr + 0x38) as u64) << 32) + read(aux_addr + 0x3C) as u64
-            );
-
+            println!("> Model    : {:#010X}", component.model);
+            println!("> Data     : {:#018X}", component.data);
             println!(
                 "> Mapping  : {}",
-                match read(aux_addr + 0x40) {
-                    0x0000_0000 => "<device is not mapped>".to_string(),
-                    _ => format!(
-                        "{:#010X} -> {:#010X}",
-                        read(aux_addr + 0x44),
-                        read(aux_addr + 0x48)
-                    ),
+                match component.mapping {
+                    None => "<device is not mapped>".to_string(),
+                    Some((start_addr, end_addr)) =>
+                        format!("{:#010X} -> {:#010X}", start_addr, end_addr),
                 }
             );
         }
