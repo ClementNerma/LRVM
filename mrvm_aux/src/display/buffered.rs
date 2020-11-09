@@ -58,6 +58,18 @@ impl BufferedDisplay {
             hw_id,
         })
     }
+
+    /// Create a print!-based buffered display component, converting invalid UTF-8 strings to lossy ones
+    pub fn new_print_lossy(capacity: u32, hw_id: u64) -> Result<Self, &'static str> {
+        Self::new(
+            capacity,
+            Box::new(|message| match message {
+                Ok(message) => print!("{}", message),
+                Err((_, bytes)) => print!("{}", String::from_utf8_lossy(bytes)),
+            }),
+            hw_id,
+        )
+    }
 }
 
 impl Bus for BufferedDisplay {

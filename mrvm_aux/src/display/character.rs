@@ -17,6 +17,14 @@ impl CharDisplay {
     pub fn new(handler: Box<dyn FnMut(Result<char, u32>)>, hw_id: u64) -> Self {
         Self { handler, hw_id }
     }
+
+    /// Create a println!-based character display component, tolerating invalid UTF-8 characters ('�' displayed instead)
+    pub fn new_print_lossy(hw_id: u64) -> Self {
+        Self::new(
+            Box::new(|result| print!("{}", result.unwrap_or('�'))),
+            hw_id,
+        )
+    }
 }
 
 impl Bus for CharDisplay {
