@@ -14,7 +14,7 @@ pub fn re_assemble(source: &str) -> String {
 
     println!("> Decoding assembled program...");
 
-    let decoded = Program::decode(assembled).unwrap_or_else(|(instr, err)| {
+    let decoded = Program::decode(assembled, true).unwrap_or_else(|(instr, err)| {
         panic!(
             "Failed to decode assembled instruction {}: {}",
             instr + 1,

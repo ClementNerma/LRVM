@@ -47,7 +47,7 @@ pub fn assemble_words(source: &str) -> Result<Vec<u32>, String> {
 /// Convert a LASM source code to a strongly-typed program
 /// May fail because Program::decode() may fail if for instance there is raw data in the assembled program (strings for instance)
 pub fn assemble_prog(source: &str) -> Result<Result<Program, (usize, InstrDecodingError)>, String> {
-    Ok(Program::decode(assemble(source)?))
+    Ok(Program::decode(assemble(source)?, false))
 }
 
 /// Disassemble a machine code to LASM source code
@@ -56,7 +56,7 @@ pub fn disassemble(
     code: &[u8],
     annotate_instr_addr: bool,
 ) -> Result<String, (usize, InstrDecodingError)> {
-    Ok(Program::decode(code)?.to_lasm(annotate_instr_addr))
+    Ok(Program::decode(code, false)?.to_lasm(annotate_instr_addr))
 }
 
 /// Disassemble a machine code (encoded with words) to LASM source code
@@ -65,5 +65,5 @@ pub fn disassemble_words(
     code: &[u32],
     annotate_instr_addr: bool,
 ) -> Result<String, (usize, InstrDecodingError)> {
-    Ok(Program::decode(words_to_bytes(code))?.to_lasm(annotate_instr_addr))
+    Ok(Program::decode(words_to_bytes(code), false)?.to_lasm(annotate_instr_addr))
 }

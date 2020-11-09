@@ -1,4 +1,4 @@
-use super::cst;
+use super::{cst, ProgramWord};
 use super::{ArFlag, DivMode, HwInfo, If2Cond, Reg, RegOrLit1, RegOrLit2};
 use std::fmt;
 
@@ -613,6 +613,12 @@ pub enum InstrDecodingError {
     UnknownOpCode { opcode: u8 },
     /// An unknown register code was used in a parameter
     UnknownRegister { param: usize, code: u8 },
+}
+
+impl Into<ProgramWord> for Instr {
+    fn into(self) -> ProgramWord {
+        ProgramWord::Instr(self)
+    }
 }
 
 impl fmt::Display for InstrDecodingError {

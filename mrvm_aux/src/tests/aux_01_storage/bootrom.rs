@@ -5,7 +5,7 @@ use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
 use mrvm_tools::exceptions::{AuxHwException, NativeException};
 
 fn prepare(instr: Instr) -> MotherBoard {
-    let prog = Program::from(vec![instr, Instr::Halt()]);
+    let prog = Program::from_instr(vec![instr, Instr::Halt()]);
 
     prepare_vm(vec![Box::new(
         BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap(),

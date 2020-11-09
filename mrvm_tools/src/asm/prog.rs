@@ -1,11 +1,11 @@
 //! The [`Program`] struct allows to represent a strongly-typed assembly program.
 //! If the program builds, then it's guaranteed to be correct and does not need a runtime validation.
 
-use super::{Instr, InstrDecodingError};
+use super::{Instr, InstrDecodingError, ProgramWord};
 
 /// Strongly-typed assembly program
-#[derive(Default, Debug, Clone, Eq, PartialEq)]
-pub struct Program(pub Vec<Instr>);
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
+pub struct Program(pub Vec<ProgramWord>);
 
 impl Program {
     /// Create an empty program
@@ -13,24 +13,29 @@ impl Program {
         Self(Vec::new())
     }
 
+    /// Create a program from a set of program words
+    pub fn from(pwords: Vec<ProgramWord>) -> Self {
+        Self(pwords)
+    }
+
     /// Create a program from a set of instructions
-    pub fn from(instr: Vec<Instr>) -> Self {
-        Self(instr)
+    pub fn from_instr(instr: Vec<Instr>) -> Self {
+        Self(instr.into_iter().map(ProgramWord::Instr).collect())
     }
 
     /// Iterate over the program's instructions
-    pub fn instr(&self) -> impl Iterator<Item = &Instr> {
+    pub fn prog_words(&self) -> impl Iterator<Item = &ProgramWord> {
         self.0.iter()
     }
 
     /// Prepend an instruction at the beginning of the program
-    pub fn prepend(&mut self, instr: Instr) -> &mut Self {
+    pub fn prepend(&mut self, instr: ProgramWord) -> &mut Self {
         self.0.insert(0, instr);
         self
     }
 
     /// Prepend a set of instructions at the beginning of the program
-    pub fn prepend_all(&mut self, instr: impl AsRef<[Instr]>) -> &mut Self {
+    pub fn prepend_all(&mut self, instr: impl AsRef<[ProgramWord]>) -> &mut Self {
         let instr = instr.as_ref();
 
         let tail = self.0.len() - instr.len();
@@ -41,20 +46,24 @@ impl Program {
     }
 
     /// Append an instruction at the end of the program
-    pub fn append(&mut self, instr: Instr) -> &mut Self {
+    pub fn append(&mut self, instr: ProgramWord) -> &mut Self {
         self.0.push(instr);
         self
     }
 
     /// Append a set of instructions at the end of the program
-    pub fn append_all(&mut self, instr: impl AsRef<[Instr]>) -> &mut Self {
+    pub fn append_all(&mut self, instr: impl AsRef<[ProgramWord]>) -> &mut Self {
         self.0.extend_from_slice(instr.as_ref());
         self
     }
 
     /// Disassemble a machine code into a program.
     /// In case of error, returns a tuple containing the faulty instruction's index along with the decoding error.
-    pub fn decode(prog: impl AsRef<[u8]>) -> Result<Self, (usize, InstrDecodingError)> {
+    /// Raw data can be forbidden to ensure strict checking of instructions.
+    pub fn decode(
+        prog: impl AsRef<[u8]>,
+        forbid_raw: bool,
+    ) -> Result<Self, (usize, InstrDecodingError)> {
         let prog = prog.as_ref();
 
         // Ensure the source code is aligned
@@ -66,15 +75,25 @@ impl Program {
 
         // Decode all instructions (each instruction being on 4 bytes)
         for i in 0..prog.len() / 4 {
-            match Instr::decode([
+            let bytes = [
                 prog[i * 4],
                 prog[i * 4 + 1],
                 prog[i * 4 + 2],
                 prog[i * 4 + 3],
-            ]) {
-                Ok(instr) => out.push(instr),
-                Err(err) => return Err((i, err)),
-            }
+            ];
+
+            let pword = match Instr::decode(bytes) {
+                Ok(instr) => ProgramWord::Instr(instr),
+                Err(err) => {
+                    if forbid_raw {
+                        return Err((i, err));
+                    }
+
+                    ProgramWord::Raw(bytes)
+                }
+            };
+
+            out.push(pword);
         }
 
         Ok(Self::from(out))
@@ -82,15 +101,15 @@ impl Program {
 
     /// Encode the program to folded bytes (list of 4-bytes slices)
     pub fn to_folded_bytes(&self) -> Vec<[u8; 4]> {
-        self.instr().map(|instr| instr.encode()).collect()
+        self.prog_words().map(|pword| pword.encode()).collect()
     }
 
     /// Encode the program as a list of bytes
     pub fn encode(&self) -> Vec<u8> {
         let mut out = vec![];
 
-        for instr in &self.0 {
-            out.extend_from_slice(&instr.encode());
+        for pword in &self.0 {
+            out.extend_from_slice(&pword.encode());
         }
 
         out
@@ -98,7 +117,7 @@ impl Program {
 
     /// Encode the progrma as a list of words
     pub fn encode_words(&self) -> Vec<u32> {
-        self.instr().map(|instr| instr.encode_word()).collect()
+        self.prog_words().map(|pword| pword.encode_word()).collect()
     }
 
     /// Convert the program to a LASM source code
@@ -113,13 +132,13 @@ impl Program {
 
     /// Convert each line of the program to its LASM source code
     pub fn to_lasm_lines(&self) -> Vec<String> {
-        self.instr().map(|instr| instr.to_lasm()).collect()
+        self.prog_words().map(|pword| pword.to_lasm()).collect()
     }
 
     /// Convert each line of the program to its LASM source code with relative instructions address
     pub fn to_lasm_lines_annotated(&self) -> Vec<String> {
         let mut counter = 0;
-        self.instr()
+        self.prog_words()
             .map(|instr| {
                 counter += 4;
                 format!("{:#010X}: {}", counter, instr.to_lasm())

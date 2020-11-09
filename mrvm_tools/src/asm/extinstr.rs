@@ -1,6 +1,6 @@
 //! Extended instructions (ExtInstr) are a set of powerful instructions that compile into several sub-instructions.
 
-use super::{Instr, Program, Reg};
+use super::{Instr, Program, ProgramWord, Reg};
 
 /// Extended instruction
 #[derive(Debug, Copy, Clone)]
@@ -57,18 +57,26 @@ impl ExtInstr {
         }
     }
 
+    /// Convert the extended instruction into a set of program words
+    pub fn to_prog_words(&self) -> Vec<ProgramWord> {
+        self.to_instr()
+            .into_iter()
+            .map(ProgramWord::Instr)
+            .collect()
+    }
+
     /// Convert the extended instruction into machine code (split in words)
     pub fn encode_words(&self) -> Vec<u32> {
-        Program::from(self.to_instr()).encode_words()
+        Program::from_instr(self.to_instr()).encode_words()
     }
 
     /// Convert the extended instruction into machine code
     pub fn encode(&self) -> Vec<u8> {
-        Program::from(self.to_instr()).encode()
+        Program::from_instr(self.to_instr()).encode()
     }
 
     /// Convert the extended instruction to a LASM source code
     pub fn to_lasm(&self) -> String {
-        Program::from(self.to_instr()).to_lasm(false)
+        Program::from_instr(self.to_instr()).to_lasm(false)
     }
 }

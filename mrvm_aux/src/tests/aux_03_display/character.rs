@@ -5,13 +5,13 @@ use mrvm_tools::debug::{exec_vm, RunConfig};
 use std::sync::{Arc, Mutex};
 
 fn display_prog(character: char, display_addr: u32) -> Program {
-    Program::from(ExtInstr::WriteAddrLit(display_addr, character as u32).to_instr())
+    Program::from_instr(ExtInstr::WriteAddrLit(display_addr, character as u32).to_instr())
 }
 
 #[test]
 fn buffered_display() {
     let mut prog = display_prog('Z', 0x1000);
-    prog.append(Instr::Halt());
+    prog.append(Instr::Halt().into());
 
     #[allow(clippy::mutex_atomic)]
     let received_msg = Arc::new(Mutex::new(false));

@@ -36,13 +36,13 @@ fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Resul
 
     instr.extend_from_slice(&ExtInstr::WriteAddrLit(display_final_addr, 0xAA).to_instr());
 
-    Ok(Program::from(instr))
+    Ok(Program::from_instr(instr))
 }
 
 #[test]
 fn buffered_display() {
     let mut prog = display_prog("Hello world!", 0x1000, 0x1100 - 0x04).unwrap();
-    prog.append(Instr::Halt());
+    prog.append(Instr::Halt().into());
 
     #[allow(clippy::mutex_atomic)]
     let received_msg = Arc::new(Mutex::new(false));

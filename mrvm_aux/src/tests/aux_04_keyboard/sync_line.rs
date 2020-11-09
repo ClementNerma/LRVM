@@ -7,9 +7,9 @@ use std::sync::{Arc, Mutex};
 static PLACEHOLDER_KEYB_INPUT: &str = "Placeholder keyboard input";
 
 fn keyb_prog(input_end_addr: u32) -> Program {
-    let mut prog = Program::from(ExtInstr::SetReg(Reg::ac0, input_end_addr).to_instr());
-    prog.append_all(ExtInstr::SetReg(Reg::avr, 0xAA).to_instr());
-    prog.append(Instr::Wea(Reg::ac0.into(), 0_u8.into(), 0_u8.into()));
+    let mut prog = Program::from_instr(ExtInstr::SetReg(Reg::ac0, input_end_addr).to_instr());
+    prog.append_all(ExtInstr::SetReg(Reg::avr, 0xAA).to_prog_words());
+    prog.append(Instr::Wea(Reg::ac0.into(), 0_u8.into(), 0_u8.into()).into());
 
     prog
 }
@@ -17,7 +17,7 @@ fn keyb_prog(input_end_addr: u32) -> Program {
 #[test]
 fn sync_line() {
     let mut prog = keyb_prog(0x1100 - 0x04);
-    prog.append(Instr::Halt());
+    prog.append(Instr::Halt().into());
 
     #[allow(clippy::mutex_atomic)]
     let received_req = Arc::new(Mutex::new(false));

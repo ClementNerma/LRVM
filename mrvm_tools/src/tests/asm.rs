@@ -1,7 +1,7 @@
 use crate::asm::*;
 
 fn prog() -> Program {
-    Program::from(vec![
+    Program::from_instr(vec![
         Instr::Add(Reg::a0, 0xFFu8.into()),
         Instr::Sub(Reg::a0, 0xFFu8.into()),
         Instr::Div(Reg::a0, 0x00u8.into(), cst::DIV_ZRO_MIN.into()),
@@ -38,7 +38,7 @@ fn encoding() {
 
 #[test]
 fn decoding() {
-    let re_prog = Program::decode(encoded()).expect("Failed to decode encoded program");
+    let re_prog = Program::decode(encoded(), false).expect("Failed to decode encoded program");
     assert_eq!(
         re_prog,
         prog(),

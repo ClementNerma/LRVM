@@ -4,9 +4,9 @@ use mrvm_tools::debug::{exec_vm, RunConfig};
 
 #[test]
 fn flash_mem() {
-    let mut program = Program::from(ExtInstr::WriteAddrLit(0x1000, 0x01234567).to_instr());
-    program.append_all(ExtInstr::WriteAddrLit(0x1008, 0x89ABCDEF).to_instr());
-    program.append(Instr::Halt());
+    let mut program = Program::from_instr(ExtInstr::WriteAddrLit(0x1000, 0x01234567).to_instr());
+    program.append_all(ExtInstr::WriteAddrLit(0x1008, 0x89ABCDEF).to_prog_words());
+    program.append(Instr::Halt().into());
 
     let (mut vm, state) = exec_vm(
         vec![
