@@ -182,7 +182,7 @@ impl fmt::Display for NativeException {
                     format!("Unknown hardware information code {:#004X}", code),
                 Self::ComponentNotMapped(id_lower) =>
                     format!("Component with ID {:#004X} is not mapped", id_lower),
-                Self::HardwareException(hw_ex) => format!("Hardware exception occurred: {}", hw_ex),
+                Self::HardwareException(hw_ex) => format!("Hardware exception: {}", hw_ex),
                 Self::Interruption(code) => format!("Interruption (code {:#004X})", code),
             }
         )
