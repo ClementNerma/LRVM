@@ -475,30 +475,30 @@ Under the hood, they simply jump four bytes forward if the condition is not met,
 The memory instructions allow to manipulate the memory:
 
 - `LSA reg_dest, [reg_addr | 1-byte], [[reg_add | 1-byte]]` (Load Simple Address) | opcode: `0x14`  
-  Read the word at address (`addr` + `add`) in `reg_dest`  
+  Read the word at address (`addr` + `add` (signed)) in `reg_dest`  
   By default `add` is zero  
   The address must be aligned or an exception will be raised  
   **Affects** `reg_dest`
 
 - `LEA [reg_addr | 1-byte], [[reg_add | 1-byte], [[reg_mul | 1-byte]]]` (Load Effective Address) | opcode: `0x15`  
-  Read the word at address (`addr` + `add` \* `mul`) in `avr`  
+  Read the word at address (`addr` + `add` (signed) \* `mul` (signed)) in `avr`  
   By default `add` is zero and `mul` is one  
   As the `avr` is used for atomic instructions, its value is expected to be moved to another register to operate on  
   The address must be aligned or an exception will be raised
   **Affects** `avr`
 
 - `WSA [reg_addr | 1-byte], [[reg_add | 1-byte], [[reg_val | 1-byte]]]` (Write Simple Address) | opcode: `0x16`  
-  Write the provided value to address at (`addr` + `add`)  
+  Write the provided value to address at (`addr` + `add` (signed))  
   By default `add` is zero  
   The address must be aligned or an exception will be raised
 
 - `WEA [reg_addr | 1-byte], [[reg_add | 1-byte], [[reg_mul | 1-byte]]]` (Write Effective Address) | opcode: `0x17`  
-  Write the value of `avr` to address at (`addr` + `add` \* `mul`)  
+  Write the value of `avr` to address at (`addr` + `add` (signed) \* `mul` (signed))  
   By default `add` is zero  
   The address must be aligned or an exception will be raised
 
 - `SRM [reg_addr | 1-byte], [reg_add | 1-byte], reg_swap` (Swap Register and Memory) | opcode: `0x18`  
-  Swap the values of `reg_swap` and address at (`reg_addr` + `reg_add`)  
+  Swap the values of `reg_swap` and address at (`reg_addr` + `reg_add` (signed))  
   Equivalent to `LSA <temporary>, addr, add`, `WSA addr, add, reg_swap`, `CPY reg_swap, <temporary>`  
   **Affects** `reg_swap`
 

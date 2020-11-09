@@ -296,7 +296,7 @@ impl CPU {
             0x14 => {
                 let (reg_dest, v_addr, add) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
 
-                let word = self.mem_read(v_addr + add)?;
+                let word = self.mem_read(v_addr.wrapping_add(add))?;
 
                 self.write_reg(reg_dest, word)
             },
@@ -305,7 +305,7 @@ impl CPU {
             0x15 => {
                 let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
-                self.regs.avr = self.mem_read(v_addr + add * mul)?;
+                self.regs.avr = self.mem_read(v_addr.wrapping_add(add.wrapping_mul(mul)))?;
                 Ok(())
             },
 
@@ -313,14 +313,14 @@ impl CPU {
             0x16 => {
                 let (v_addr, add, val) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
-                self.mem_write(v_addr + add, val)
+                self.mem_write(v_addr.wrapping_add(add), val)
             },
 
             // WEA
             0x17 => {
                 let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
-                self.mem_write(v_addr + add * mul, self.regs.avr)
+                self.mem_write(v_addr.wrapping_add(add.wrapping_mul(mul)), self.regs.avr)
             },
 
             // SRM
