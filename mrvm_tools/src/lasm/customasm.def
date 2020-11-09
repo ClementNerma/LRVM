@@ -102,7 +102,7 @@
 #ruledef
 {
     #labelalign 4
-
+    
     cpy  {reg_dest: reg}, {reg_val: reg} => ((0x01 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_val[7:0] @ 0x00
     cpy  {reg_dest: reg}, {lit_val: u16} => ((0x01 << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_val[15:8] @ lit_val[7:0]
 
@@ -121,11 +121,15 @@
     div  {reg_obj: reg}, {lit_val:  u8}, {reg_mode: reg}      => ((0x06 << 3) + 0b101)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ reg_mode[7:0]
     div  {reg_obj: reg}, {reg_val: reg}, {lit_mode: div_mode} => ((0x06 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ lit_mode[7:0]
     div  {reg_obj: reg}, {lit_val:  u8}, {lit_mode: div_mode} => ((0x06 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ lit_mode[7:0]
+    div  {reg_obj: reg}, {reg_val: reg}                       => ((0x06 << 3) + 0b111)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    div  {reg_obj: reg}, {lit_val:  u8}                       => ((0x06 << 3) + 0b101)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ 0x00
 
-    mod  {reg_obj: reg}, {reg_val: reg}, {reg_mode: reg} => ((0x07 << 3) + 0b111)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ reg_mode[7:0]
-    mod  {reg_obj: reg}, {lit_val:  u8}, {reg_mode: reg} => ((0x07 << 3) + 0b101)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ reg_mode[7:0]
+    mod  {reg_obj: reg}, {reg_val: reg}, {reg_mode: reg}      => ((0x07 << 3) + 0b111)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ reg_mode[7:0]
+    mod  {reg_obj: reg}, {lit_val:  u8}, {reg_mode: reg}      => ((0x07 << 3) + 0b101)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ reg_mode[7:0]
     mod  {reg_obj: reg}, {reg_val: reg}, {lit_mode: div_mode} => ((0x07 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ lit_mode[7:0]
     mod  {reg_obj: reg}, {lit_val:  u8}, {lit_mode: div_mode} => ((0x07 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ lit_mode[7:0]
+    mod  {reg_obj: reg}, {reg_val: reg}                       => ((0x07 << 3) + 0b111)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
+    mod  {reg_obj: reg}, {lit_val:  u8}                       => ((0x07 << 3) + 0b101)[7:0] @ reg_obj[7:0] @ lit_val[7:0] @ 0x00
 
     and  {reg_obj: reg}, {reg_val: reg} => ((0x08 << 3) + 0b110)[7:0] @ reg_obj[7:0] @ reg_val[7:0] @ 0x00
     and  {reg_obj: reg}, {lit_val: u16} => ((0x08 << 3) + 0b100)[7:0] @ reg_obj[7:0] @ lit_val[15:8] @ lit_val[7:0]
@@ -173,33 +177,51 @@
     lsa {reg_dest: reg}, {lit_addr:  u8}, {reg_add: reg} => ((0x14 << 3) + 0b101)[7:0] @ reg_dest[7:0] @ lit_addr[7:0] @ reg_add[7:0]
     lsa {reg_dest: reg}, {reg_addr: reg}, {lit_add:  u8} => ((0x14 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_addr[7:0] @ lit_add[7:0]
     lsa {reg_dest: reg}, {lit_addr:  u8}, {lit_add:  u8} => ((0x14 << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_addr[7:0] @ lit_add[7:0]
+    lsa {reg_dest: reg}, {reg_addr: reg}                 => ((0x14 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_addr[7:0] @         0x00
+    lsa {reg_dest: reg}, {lit_addr:  u8}                 => ((0x14 << 3) + 0b100)[7:0] @ reg_dest[7:0] @ lit_addr[7:0] @         0x00
 
     lea {reg_addr: reg}, {reg_add: reg}, {reg_mul: reg} => ((0x15 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
-    lea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} => ((0x15 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
     lea {reg_addr: reg}, {lit_add:  u8}, {reg_mul: reg} => ((0x15 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
-    lea {reg_addr: reg}, {lit_add:  u8}, {lit_mul:  u8} => ((0x15 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
     lea {lit_addr:  u8}, {reg_add: reg}, {reg_mul: reg} => ((0x15 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
-    lea {lit_addr:  u8}, {reg_add: reg}, {lit_mul:  u8} => ((0x15 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
     lea {lit_addr:  u8}, {lit_add:  u8}, {reg_mul: reg} => ((0x15 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
+    lea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} => ((0x15 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
+    lea {reg_addr: reg}, {lit_add:  u8}, {lit_mul:  u8} => ((0x15 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+    lea {lit_addr:  u8}, {reg_add: reg}, {lit_mul:  u8} => ((0x15 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
     lea {lit_addr:  u8}, {lit_add:  u8}, {lit_mul:  u8} => ((0x15 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+    lea {reg_addr: reg}, {reg_add: reg}                 => ((0x15 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @         0x00
+    lea {reg_addr: reg}, {lit_add:  u8}                 => ((0x15 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @         0x00
+    lea {lit_addr:  u8}, {reg_add: reg}                 => ((0x15 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @         0x00
+    lea {lit_addr:  u8}, {lit_add:  u8}                 => ((0x15 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @         0x00
+    lea {reg_addr: reg}                                 => ((0x15 << 3) + 0b110)[7:0] @ reg_addr[7:0] @         0x00 @         0x00
+    lea {lit_addr:  u8}                                 => ((0x15 << 3) + 0b010)[7:0] @ lit_addr[7:0] @         0x00 @         0x00
 
     wsa {reg_addr: reg}, {reg_add: reg}, {reg_val: reg} => ((0x16 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_val[7:0]
-    wsa {reg_addr: reg}, {reg_add: reg}, {lit_val:  u8} => ((0x16 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_val[7:0]
-    wsa {reg_addr: reg}, {lit_add:  u8}, {reg_val: reg} => ((0x16 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_val[7:0]
-    wsa {reg_addr: reg}, {lit_add:  u8}, {lit_val:  u8} => ((0x16 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_val[7:0]
     wsa {lit_addr:  u8}, {reg_add: reg}, {reg_val: reg} => ((0x16 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_val[7:0]
+    wsa {reg_addr: reg}, {reg_add: reg}, {lit_val:  u8} => ((0x16 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_val[7:0]
     wsa {lit_addr:  u8}, {reg_add: reg}, {lit_val:  u8} => ((0x16 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_val[7:0]
+    wsa {reg_addr: reg}, {lit_add:  u8}, {reg_val: reg} => ((0x16 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_val[7:0]
     wsa {lit_addr:  u8}, {lit_add:  u8}, {reg_val: reg} => ((0x16 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_val[7:0]
+    wsa {reg_addr: reg}, {lit_add:  u8}, {lit_val:  u8} => ((0x16 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_val[7:0]
     wsa {lit_addr:  u8}, {lit_add:  u8}, {lit_val:  u8} => ((0x16 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_val[7:0]
-
+    wsa {reg_addr: reg}, {reg_val: reg}                 => ((0x16 << 3) + 0b101)[7:0] @ reg_addr[7:0] @         0x00 @ reg_val[7:0]
+    wsa {lit_addr:  u8}, {reg_val: reg}                 => ((0x16 << 3) + 0b001)[7:0] @ lit_addr[7:0] @         0x00 @ reg_val[7:0]
+    wsa {reg_addr: reg}, {lit_val:  u8}                 => ((0x16 << 3) + 0b100)[7:0] @ reg_addr[7:0] @         0x00 @ lit_val[7:0]
+    wsa {lit_addr:  u8}, {lit_val:  u8}                 => ((0x16 << 3) + 0b000)[7:0] @ lit_addr[7:0] @         0x00 @ lit_val[7:0]
+    
     wea {reg_addr: reg}, {reg_add: reg}, {reg_mul: reg} => ((0x17 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
-    wea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} => ((0x17 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
     wea {reg_addr: reg}, {lit_add:  u8}, {reg_mul: reg} => ((0x17 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
-    wea {reg_addr: reg}, {lit_add:  u8}, {lit_mul:  u8} => ((0x17 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
     wea {lit_addr:  u8}, {reg_add: reg}, {reg_mul: reg} => ((0x17 << 3) + 0b011)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ reg_mul[7:0]
-    wea {lit_addr:  u8}, {reg_add: reg}, {lit_mul:  u8} => ((0x17 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
     wea {lit_addr:  u8}, {lit_add:  u8}, {reg_mul: reg} => ((0x17 << 3) + 0b001)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ reg_mul[7:0]
+    wea {reg_addr: reg}, {reg_add: reg}, {lit_mul:  u8} => ((0x17 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
+    wea {reg_addr: reg}, {lit_add:  u8}, {lit_mul:  u8} => ((0x17 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+    wea {lit_addr:  u8}, {reg_add: reg}, {lit_mul:  u8} => ((0x17 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @ lit_mul[7:0]
     wea {lit_addr:  u8}, {lit_add:  u8}, {lit_mul:  u8} => ((0x17 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @ lit_mul[7:0]
+    wea {reg_addr: reg}, {reg_add: reg}                 => ((0x17 << 3) + 0b110)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @         0x00
+    wea {reg_addr: reg}, {lit_add:  u8}                 => ((0x17 << 3) + 0b100)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @         0x00
+    wea {lit_addr:  u8}, {reg_add: reg}                 => ((0x17 << 3) + 0b010)[7:0] @ lit_addr[7:0] @ reg_add[7:0] @         0x00
+    wea {lit_addr:  u8}, {lit_add:  u8}                 => ((0x17 << 3) + 0b000)[7:0] @ lit_addr[7:0] @ lit_add[7:0] @         0x00
+    wea {reg_addr: reg}                                 => ((0x17 << 3) + 0b110)[7:0] @ reg_addr[7:0] @         0x00 @         0x00
+    wea {lit_addr:  u8}                                 => ((0x17 << 3) + 0b010)[7:0] @ lit_addr[7:0] @         0x00 @         0x00
 
     srm {reg_addr: reg}, {reg_add: reg}, {reg_swap: reg} => ((0x17 << 3) + 0b111)[7:0] @ reg_addr[7:0] @ reg_add[7:0] @ reg_swap[7:0]
     srm {reg_addr: reg}, {lit_add:  u8}, {reg_swap: reg} => ((0x17 << 3) + 0b101)[7:0] @ reg_addr[7:0] @ lit_add[7:0] @ reg_swap[7:0]

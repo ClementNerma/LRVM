@@ -292,6 +292,8 @@ The notation used to describe instructions is as follows:
 
 The "upper bits" of a register refer its 16 strongest bits, while its "lower bits" refer to its 16 weakest ones.
 
+Double brackets indicate the parameter is optional ; while it must be provided to get a 4-byte-long instruction, the assembler will accept usages of the instruction without the said parameter.
+
 The `{S}` notation after an instruction's name indicates it requires to be in supervisor mode (otherwise an exception is raised).
 
 #### Reading hardware informations
@@ -353,7 +355,7 @@ Below is the list of arithmetic instructions:
   Multiply `reg` by the provided value and put the result in `reg`
   **Affects** `reg`, `af`
 
-- `DIV reg, [reg_val | 1-byte], [reg_mode | 1-mode]` (DIVide by) | opcode: `0x06`  
+- `DIV reg, [reg_val | 1-byte], [[reg_mode | 1-mode]]` (DIVide by) | opcode: `0x06`  
   Divide `reg` by the provided value and put the result in `reg`
 
   **MODE**  
@@ -376,7 +378,7 @@ Below is the list of arithmetic instructions:
   **Affects** `reg`, `af`  
   **Exceptions** `0x0A` for forbidden division by zero, `0x0B` for forbidden overflowing division by -1 (in signed mode)
 
-- `MOD reg, [reg_val | 1-byte], [reg_mode | 1-mode]` (MODulus) | opcode: `0x07`  
+- `MOD reg, [reg_val | 1-byte], [[reg_mode | 1-mode]]` (MODulus) | opcode: `0x07`  
   Compute the modulus of `reg` by the provided value and put the result in `reg`  
   As computations are integer-based, this is equal to the remainder of `reg` by the provided value  
   The provided mode is interpreted the same way as for the `DIV` instruction
@@ -472,23 +474,27 @@ Under the hood, they simply jump four bytes forward if the condition is not met,
 
 The memory instructions allow to manipulate the memory:
 
-- `LSA reg_dest, [reg_addr | 1-byte], [reg_add | 1-byte]` (Load Simple Address) | opcode: `0x14`  
+- `LSA reg_dest, [reg_addr | 1-byte], [[reg_add | 1-byte]]` (Load Simple Address) | opcode: `0x14`  
   Read the word at address (`addr` + `add`) in `reg_dest`  
+  By default `add` is zero  
   The address must be aligned or an exception will be raised  
   **Affects** `reg_dest`
 
-- `LEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Load Effective Address) | opcode: `0x15`  
+- `LEA [reg_addr | 1-byte], [[reg_add | 1-byte], [[reg_mul | 1-byte]]]` (Load Effective Address) | opcode: `0x15`  
   Read the word at address (`addr` + `add` \* `mul`) in `avr`  
+  By default `add` is zero and `mul` is one  
   As the `avr` is used for atomic instructions, its value is expected to be moved to another register to operate on  
   The address must be aligned or an exception will be raised
   **Affects** `avr`
 
-- `WSA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_val | 1-byte]` (Write Simple Address) | opcode: `0x16`  
+- `WSA [reg_addr | 1-byte], [[reg_add | 1-byte], [[reg_val | 1-byte]]]` (Write Simple Address) | opcode: `0x16`  
   Write the provided value to address at (`addr` + `add`)  
+  By default `add` is zero  
   The address must be aligned or an exception will be raised
 
-- `WEA [reg_addr | 1-byte], [reg_add | 1-byte], [reg_mul | 1-byte]` (Write Effective Address) | opcode: `0x17`  
+- `WEA [reg_addr | 1-byte], [[reg_add | 1-byte], [[reg_mul | 1-byte]]]` (Write Effective Address) | opcode: `0x17`  
   Write the value of `avr` to address at (`addr` + `add` \* `mul`)  
+  By default `add` is zero  
   The address must be aligned or an exception will be raised
 
 - `SRM [reg_addr | 1-byte], [reg_add | 1-byte], reg_swap` (Swap Register and Memory) | opcode: `0x18`  
