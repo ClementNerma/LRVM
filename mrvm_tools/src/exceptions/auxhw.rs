@@ -1,6 +1,7 @@
 use std::fmt;
 
 /// Strongly-typed hardware exception
+#[derive(Debug)]
 pub enum AuxHwException {
     /// Unknown error
     UnknownError,
@@ -35,9 +36,9 @@ pub enum AuxHwException {
 
 impl AuxHwException {
     /// Decode an auxiliary component's exception
-    pub fn decode(code: u16) -> Result<Self, ()> {
-        let code = (code >> 8) as u8;
-        let data = code as u8;
+    pub fn decode(ex: u16) -> Result<Self, ()> {
+        let code = (ex >> 8) as u8;
+        let data = ex as u8;
 
         Self::decode_parts(code, Some(data))
     }
