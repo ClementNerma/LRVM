@@ -229,7 +229,7 @@ impl CPU {
             0x0E => {
                 let bytes = args!(REG_OR_LIT_2) as i16;
 
-                self.regs.pc = (self.regs.pc as i32).wrapping_add(bytes.into()) as u32;
+                self.regs.pc = self.regs.pc.wrapping_add(bytes as u32);
                 self._cycle_changed_pc = true;
                 Ok(())
             },
