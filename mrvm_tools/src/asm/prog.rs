@@ -3,7 +3,7 @@
 
 use super::{Instr, InstrDecodingError};
 
-//. Strongly-typed assembly program
+/// Strongly-typed assembly program
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Program(pub Vec<Instr>);
 
