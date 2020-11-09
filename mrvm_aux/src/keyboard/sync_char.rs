@@ -46,11 +46,9 @@ impl Bus for SyncCharKeyboard {
     }
 
     fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
-        let addr = addr / 4;
-
         if addr == 0 {
             self.buffer as u32
-        } else if addr == 1 {
+        } else if addr == 4 {
             *ex = AuxHwException::MemoryNotReadable.into();
             0
         } else {
@@ -61,7 +59,7 @@ impl Bus for SyncCharKeyboard {
     fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
         if addr == 0 {
             *ex = 0x31 << 8;
-        } else if addr == 1 {
+        } else if addr == 4 {
             match word {
                 0xAA => self.buffer = (self.handler)(),
                 0xFF => self.reset(),
