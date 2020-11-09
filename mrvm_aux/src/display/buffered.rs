@@ -8,7 +8,7 @@ use mrvm_tools::metadata::{DeviceMetadata, DisplayType};
 use std::convert::TryInto;
 use std::str::{from_utf8, Utf8Error};
 
-pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, Vec<u8>)>;
+pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, &'a [u8])>;
 
 /// The buffered display works with a buffer and a handler. When it receives a write request, it writes it into the buffer unless the
 /// write address is on its last word ; in this case, in interprets the word as:
@@ -92,7 +92,7 @@ impl Bus for BufferedDisplay {
         match word {
             0xAA => {
                 let bytes = words_to_bytes(&self.buffer);
-                (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.clone())))
+                (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.as_ref())))
             }
 
             0xBB => {
