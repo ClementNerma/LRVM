@@ -140,8 +140,9 @@ impl Program {
         let mut counter = 0;
         self.prog_words()
             .map(|instr| {
+                let instr = format!("{:#010X}: {}", counter, instr.to_lasm());
                 counter += 4;
-                format!("{:#010X}: {}", counter, instr.to_lasm())
+                instr
             })
             .collect()
     }
