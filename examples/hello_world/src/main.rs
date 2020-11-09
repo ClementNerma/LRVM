@@ -22,7 +22,7 @@ fn main() {
             BufferedDisplay::new(
                 0x100,
                 Box::new(|string| {
-                    println!("[Display] {}", string.unwrap_or("<invalid input received>"))
+                    print!("[Display] {}", string.unwrap_or("<invalid input received>"))
                 }),
                 rng.gen(),
             )

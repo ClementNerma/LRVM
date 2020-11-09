@@ -31,6 +31,7 @@ impl BufferedDisplay {
     /// The provided capacity must be a multiple of 4, and 4 bytes will be substracted for handling the action code.
     /// This means a capacity of 64 bytes will allow 60 bytes of data or 15 words.
     /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
+    /// NOTE: The handler should not display a newline symbol at the end of the provided string.
     pub fn new(
         capacity: u32,
         handler: Box<dyn FnMut(DecodedStr)>,
