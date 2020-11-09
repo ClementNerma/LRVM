@@ -23,5 +23,5 @@ main:
     halt
 
 message:
-    #str "Hello, world!\n"
+    #d "Hello, world!\n"
     #d32 0
