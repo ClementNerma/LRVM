@@ -19,10 +19,7 @@ fn main() {
             Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
             Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
             Box::new(AsyncCounter::new(rng.gen())),
-            Box::new(NumberDisplay::new(
-                Box::new(|num| println!("Counter: {}", num)),
-                rng.gen(),
-            )),
+            Box::new(NumberDisplay::new_print(rng.gen())),
         ],
         RunConfig::halt_on_ex(),
     );
