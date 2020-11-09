@@ -225,7 +225,7 @@ impl CPU {
                 Ok(())
             },
 
-            // JMP
+            // JPR
             0x0E => {
                 let bytes = args!(REG_OR_LIT_2) as i16;
 
