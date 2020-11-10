@@ -1,7 +1,7 @@
 /// VM runner configuration to use with 'run_vm' or 'exec_vm' from 'mrvm_tools::debug'
 #[derive(Debug, Clone, Copy)]
 pub struct RunConfig {
-    pub cycles_limit: Option<u32>,
+    pub cycles_limit: Option<u128>,
     pub halt_on_exception: bool,
     pub print_cycles: bool,
     pub print_exceptions: bool,
@@ -35,7 +35,7 @@ impl RunConfig {
     }
 
     /// Set if the VM should be stopped after a given number of CPU cycles.
-    pub fn with_cycles_limit(mut self, limit: Option<u32>) -> Self {
+    pub fn with_cycles_limit(mut self, limit: Option<u128>) -> Self {
         self.cycles_limit = limit;
         self
     }

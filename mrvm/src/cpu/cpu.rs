@@ -15,7 +15,7 @@ pub struct CPU {
     /// Hardware bridge
     hwb: HardwareBridge,
     /// Current cycle count (goes back to 0 after reaching maximum)
-    cycles: u32,
+    cycles: u128,
     /// Is the CPU halted?
     halted: bool,
     /// (Internal) Did the current cycle change the PC register?
@@ -97,7 +97,7 @@ impl CPU {
 
     /// Get the number of cycles the CPU run so far
     /// Note that this number goes back to 0 after reaching its maximum (overflow).
-    pub fn cycles(&self) -> u32 {
+    pub fn cycles(&self) -> u128 {
         self.cycles
     }
 
@@ -406,7 +406,7 @@ impl CPU {
             // CYCLES
             0x1D => {
                 let reg_dest = args!(REG);
-                self.write_reg(reg_dest, self.cycles)
+                self.write_reg(reg_dest, self.cycles as u32)
             },
 
             // HALT

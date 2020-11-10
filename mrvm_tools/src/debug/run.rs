@@ -7,7 +7,7 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub struct StoppedState {
     /// Cycles count when the VM stopped
-    pub cycles: u32,
+    pub cycles: u128,
     /// The address the VM was stopped at
     pub addr: u32,
     /// If the VM was stopped due to an exception, contains the faulty exception
