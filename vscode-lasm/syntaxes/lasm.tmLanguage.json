@@ -36,11 +36,11 @@
     },
     {
       "name": "constant.numeric",
-      "match": "\\b(\\-)?(\\d+)\\b"
+      "match": "\\b(\\-)?(\\d)([_\\d]*)\\b"
     },
     {
       "name": "constant.numeric",
-      "match": "\\b(\\-)?(0b[01]+|0o[01234567]+|(?:0d)?\\d+|0x[\\dabcdefABCDEF]+)\\b"
+      "match": "\\b(\\-)?(0b[01][01_]*|0o[01234567][01234567_]*|(?:0d)?\\d[_\\d]+|0x[\\dabcdefABCDEF][\\dabcdefABCDEF_]*)\\b"
     },
     {
       "match": "^\\s*(cpy|ex|zro)\\b",
