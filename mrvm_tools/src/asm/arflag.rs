@@ -1,3 +1,4 @@
+use super::{RegOrLit1, RegOrLit2};
 use std::convert::TryFrom;
 
 /// Arithmetic flag
@@ -83,5 +84,17 @@ impl TryFrom<u8> for ArFlag {
 impl Into<u8> for ArFlag {
     fn into(self) -> u8 {
         self.code()
+    }
+}
+
+impl Into<RegOrLit1> for ArFlag {
+    fn into(self) -> RegOrLit1 {
+        self.code().into()
+    }
+}
+
+impl Into<RegOrLit2> for ArFlag {
+    fn into(self) -> RegOrLit2 {
+        self.code().into()
     }
 }
