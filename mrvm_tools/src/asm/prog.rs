@@ -23,6 +23,11 @@ impl Program {
         Self(instr.into_iter().map(ProgramWord::Instr).collect())
     }
 
+    /// Get the number of words in the program
+    pub fn size(&self) -> usize {
+        self.0.len()
+    }
+
     /// Iterate over the program's instructions
     pub fn prog_words(&self) -> impl Iterator<Item = &ProgramWord> {
         self.0.iter()
