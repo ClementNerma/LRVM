@@ -1,0 +1,12 @@
+
+main:
+    add a0, 1
+    
+    cpy a1, 1
+    shl a1, 24
+
+    cmp a0, a1
+    ifeq
+    halt
+
+    jp main

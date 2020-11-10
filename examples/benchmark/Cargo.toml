@@ -1,0 +1,9 @@
+[package]
+name = "benchmark"
+version = "0.1.0"
+authors = ["Clément Nerma <clement.nerma@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+mrvm_aux = { path = "../../mrvm_aux" }
+mrvm_tools = { path = "../../mrvm_tools" }

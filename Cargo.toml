@@ -9,5 +9,6 @@ members = [
     "examples/hw_detect",
     "examples/async_hw",
     "examples/disassemble",
-    "examples/brainfuck"
+    "examples/brainfuck",
+    "examples/benchmark"
 ]
