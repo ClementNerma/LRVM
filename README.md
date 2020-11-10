@@ -22,6 +22,21 @@ It is split into several crates:
 An arbitrary number of components can be connected to the virtual motherboard and accessed through memory mapping (MMIO).
 Many components are available in the [`mrvm_aux`](mrvm_aux/) crate.
 
+## Performances
+
+MRVM is designed to be easy to learn and use, which means performance is not a primary goal. The CPU works as a single-core interpreter ; there is no multi-threading nor just-in-time compilation (JIT) as this would complexify this project a lot, which would be contrary to its main goal.
+
+You can run a little benchmark to see how many instructions per second your computer can run with MRVM. The benchmark is essentially made of arithmetic instructions, which are the slowest ones as they require to compute the resulting arithmetic flags.
+
+To run the benchmark:
+
+```shell
+cd examples/benchmark
+cargo run --release
+```
+
+For reference, on an **Intel Core i7-9700K** (8 physical cores @ 3.6 ~ 4.9 GHz) with **DDR4 @ 2667 MHz**, we get a result of ~ 25 MIPS (Million Operations Per Second).
+
 ## Documentation
 
 The documentation is made of several parts :
