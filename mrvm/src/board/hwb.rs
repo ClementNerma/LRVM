@@ -1,10 +1,11 @@
 use super::Bus;
-use std::sync::{Arc, Mutex};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 /// Auxiliary component's bus and internal data cache
 struct AuxWithCache {
     /// Auxiliary component's [`Bus`] interface
-    shared_bus: Arc<Mutex<Box<dyn Bus>>>,
+    shared_bus: Rc<RefCell<Box<dyn Bus>>>,
     /// Data cache for this auxiliary component
     cache: AuxCache,
 }
@@ -32,7 +33,7 @@ pub struct HardwareBridge {
 }
 
 impl HardwareBridge {
-    pub fn new(aux: impl IntoIterator<Item = Arc<Mutex<Box<dyn Bus>>>>) -> Self {
+    pub fn new(aux: impl IntoIterator<Item = Rc<RefCell<Box<dyn Bus>>>>) -> Self {
         Self {
             aux: aux
                 .into_iter()
@@ -43,7 +44,7 @@ impl HardwareBridge {
                         "Hardware bridge cannot handle more than 2^32 components!"
                     );
 
-                    let bus = shared_bus.lock().unwrap();
+                    let bus = shared_bus.borrow();
 
                     let name = bus.name().chars().take(32).collect::<String>();
                     let metadata = bus.metadata();
@@ -108,7 +109,7 @@ impl HardwareBridge {
 
         self.aux
             .get(aux_id)
-            .map(|aux| aux.shared_bus.lock().unwrap().read(addr, ex))
+            .map(|aux| aux.shared_bus.borrow_mut().read(addr, ex))
     }
 
     /// Send a WRITE signal to a component.  
@@ -122,13 +123,13 @@ impl HardwareBridge {
 
         self.aux
             .get(aux_id)
-            .map(|aux| aux.shared_bus.lock().unwrap().write(addr, word, ex))
+            .map(|aux| aux.shared_bus.borrow_mut().write(addr, word, ex))
     }
 
     /// Send a RESET signal to a component
     pub fn reset(&mut self, aux_id: usize) -> Option<()> {
         self.aux
             .get(aux_id)
-            .map(|aux| aux.shared_bus.lock().unwrap().reset())
+            .map(|aux| aux.shared_bus.borrow_mut().reset())
     }
 }

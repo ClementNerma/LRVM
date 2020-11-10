@@ -6,12 +6,13 @@
 use super::{Bus, HardwareBridge};
 use crate::cpu::CPU;
 use crate::mem::MappedMemory;
-use std::sync::{Arc, Mutex};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 /// Virtual motherboard
 pub struct MotherBoard {
     /// Auxiliary components connected to the motherboard
-    aux: Vec<Arc<Mutex<Box<dyn Bus>>>>,
+    aux: Vec<Rc<RefCell<Box<dyn Bus>>>>,
     /// Central Processing Unit (CPU)
     cpu: CPU,
 }
@@ -21,7 +22,7 @@ impl MotherBoard {
     pub fn new(components: impl IntoIterator<Item = Box<dyn Bus>>) -> Self {
         let aux = components
             .into_iter()
-            .map(|cp| Arc::new(Mutex::new(cp)))
+            .map(|cp| Rc::new(RefCell::new(cp)))
             .collect::<Vec<_>>();
 
         assert!(
@@ -61,7 +62,7 @@ impl MotherBoard {
         self.cpu.reset();
 
         for aux in self.aux.iter() {
-            aux.lock().unwrap().reset();
+            aux.borrow_mut().reset();
         }
     }
 
