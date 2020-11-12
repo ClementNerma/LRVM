@@ -39,13 +39,13 @@ fn bootrom_write() {
         .ex
         .expect("No exception occurred while writing BootROM");
 
-    match NativeException::decode_parts(ex.code, ex.associated) {
-        Ok(NativeException::HardwareException(AuxHwException::MemoryNotWritable)) => {}
-        Ok(NativeException::HardwareException(hw_ex)) => panic!(
+    match NativeException::decode_with_mode(ex.raw) {
+        Ok((NativeException::HardwareException(AuxHwException::MemoryNotWritable), _)) => {}
+        Ok((NativeException::HardwareException(hw_ex), _)) => panic!(
             "Wrong hardware exception occurred while writing BootROM: {}",
             hw_ex
         ),
-        Ok(ex) => panic!(
+        Ok((ex, _)) => panic!(
             "Expected hardware exception while writing BootROM, got non-hardware exception: {}",
             ex
         ),

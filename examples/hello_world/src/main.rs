@@ -43,9 +43,7 @@ fn main() {
     let cpu = motherboard.cpu();
 
     while !cpu.halted() {
-        let was_at = cpu.regs.pc;
-        cpu.next()
-            .unwrap_or_else(|_| panic!("Exception occurred at address {:#010X}", was_at));
+        cpu.next();
     }
 
     println!("> CPU halted.");

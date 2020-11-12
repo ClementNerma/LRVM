@@ -55,17 +55,20 @@ impl CPU {
     /// * `Ok(false)` if the CPU is currently halted
     /// * `Err()` if an exception occurred *except for interruptions*
     #[allow(clippy::should_implement_trait)]
-    pub fn next(&mut self) -> Result<bool, Ex> {
+    pub fn next(&mut self) {
         // Do not run if the CPU is halted
         if self.halted {
-            return Ok(false);
+            return ;
         }
 
         // Cycle goes back to 0 when overflowing
         self.cycles = self.cycles.wrapping_add(1);
 
         // Get the instruction to run
-        let instr = self.mem_exec(self.regs.pc)?.to_be_bytes();
+        let instr = match self.mem_exec(self.regs.pc) {
+            Err(_) => return,
+            Ok(bytes) => bytes.to_be_bytes()
+        };
 
         // Get its opcode (5 first bits of the first byte)
         let opcode = instr[0] >> 3;
@@ -78,7 +81,9 @@ impl CPU {
         self._cycle_changed_pc = false;
 
         // Run the decoded instruction
-        self.run_instr(opcode, opregs, params)?;
+        if self.run_instr(opcode, opregs, params).is_err() {
+            return
+        }
 
         // By default, the program counter (located in the PC register) is incremented of 4 bytes to make the CPU retrieve the next instruction
         //  from the memory's next word.
@@ -87,9 +92,6 @@ impl CPU {
         if !self._cycle_changed_pc {
             self.regs.pc = self.regs.pc.wrapping_add(4);
         }
-        
-        // Everything went fine!
-        Ok(true)
     }
 
     /// Check if the CPU is halted
@@ -106,7 +108,7 @@ impl CPU {
     /// (Internal) Run a decoded instruction
     /// This method exists for the sole purpose of making the code cleaner in order to make the ".next()" method more understandable
     #[allow(clippy::cognitive_complexity)]
-    fn run_instr(&mut self, opcode: u8, opregs: [bool; 3], params: [u8; 3]) -> Result<(), Ex> {
+    fn run_instr(&mut self, opcode: u8, opregs: [bool; 3], params: [u8; 3]) -> Result<(), ()> {
         // Decode the opcode's arguments
         // 'REG' = parameter is always a register
         // 'REG_OR_LIT_1' = parameter is either a register or a 1-byte literal
@@ -154,7 +156,8 @@ impl CPU {
         match opcode {
             // <Unknown instruction>
             0x00 => {
-                Err(self.exception(0x01, Some(opcode.into())))
+                self.exception(0x01, Some(opcode.into()));
+                Err(())
             },
 
             // CPY
@@ -243,7 +246,8 @@ impl CPU {
                     self.regs.smt = 0;
                     Ok(())
                 } else {
-                    Err(self.exception(0x09, Some(opcode.into())))
+                    self.exception(0x09, Some(opcode.into()));
+                    Err(())
                 }
             },
 
@@ -260,7 +264,8 @@ impl CPU {
                 let flag = args!(REG_OR_LIT_1);
 
                 if flag > 7 {
-                    return Err(self.exception(0x0C, Some(flag as u8 as u16)));
+                    self.exception(0x0C, Some(flag as u8 as u16));
+                    return Err(());
                 }
 
                 let is_flag_set = (self.regs.af & (1 << (7 - flag))) != 0;
@@ -285,7 +290,10 @@ impl CPU {
                     0x05 => !(flag_a && flag_b),
                     0x06 => flag_a && !flag_b,
                     0x07 => flag_b && !flag_a,
-                    _ => return Err(self.exception(0x0D, Some(cond as u8 as u16)))
+                    _ => {
+                        self.exception(0x0D, Some(cond as u8 as u16));
+                        return Err(())
+                    }
                 };
 
                 if !result {
@@ -483,9 +491,10 @@ impl CPU {
 
     /// Try to read a register's value.
     /// Raises an exception if the specified register is only readable in supervisor mode and userland mode is active.
-    fn read_reg(&mut self, code: u8) -> Result<u32, Ex> {
+    fn read_reg(&mut self, code: u8) -> Result<u32, ()> {
         if code >= 0x18 && !self.sv_mode() {
-            return Err(self.exception(0x03, Some(code.into())));
+            self.exception(0x03, Some(code.into()));
+            return Err(());
         }
 
         let ucode = usize::from(code);
@@ -506,22 +515,27 @@ impl CPU {
             0x1D => Ok(self.regs.mtt),
             0x1E => Ok(self.regs.pda),
             0x1F => Ok(self.regs.smt),
-            _ => Err(self.exception(0x02, Some(code.into())))
+            _ => {
+                self.exception(0x02, Some(code.into()));
+                Err(())
+            }
         }
     }
 
     /// Try to write a register's value.
     /// Raises an exception if the specified register is only writable in supervisor mode and userland mode is active.
     /// Raises an exception if the specified register is not writable.
-    fn write_reg(&mut self, code: u8, word: u32) -> Result<(), Ex> {
+    fn write_reg(&mut self, code: u8, word: u32) -> Result<(), ()> {
         let ucode = usize::from(code);
 
         if code >= 0x17 && !self.sv_mode() {
-            return Err(self.exception(0x04, Some(code.into())));
+            self.exception(0x04, Some(code.into()));
+            return Err(())
         }
 
         if code == 0x17 || code == 0x1A || code == 0x1B {
-            return Err(self.exception(0x04, Some(code.into())));
+            self.exception(0x04, Some(code.into()));
+            return Err(())
         }
 
         // If we change PC, indicate it has been changed to the CPU won't jump 4 bytes ahead.
@@ -545,7 +559,10 @@ impl CPU {
             0x1D => self.regs.mtt = word,
             0x1E => self.regs.pda = word,
             0x1F => self.regs.smt = word,
-            _ => return Err(self.exception(0x02, Some(code.into())))
+            _ => {
+                self.exception(0x02, Some(code.into()));
+                return Err(())
+            }
         }
         
         Ok(())
@@ -553,7 +570,7 @@ impl CPU {
 
     /// Perform a numeric computation and set the arithmetic flags.
     /// Raises an exception if a forbidden operation happens (e.g. division by zero when forbidden by the provided division mode).
-    fn compute(&mut self, op1: u32, op2: u32, op: Op) -> Result<u32, Ex> {
+    fn compute(&mut self, op1: u32, op2: u32, op: Op) -> Result<u32, ()> {
         let iop1 = op1 as i32;
         let iop2 = op2 as i32;
 
@@ -582,7 +599,10 @@ impl CPU {
                     // Division / modulus by zero
                     (_, _, _, 0) => match (mode & 0b0000_1100) >> 2 {
                         // Forbid
-                        0b00 => return Err(self.exception(0x0A, None)),
+                        0b00 => {
+                            self.exception(0x0A, None);
+                            return Err(())
+                        },
                         // Result in the minimum signed value
                         0b01 => (0x8000_0000, true, true),
                         // Result in zero
@@ -595,7 +615,10 @@ impl CPU {
                     // Minimum signed value divided / moduled by -1 (overflowing multiplication)
                     (_, true, std::i32::MIN, -1) => match (mode & 0b0000_0011) >> 2 {
                         // Forbid
-                        0b00 => return Err(self.exception(0x0B, None)),
+                        0b00 => {
+                            self.exception(0x0B, None);
+                            return Err(())
+                        },
                         // Result in the minimum signed value
                         0b01 => (0x8000_0000, true, true),
                         // Result in zero
@@ -673,7 +696,7 @@ impl CPU {
 
     /// Raise an exception with the provided `code` and `associated` data.
     /// Returns the related exception object.
-    fn exception(&mut self, code: u8, associated: Option<u16>) -> Ex {
+    fn exception(&mut self, code: u8, associated: Option<u16>) {
         // Assign the Exception Type `et` register.
         self.regs.et =
             (if self.sv_mode() { 1 << 24 } else { 0 }) +
@@ -688,14 +711,13 @@ impl CPU {
 
         // Do not forget to indicate we changed PC
         self._cycle_changed_pc = true;
-
-        Ex { code, associated }
     }
 
     /// Ensure an address is aligned, or raise an exception otherwise.
-    fn ensure_aligned(&mut self, v_addr: u32) -> Result<u32, Ex> {
+    fn ensure_aligned(&mut self, v_addr: u32) -> Result<u32, ()> {
         if v_addr % 4 != 0 {
-            Err(self.exception(0x05, Some((v_addr % 4) as u16)))
+            self.exception(0x05, Some((v_addr % 4) as u16));
+            Err(())
         } else {
             Ok(v_addr)
         }
@@ -709,7 +731,7 @@ impl CPU {
     /// * A mutable reference to the exception variable
     ///
     /// The handler is expected to return a value (of any type), which will be turned into an Err() if an exception occurred.
-    fn mem_do<T>(&mut self, action: MemAction, v_addr: u32, handler: &mut dyn FnMut(&mut MappedMemory, u32, &mut u16) -> T) -> Result<T, Ex> {
+    fn mem_do<T>(&mut self, action: MemAction, v_addr: u32, handler: &mut dyn FnMut(&mut MappedMemory, u32, &mut u16) -> T) -> Result<T, ()> {
         let v_addr = self.ensure_aligned(v_addr)?;
         
         match self.mmu.translate(&mut self.mem, &self.regs, v_addr, action) {
@@ -718,38 +740,45 @@ impl CPU {
                 let ret = handler(&mut self.mem, p_addr, &mut ex);
 
                 if ex != 0 {
-                    Err(self.exception(0xA0, Some(ex)))
+                    self.exception(0xA0, Some(ex));
+                    Err(())
                 } else {
                     Ok(ret)
                 }
             },
 
-            Err(None) => Err(self.exception(0x06, Some(v_addr as u16))),
+            Err(None) => {
+                self.exception(0x06, Some(v_addr as u16));
+                Err(())
+            },
 
-            Err(Some(ex)) => Err(self.exception(0xA0, Some(ex)))
+            Err(Some(ex)) => {
+                self.exception(0xA0, Some(ex));
+                Err(())
+            }
         }
     }
 
     /// Read an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept reading this address in the current mode.
-    fn mem_read(&mut self, v_addr: u32) -> Result<u32, Ex> {
+    fn mem_read(&mut self, v_addr: u32) -> Result<u32, ()> {
         self.mem_do(MemAction::Read, v_addr, &mut |mem, p_addr, ex| mem.read(p_addr, ex))
     }
 
     /// Write an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept writing this address in the current mode.
-    fn mem_write(&mut self, v_addr: u32, word: u32) -> Result<(), Ex> {
+    fn mem_write(&mut self, v_addr: u32, word: u32) -> Result<(), ()> {
         self.mem_do(MemAction::Write, v_addr, &mut |mem, p_addr, ex| mem.write(p_addr, word, ex))
     }
 
     /// Execute (read) an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept executing this address in the current mode.
-    fn mem_exec(&mut self, v_addr: u32) -> Result<u32, Ex> {
+    fn mem_exec(&mut self, v_addr: u32) -> Result<u32, ()> {
         self.mem_do(MemAction::Exec, v_addr, &mut |mem, p_addr, ex| mem.read(p_addr, ex))
     }
 
     /// Get informations about an auxiliary comopnent, after retrieving its name and raw metadata
-    fn get_hw_info(&mut self, hw_info: u32, aux_id: usize) -> Result<u32, Ex> {
+    fn get_hw_info(&mut self, hw_info: u32, aux_id: usize) -> Result<u32, ()> {
         // Get the auxiliary component's name and metadata (if it exists) as well as its optional mapping
         let cache = self.hwb.cache_of(aux_id).cloned().ok_or_else(||
             self.exception(0x10, Some(aux_id as u16))
@@ -802,7 +831,10 @@ impl CPU {
             0xA2 => mapping_opt.ok_or_else(|| self.exception(0x12, Some(aux_id as u16)))?.end_addr(),
 
             // Invalid information code
-            _ => return Err(self.exception(0x11, Some(hw_info as u16)))
+            _ => {
+                self.exception(0x11, Some(hw_info as u16));
+                return Err(())
+            }
         };
 
         Ok(data)
@@ -812,12 +844,3 @@ impl CPU {
 /// (Internal) Numeric operation
 #[derive(PartialEq, Debug)]
 enum Op { Add, Sub, Mul, Div { mode: u8 }, Mod { mode: u8 }, And, Bor, Xor, Shl, Shr }
-
-/// Occurred exception
-#[derive(Copy, Clone, Debug)]
-pub struct Ex {
-    /// Exception's code
-    pub code: u8,
-    /// Exception's associated data (not all exceptions have some)
-    pub associated: Option<u16>
-}
