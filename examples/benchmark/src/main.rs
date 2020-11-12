@@ -37,7 +37,7 @@ fn main() {
 
     println!();
     println!(
-        "Running speed is (~) {:.2} MIPS (Million Operations Per Second)",
+        "Running speed is (~) {:.2} MIPS (Million Instructions Per Second)",
         freq
     );
 }
