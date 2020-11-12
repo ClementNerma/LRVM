@@ -73,7 +73,7 @@ pub fn run_vm(cpu: &mut CPU, config: RunConfig) -> StoppedState {
                     associated: ex.associated,
                 };
 
-                if config.print_exceptions && (!config.halt_on_exception || !config.print_finish) {
+                if config.print_exceptions && !(config.halt_on_exception && config.print_finish) {
                     println!(
                         "[mrvm] At address {:#010X} - Exception occurred: {}",
                         was_at,
