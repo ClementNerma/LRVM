@@ -50,8 +50,10 @@ impl CPU {
         self._cycle_changed_pc = true;
     }
 
-    /// Run the next instruction.
-    /// Returns `Ok(true)` if the instruction run correctly, `Ok(false)` if the CPU is currently halted and an `Err()` if an exception occurred.
+    /// Run the next instruction. Returns:
+    /// * `Ok(true)` if the instruction run correctly
+    /// * `Ok(false)` if the CPU is currently halted
+    /// * `Err()` if an exception occurred *except for interruptions*
     #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> Result<bool, Ex> {
         // Do not run if the CPU is halted
@@ -249,7 +251,8 @@ impl CPU {
             0x10 => {
                 let itr_code = args!(REG_OR_LIT_1);
 
-                Err(self.exception(0xF0, Some(itr_code as u16)))
+                self.exception(0xF0, Some(itr_code as u16));
+                Ok(())
             },
 
             // IF, IFN
