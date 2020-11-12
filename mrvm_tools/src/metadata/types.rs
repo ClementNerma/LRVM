@@ -1,256 +1,78 @@
 use super::DeviceCategory;
 use std::fmt;
 
-#[non_exhaustive]
-#[derive(Copy, Clone, Debug)]
-pub enum ClockType {
-    Realtime,
-}
-
-impl ClockType {
-    pub fn decode(code: u32) -> Result<Self, ()> {
-        match code {
-            0x0000_0001 => Ok(Self::Realtime),
-
-            _ => Err(()),
+macro_rules! impl_device_type {
+    ($type_name: ident, as $type_enum: ident => { $($dev_name: ident => $dev_code: expr),* }) => {
+        #[non_exhaustive]
+        #[derive(Copy, Clone, Debug)]
+        pub enum $type_enum {
+            $($dev_name),*
         }
-    }
 
-    pub fn code(self) -> u32 {
-        match self {
-            Self::Realtime => 0x0000_0001,
-        }
-    }
-
-    pub fn wrap(self) -> DeviceCategory {
-        DeviceCategory::Clock(self)
-    }
-
-    pub fn encode(self) -> u64 {
-        self.wrap().encode()
-    }
-}
-
-impl fmt::Display for ClockType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::Realtime => "Realtime",
+        impl $type_enum {
+            pub fn decode(code: u32) -> Result<Self, ()> {
+                match code {
+                    $($dev_code => Ok(Self::$dev_name)),*
+                    , _ => Err(())
+                }
             }
-        )
-    }
-}
 
-#[non_exhaustive]
-#[derive(Copy, Clone, Debug)]
-pub enum DisplayType {
-    Number,
-    Character,
-    Buffered,
-}
-
-impl DisplayType {
-    pub fn decode(code: u32) -> Result<Self, ()> {
-        match code {
-            0x0000_0001 => Ok(Self::Number),
-            0x0000_0010 => Ok(Self::Character),
-            0x0000_0100 => Ok(Self::Buffered),
-
-            _ => Err(()),
-        }
-    }
-
-    pub fn code(self) -> u32 {
-        match self {
-            Self::Number => 0x0000_0001,
-            Self::Character => 0x0000_0010,
-            Self::Buffered => 0x0000_0100,
-        }
-    }
-
-    pub fn wrap(self) -> DeviceCategory {
-        DeviceCategory::Display(self)
-    }
-
-    pub fn encode(self) -> u64 {
-        self.wrap().encode()
-    }
-}
-
-impl Into<DeviceCategory> for DisplayType {
-    fn into(self) -> DeviceCategory {
-        self.wrap()
-    }
-}
-
-impl fmt::Display for DisplayType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::Number => "Number",
-                Self::Character => "Character",
-                Self::Buffered => "Buffered",
+            pub fn code(self) -> u32 {
+                match self {
+                    $(Self::$dev_name => $dev_code),*
+                }
             }
-        )
-    }
-}
 
-#[non_exhaustive]
-#[derive(Copy, Clone, Debug)]
-pub enum KeyboardType {
-    ReadCharSynchronous,
-    ReadLineSynchronous,
-}
-
-impl KeyboardType {
-    pub fn decode(code: u32) -> Result<Self, ()> {
-        match code {
-            0x0000_0100 => Ok(Self::ReadCharSynchronous),
-            0x0000_1000 => Ok(Self::ReadLineSynchronous),
-
-            _ => Err(()),
-        }
-    }
-
-    pub fn code(self) -> u32 {
-        match self {
-            Self::ReadCharSynchronous => 0x0000_0100,
-            Self::ReadLineSynchronous => 0x0000_1000,
-        }
-    }
-
-    pub fn wrap(self) -> DeviceCategory {
-        DeviceCategory::Keyboard(self)
-    }
-
-    pub fn encode(self) -> u64 {
-        self.wrap().encode()
-    }
-}
-
-impl Into<DeviceCategory> for KeyboardType {
-    fn into(self) -> DeviceCategory {
-        self.wrap()
-    }
-}
-
-impl fmt::Display for KeyboardType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::ReadCharSynchronous => "Read character synchronous",
-                Self::ReadLineSynchronous => "Read line synchronous",
+            pub fn wrap(self) -> DeviceCategory {
+                DeviceCategory::$type_name(self)
             }
-        )
-    }
-}
 
-#[non_exhaustive]
-#[derive(Copy, Clone, Debug)]
-pub enum MemoryType {
-    RAM,
-}
-
-impl MemoryType {
-    pub fn decode(code: u32) -> Result<Self, ()> {
-        match code {
-            0x0000_0100 => Ok(Self::RAM),
-
-            _ => Err(()),
-        }
-    }
-
-    pub fn code(self) -> u32 {
-        match self {
-            Self::RAM => 0x0000_0100,
-        }
-    }
-
-    pub fn wrap(self) -> DeviceCategory {
-        DeviceCategory::Memory(self)
-    }
-
-    pub fn encode(self) -> u64 {
-        self.wrap().encode()
-    }
-}
-
-impl Into<DeviceCategory> for MemoryType {
-    fn into(self) -> DeviceCategory {
-        self.wrap()
-    }
-}
-
-impl fmt::Display for MemoryType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::RAM => "RAM",
+            pub fn encode(self) -> u64 {
+                self.wrap().encode()
             }
-        )
-    }
-}
-
-#[non_exhaustive]
-#[derive(Copy, Clone, Debug)]
-pub enum StorageType {
-    Readonly,
-    Flash,
-    Persistent,
-}
-
-impl StorageType {
-    pub fn decode(code: u32) -> Result<Self, ()> {
-        match code {
-            0x0000_0100 => Ok(Self::Readonly),
-            0x0000_0011 => Ok(Self::Flash),
-            0x0000_0021 => Ok(Self::Persistent),
-
-            _ => Err(()),
         }
-    }
 
-    pub fn code(self) -> u32 {
-        match self {
-            Self::Readonly => 0x0000_0100,
-            Self::Flash => 0x0000_0011,
-            Self::Persistent => 0x0000_0021,
-        }
-    }
-
-    pub fn wrap(self) -> DeviceCategory {
-        DeviceCategory::Storage(self)
-    }
-
-    pub fn encode(self) -> u64 {
-        self.wrap().encode()
-    }
-}
-
-impl Into<DeviceCategory> for StorageType {
-    fn into(self) -> DeviceCategory {
-        self.wrap()
-    }
-}
-
-impl fmt::Display for StorageType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::Readonly => "Readonly",
-                Self::Flash => "Flash",
-                Self::Persistent => "Persistent",
+        impl Into<DeviceCategory> for $type_enum {
+            fn into(self) -> DeviceCategory {
+                self.wrap()
             }
-        )
-    }
+        }
+
+        impl fmt::Display for $type_enum {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write!(
+                    f,
+                    "{}",
+                    match self {
+                        $(Self::$dev_name => stringify!($dev_name)),*
+                    }
+                )
+            }
+        }
+    };
 }
+
+impl_device_type!(Clock, as ClockType => {
+    Realtime => 0x0000_0001
+});
+
+impl_device_type!(Display, as DisplayType => {
+    Number    => 0x0000_0001,
+    Character => 0x0000_0010,
+    Buffered  => 0x0000_0100
+});
+
+impl_device_type!(Keyboard, as KeyboardType => {
+    ReadCharSynchronous => 0x0000_0100,
+    ReadLineSynchronous => 0x0000_1000
+});
+
+impl_device_type!(Memory, as MemoryType => {
+    RAM => 0x0000_0100
+});
+
+impl_device_type!(Storage, as StorageType => {
+    Readonly   => 0x0000_0100,
+    Flash      => 0x0000_0011,
+    Persistent => 0x0000_0021
+});
