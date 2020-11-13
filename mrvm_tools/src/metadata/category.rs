@@ -18,6 +18,7 @@ impl DeviceCategory {
         let typ = (code & 0xFFFF_FFFF) as u32;
 
         match cat {
+            0x0000_1000 => Ok(Self::Clock(ClockType::decode(typ)?)),
             0x0001_1000 => Ok(Self::Display(DisplayType::decode(typ)?)),
             0x0001_6000 => Ok(Self::Keyboard(KeyboardType::decode(typ)?)),
             0x0002_1000 => Ok(Self::Memory(MemoryType::decode(typ)?)),
