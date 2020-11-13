@@ -52,6 +52,10 @@ macro_rules! impl_device_type {
     };
 }
 
+impl_device_type!(Debug, as DebugType => {
+    Basic => 0x0000_0100
+});
+
 impl_device_type!(Clock, as ClockType => {
     Realtime => 0x0000_0001
 });

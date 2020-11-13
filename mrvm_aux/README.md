@@ -8,6 +8,12 @@ All details related to how components work can be found in the [hardware documen
 
 ## List of components
 
+### Debug interfaces
+
+| Component name                            | Description           |
+| ----------------------------------------- | --------------------- |
+| [`debug::BasicDebug`](src/debug/basic.rs) | Basic debug interface |
+
 ### Volatile memory
 
 | Component name                                 | Description     |

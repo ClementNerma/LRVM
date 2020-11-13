@@ -3,6 +3,7 @@ use std::fmt;
 
 #[derive(Copy, Clone, Debug)]
 pub enum DeviceCategory {
+    Debug(DebugType),
     Clock(ClockType),
     Display(DisplayType),
     Keyboard(KeyboardType),
@@ -13,11 +14,16 @@ pub enum DeviceCategory {
 }
 
 impl DeviceCategory {
+    pub fn test(&self) {}
+}
+
+impl DeviceCategory {
     pub fn decode(code: u64) -> Result<Self, ()> {
         let cat = (code >> 32) as u32;
         let typ = (code & 0xFFFF_FFFF) as u32;
 
         match cat {
+            0x0000_0100 => Ok(Self::Debug(DebugType::decode(typ)?)),
             0x0000_1000 => Ok(Self::Clock(ClockType::decode(typ)?)),
             0x0001_1000 => Ok(Self::Display(DisplayType::decode(typ)?)),
             0x0001_6000 => Ok(Self::Keyboard(KeyboardType::decode(typ)?)),
@@ -32,6 +38,7 @@ impl DeviceCategory {
 
     pub fn category_code(self) -> u32 {
         match self {
+            Self::Debug(_) => 0x0000_0100,
             Self::Clock(_) => 0x0000_1000,
             Self::Display(_) => 0x0001_1000,
             Self::Keyboard(_) => 0x0001_6000,
@@ -44,6 +51,7 @@ impl DeviceCategory {
 
     pub fn type_code(self) -> u32 {
         match self {
+            Self::Debug(t) => t.code(),
             Self::Clock(t) => t.code(),
             Self::Display(t) => t.code(),
             Self::Keyboard(t) => t.code(),
@@ -65,6 +73,7 @@ impl fmt::Display for DeviceCategory {
             f,
             "{}",
             match self {
+                Self::Debug(d) => format!("Debug:{}", d),
                 Self::Clock(c) => format!("Clock:{}", c),
                 Self::Display(d) => format!("Display:{}", d),
                 Self::Keyboard(k) => format!("Keyboard:{}", k),
