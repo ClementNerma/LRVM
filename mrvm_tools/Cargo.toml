@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies]
 mrvm = { path = "../mrvm" }
-customasm = "0.11.1"
+customasm = { git = "https://github.com/hlorenzi/customasm.git", branch = "main" }
