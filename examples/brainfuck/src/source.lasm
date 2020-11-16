@@ -35,6 +35,7 @@ main:
 ; Display a null-terminated string located at address 'rr6'
 print:
     cpy rr7, 0x3000
+    jp .cpy_bytes
 
 .cpy_bytes:
     lea rr6
@@ -99,6 +100,8 @@ interpret_bf:
     ;   a0     ; current instruction
 
     sub rr2, 1 ; will be increment when getting the first character
+
+    jp .main
 
 .main:
     call .next_char
@@ -368,7 +371,6 @@ welcome:
     #d "\n\n"
     #d "Please type your BrainFuck program here:"
     #d "\n\n"
-    #d16 0
     #d32 0
 
 ; Running message
@@ -376,21 +378,18 @@ running:
     #d "\n"
     #d "=> Now running your program..."
     #d "\n\n"
-    #d24 0
     #d32 0
 
 ; Error message (part 1)
 error_pre_char_num:
     #d "\n"
     #d "===> ERROR: At character "
-    #d16 0
     #d32 0
 
 ; Error message (part 2)
 error_post_char_num:
     #d "\n"
     #d "     "
-    #d16 0
     #d32 0
 
 ; Error message (part 3)
@@ -398,30 +397,25 @@ error_post_msg:
     #d "\n\n"
     #d "Now exiting after error."
     #d "\n"
-    #d8 0
     #d32 0
 
 ; Error: unknown character
 err_unknown_char:
     #d "Unknown symbol "
-    #d8 0
     #d32 0
 
 ; Error: no opened loop
 err_no_opened_loop:
     #d "No loop opened, cannot close one."
-    #d24 0
     #d32 0
 
 ; Error: >= 1 loop not closed
 err_not_closed_loop_before_count:
     #d "Program exited before closing all loops: "
-    #d24 0
     #d32 0
 
 err_not_closed_loop_after_count:
     #d " were not closed, last one at character "
-    #d32 0
     #d32 0
 
 ; Goodbye message
@@ -429,5 +423,4 @@ goodbye:
     #d "\n\n"
     #d "=== Goodbye! ==="
     #d "\n"
-    #d8 0 ; Temporary fix for CustomAsm's bug with #labelalign directive
-    #d64 0
+    #d32 0

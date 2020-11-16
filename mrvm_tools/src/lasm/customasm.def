@@ -99,6 +99,8 @@
     CMP_RIGHT => 0x07
 }
 
+#labelalign 32
+
 #ruledef
 {
     cpy  {reg_dest: reg}, {reg_val: reg} => ((0x01 << 3) + 0b110)[7:0] @ reg_dest[7:0] @ reg_val[7:0] @ 0x00
