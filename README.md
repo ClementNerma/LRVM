@@ -35,7 +35,7 @@ cd examples/benchmark
 cargo run --release
 ```
 
-For reference, on an **Intel Core i7-9700K** (8 physical cores @ 3.6 ~ 4.9 GHz) with **DDR4 @ 2667 MHz**, we get a result of ~ 48 MIPS (Million Instructions Per Second).
+For reference, on an **Intel Core i7-9700K** (8 physical cores @ 3.6 ~ 4.9 GHz) with **DDR4 @ 2667 MHz**, we get a result of ~ 62 MIPS (Million Instructions Per Second) with [LTO enabled](https://doc.rust-lang.org/cargo/reference/profiles.html#lto).
 
 ## Documentation
 

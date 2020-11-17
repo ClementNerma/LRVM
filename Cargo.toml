@@ -12,3 +12,6 @@ members = [
     "examples/brainfuck",
     "examples/benchmark"
 ]
+
+[profile.release]
+lto = true
