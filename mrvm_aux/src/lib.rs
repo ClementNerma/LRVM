@@ -4,6 +4,9 @@
 #![deny(unused_must_use)]
 #![allow(clippy::len_without_is_empty)]
 
+// Re-export the MRVM crate
+pub use mrvm;
+
 pub mod debug;
 pub mod display;
 pub mod keyboard;

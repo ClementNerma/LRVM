@@ -5,6 +5,9 @@
 #![allow(clippy::module_inception)]
 #![allow(clippy::wrong_self_convention)]
 
+// Re-export the MRVM crate
+pub use mrvm;
+
 pub mod asm;
 pub mod bytes;
 pub mod debug;
