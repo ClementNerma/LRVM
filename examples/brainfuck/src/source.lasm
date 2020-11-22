@@ -35,7 +35,6 @@ main:
 ; Display a null-terminated string located at address 'rr6'
 print:
     cpy rr7, 0x3000
-    jp .cpy_bytes
 
 .cpy_bytes:
     lea rr6
@@ -100,8 +99,6 @@ interpret_bf:
     ;   a0     ; current instruction
 
     sub rr2, 1 ; will be increment when getting the first character
-
-    jp .main
 
 .main:
     call .next_char
