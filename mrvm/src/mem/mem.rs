@@ -59,7 +59,7 @@ impl MappedMemory {
                         max_addr = end_addr;
                     }
 
-                    last_addr = end_addr + 1;
+                    last_addr = end_addr + 4;
                 }
 
                 Err(err) => failed.push((*aux_id, err)),
@@ -152,8 +152,8 @@ impl MappedMemory {
     /// (Internal) map an auxiliary component to the memory
     fn internal_map(
         &mut self,
-        addr: u32,
-        addr_end: Option<u32>,
+        start_addr: u32,
+        end_addr: Option<u32>,
         aux_id: usize,
     ) -> Result<MappingRange, MappingError> {
         let aux_size = self
@@ -161,9 +161,9 @@ impl MappedMemory {
             .size_of(aux_id)
             .ok_or(MappingError::UnknownComponent)?;
 
-        let addr_end = addr_end.unwrap_or(addr + aux_size - 4);
+        let end_addr = end_addr.unwrap_or(start_addr + aux_size - 4);
 
-        if addr % 4 != 0 {
+        if start_addr % 4 != 0 {
             return Err(MappingError::UnalignedStartAddress);
         }
 
@@ -175,15 +175,15 @@ impl MappedMemory {
             return Err(MappingError::UnalignedBusSize);
         }
 
-        if addr_end % 4 != 0 {
+        if end_addr % 4 != 0 {
             return Err(MappingError::UnalignedEndAddress);
         }
 
-        if addr == addr_end + 4 || addr > addr_end {
+        if start_addr == end_addr + 4 || start_addr > end_addr {
             return Err(MappingError::NullOrNegAddressRange);
         }
 
-        if addr_end - addr > aux_size {
+        if end_addr - start_addr > aux_size {
             return Err(MappingError::MappingTooLarge { aux_size });
         }
 
@@ -195,7 +195,7 @@ impl MappedMemory {
         match self
             .mappings
             .iter()
-            .find(|mapping| mapping.addr <= addr_end && addr <= mapping.end_addr())
+            .find(|mapping| mapping.addr <= end_addr && start_addr <= mapping.end_addr())
         {
             Some(mapping) => Err(MappingError::AddressOverlaps(*mapping)),
 
@@ -205,13 +205,13 @@ impl MappedMemory {
                     aux_hw_id: self.bridge.hw_id_of(aux_id).expect(
                         "Internal error: failed to get HW ID of component after mapping validation",
                     ),
-                    addr,
+                    addr: start_addr,
                     size: aux_size,
                 });
 
                 Ok(MappingRange {
-                    start_addr: addr,
-                    end_addr: addr + aux_size - 1,
+                    start_addr,
+                    end_addr,
                 })
             }
         }

@@ -17,8 +17,6 @@ pub fn prepare_vm(components: Vec<Box<dyn Bus>>) -> MotherBoard {
             aux_mapping,
         } = mem.map_contiguous(0x0000_0000, (0..aux_count).collect::<Vec<_>>());
 
-        println!("{:?}", mapping);
-
         for result in aux_mapping {
             println!(
                 "=> Component {:04} '{:32}': {} {} (HW ID: 0x{})",
