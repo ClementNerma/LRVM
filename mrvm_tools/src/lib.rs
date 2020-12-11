@@ -4,6 +4,7 @@
 #![deny(unused_must_use)]
 #![allow(clippy::module_inception)]
 #![allow(clippy::wrong_self_convention)]
+#![allow(clippy::result_unit_err)]
 
 // Re-export the MRVM crate
 pub use mrvm;
