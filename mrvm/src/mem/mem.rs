@@ -183,6 +183,10 @@ impl MappedMemory {
             return Err(MappingError::NullOrNegAddressRange);
         }
 
+        if addr_end - addr > aux_size {
+            return Err(MappingError::MappingTooLarge { aux_size });
+        }
+
         if self.mappings.iter().any(|mapping| mapping.aux_id == aux_id) {
             return Err(MappingError::AlreadyMapped);
         }

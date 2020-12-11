@@ -29,6 +29,7 @@ pub enum MappingError {
     AlreadyMapped,
     NullBusSize,
     AddressOverlaps(Mapping),
+    MappingTooLarge { aux_size: u32 },
 }
 
 /// Mapping range
