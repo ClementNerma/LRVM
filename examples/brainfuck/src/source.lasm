@@ -357,9 +357,6 @@ post_error:
 ; =============================================== ;
 ; =================== STRINGS =================== ;
 ; =============================================== ;
-;
-; NOTE: Messages have additional, variable padding as a temporary fix
-;       for a bug with label alignments caused by a third-party library
 
 ; Welcome message
 welcome:
