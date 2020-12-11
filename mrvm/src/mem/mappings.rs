@@ -1,5 +1,5 @@
 /// A single component mapping.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Mapping {
     /// Mapped component's ID
     pub aux_id: usize,
@@ -19,7 +19,7 @@ impl Mapping {
 }
 
 /// Error that occurred during mapping
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum MappingError {
     UnknownComponent,
     UnalignedStartAddress,
@@ -43,9 +43,9 @@ pub struct MappingRange {
 
 /// Status of a continguous mapping
 #[derive(Debug)]
-pub struct ContiguousMappingStatus {
+pub struct ContiguousMappingResult {
     /// Range of the mapping in case of success, or ID of the faulty components if the mapping failed
-    pub mapping: Result<MappingRange, Vec<usize>>,
+    pub mapping: Result<MappingRange, Vec<(usize, MappingError)>>,
     /// List of auxiliary components mapping (succeeded or failed)
     pub aux_mapping: Vec<AuxMappingStatus>,
 }

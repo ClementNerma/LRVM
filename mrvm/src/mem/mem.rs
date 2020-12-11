@@ -1,4 +1,4 @@
-use super::{AuxMappingStatus, ContiguousMappingStatus, Mapping, MappingError, MappingRange};
+use super::{AuxMappingStatus, ContiguousMappingResult, Mapping, MappingError, MappingRange};
 use crate::board::HardwareBridge;
 
 /// Mapped memory
@@ -40,7 +40,7 @@ impl MappedMemory {
         &mut self,
         addr: u32,
         aux_ids: impl AsRef<[usize]>,
-    ) -> ContiguousMappingStatus {
+    ) -> ContiguousMappingResult {
         let mut aux_mapping = vec![];
         let mut failed = vec![];
         let mut last_addr = addr;
@@ -62,7 +62,7 @@ impl MappedMemory {
                     last_addr = end_addr + 1;
                 }
 
-                Err(_) => failed.push(*aux_id),
+                Err(err) => failed.push((*aux_id, err)),
             }
 
             aux_mapping.push(AuxMappingStatus {
@@ -73,7 +73,7 @@ impl MappedMemory {
             });
         }
 
-        ContiguousMappingStatus {
+        ContiguousMappingResult {
             mapping: if failed.is_empty() {
                 Ok(MappingRange {
                     start_addr: addr,
@@ -197,7 +197,7 @@ impl MappedMemory {
             .iter()
             .find(|mapping| mapping.addr <= addr_end && addr <= mapping.end_addr())
         {
-            Some(mapping) => Err(MappingError::AddressOverlaps(mapping.clone())),
+            Some(mapping) => Err(MappingError::AddressOverlaps(*mapping)),
 
             None => {
                 self.mappings.push(Mapping {
