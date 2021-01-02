@@ -25,6 +25,31 @@ pub struct AuxCache {
     pub size: u32,
 }
 
+impl AuxWithCache {
+    /// Create the cache from an auxiliary component
+    pub fn create_from_aux(id: usize, shared_bus: Rc<RefCell<Box<dyn Bus>>>) -> Self {
+        let bus = shared_bus.borrow();
+
+        let name = bus.name().chars().take(32).collect::<String>();
+        let metadata = bus.metadata();
+        let hw_id = ((metadata[0] as u64) << 32) + metadata[1] as u64;
+        let size = metadata[2];
+
+        std::mem::drop(bus);
+
+        AuxWithCache {
+            shared_bus,
+            cache: AuxCache {
+                id,
+                hw_id,
+                name,
+                metadata,
+                size,
+            },
+        }
+    }
+}
+
 /// The hardware bridge is an internal component that allows internal components to communicate with auxiliary ones.  
 /// It contains a small cache which allows to quickly fetch specific data about components.  
 /// Multiple hardware bridges can co-exit on the motheboard, but their cache is not shared.
@@ -44,25 +69,7 @@ impl HardwareBridge {
                         "Hardware bridge cannot handle more than 2^32 components!"
                     );
 
-                    let bus = shared_bus.borrow();
-
-                    let name = bus.name().chars().take(32).collect::<String>();
-                    let metadata = bus.metadata();
-                    let hw_id = ((metadata[0] as u64) << 32) + metadata[1] as u64;
-                    let size = metadata[2];
-
-                    std::mem::drop(bus);
-
-                    AuxWithCache {
-                        shared_bus,
-                        cache: AuxCache {
-                            id,
-                            hw_id,
-                            name,
-                            metadata,
-                            size,
-                        },
-                    }
+                    AuxWithCache::create_from_aux(id, shared_bus)
                 })
                 .collect(),
         }
