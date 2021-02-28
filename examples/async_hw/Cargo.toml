@@ -5,7 +5,7 @@ authors = ["Clément Nerma <clement.nerma@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-rand = "0.7.3"
+rand = "0.8.3"
 mrvm = { path = "../../mrvm" }
 mrvm_aux = { path = "../../mrvm_aux" }
 mrvm_tools = { path = "../../mrvm_tools" }
