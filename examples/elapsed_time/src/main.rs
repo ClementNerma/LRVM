@@ -30,7 +30,7 @@ fn main() {
             Box::new(BootRom::with_size(program, 0x1000, 0x1).unwrap()),
             Box::new(RealtimeClock::new(0x2)),
             Box::new(NumberDisplay::new(
-                Box::new(|num, _format| {
+                Box::new(|num, _format, _newline| {
                     println!("Elapsed: {} second{}", num, if num > 1 { "s" } else { "" })
                 }),
                 0x3,
