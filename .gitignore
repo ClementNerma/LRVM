@@ -1,4 +1,4 @@
 _project/
 .idea/
 target/
-vscode-lasm/mrvm-lasm-*.vsix
+vscode-lasm/*.vsix
