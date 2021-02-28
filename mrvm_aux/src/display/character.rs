@@ -1,6 +1,8 @@
 //! The buffered display component offers a simple UTF-8 display system.
 //! See [`BufferedDisplay`] for more details.
 
+use std::io::{stdout, Write};
+
 use mrvm::board::Bus;
 use mrvm_tools::exceptions::AuxHwException;
 use mrvm_tools::metadata::{DeviceMetadata, DisplayType};
@@ -20,10 +22,11 @@ impl CharDisplay {
 
     /// Create a println!-based character display component, tolerating invalid UTF-8 characters ('�' displayed instead)
     pub fn new_print_lossy(hw_id: u64) -> Self {
-        Self::new(
-            Box::new(|result| print!("{}", result.unwrap_or('�'))),
-            hw_id,
-        )
+        Self::new(Box::new(|result| {
+            print!("{}", result.unwrap_or('�'));
+
+            stdout().flush().expect("Failed to flush STDOUT");
+        }), hw_id)
     }
 }
 
