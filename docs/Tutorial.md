@@ -584,11 +584,13 @@ Hurray! You can find this example in the [`examples/hello_world`](../examples/he
 
 ### A note on performances
 
-If you simply run the program with `cargo run`, you will find it is quite slow - a whole 5 seconds on a `Core i7-9700F` CPU (which is similar to the more known `Core i7-9700K`).
+Always keep in mind that using `cargo run` will result in slow performances, as program is run in debug mode. While this may not have a huge impact on small programs, it will certainly have on very large programs.
 
-This is especially because CustomASM is quite slow in debug mode (which is Cargo's default build mode), and as assembling the source LASM code is the most part of this program, this slows it down considerably.
+To get the maximum performance, run your program with `cargo run --release` (if you want to prepare the program beforehand, `cargo build --release`).
 
-So, if you want to check the real performances of the program, run with `cargo run --release`. The results should be a lot better, but at the cost of a longer build time. On the same CPU (`Core i7-9700F`) we go from a bit more than 5 seconds to half a second!
+On a small program like the one we made at the moment, the performances go from 31 milliseconds on an `Intel Core i7-9700F` (roughly equivalent to an `Intel Core i7-9700K`) in debug mode to only 3 in release mode. Although this is not perceivable by the end user, it's still a 10x improvement!
+
+On larger programs like the [`benchmark` example](../examples/benchmark/), the program takes a whole 43 secondes to complete in debug mode, versus 1.5 second in release mode. As you can see, the impact on performances depends from one program to another (the benchmark program using many instructions not greatly optimized in debug mode).
 
 ## 4. Using the native debugging tools
 
