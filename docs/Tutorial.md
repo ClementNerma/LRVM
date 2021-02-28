@@ -808,3 +808,27 @@ fn main() {
     }
 }
 ```
+
+## Tips & traps
+
+This section contains tips & tricks on MRVM.
+
+### Supervisor vs Userland
+
+MRVM has two execution modes: _supervisor_ and _userland_.
+
+The former is the default one, with no limitation, while the second one can be enabled by setting the `smt` register to `1`.
+
+The userland mode has several limitations, and is designed to prevent programs from doing harm to the whole system when running unsafe programs. On a traditional operating systems, supervisor mode is designed for the kernel, and userland mode for the programs run by the end user.
+
+### The stack pointer
+
+Each mode has its own _stack pointer_, which is used by four instructions: `PUSH` and `POP`, as well as `CALL` and `RET`.
+
+There are three traps when using these instructions:
+
+By default, the stack points to the `0x00000000` address, which is often the BootROM, which will make the writing fail. Think to set the `ssp` (supervisor stack pointer) and if you use the userland mode the `usp` (userland stack pointer) registers at the beginning of your program.
+
+The other trap is that pushing a value to the stack (with `PUSH` or `CALL`) doesn't increase the stack pointer by a word like you would expect, but instead _decreases_ it. This means that, if `ssp` is set to `0x2000`, pushing to it will update the register to `0x1FFD` and not `0x2004`. The same applies, in the reverse order, for popping values (with `POP` or `RET`).
+
+Finally, when pushing / popping a value to / from the stack, the stack pointer is updated _before_ performing the operation. This means that setting `ssp` to `0x2000` and pushing a value will write it to `0x1FFD` instead of `0x2000`. This may seem strange at first but is in reality very pratictal, as it usually allows you to set the stack pointer to a round address. For instance, if you have a RAM component mapped from `0x0000` with a length of `0x2000`, it will go up to `0x1FFD`, which means you'll set your stack pointer to `0x2000`.
