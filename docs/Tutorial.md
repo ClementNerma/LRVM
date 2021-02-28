@@ -558,7 +558,12 @@ fn main() {
 
     while !cpu.halted() {
         let was_at = cpu.regs.pc;
-        cpu.next().expect(&format!("> Exception occurred at address {:#010X}", was_at));
+
+        cpu.next();
+
+        if cpu.regs.et != 0 {
+            panic!("> Exception occurred at address {:#010X}", was_at);
+        }
     }
 
     println!("> CPU halted.");
