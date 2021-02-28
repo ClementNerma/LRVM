@@ -2,6 +2,8 @@
 
 The MRVM project consists in a simple but complete 32-bit virtual machine.
 
+The project's goal is to make a virtual machine which is powerful enough to play with, but simple enough to use it as a learning material on how VM work and making simple proof-of-concept (POC) programs.
+
 The main features are:
 
 - Motherboard emulation, allowing to plug-in virtual components ;
