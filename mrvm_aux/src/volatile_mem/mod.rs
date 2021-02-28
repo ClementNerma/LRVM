@@ -1,3 +1,3 @@
 mod ram;
 
-pub use ram::RAM;
+pub use ram::Ram;

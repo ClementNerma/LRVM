@@ -1,7 +1,7 @@
 use mrvm::board::{Bus, MotherBoard};
 use mrvm_aux::display::BufferedDisplay;
-use mrvm_aux::storage::BootROM;
-use mrvm_aux::volatile_mem::RAM;
+use mrvm_aux::storage::BootRom;
+use mrvm_aux::volatile_mem::Ram;
 use mrvm_tools::lasm::assemble_words;
 use rand::Rng;
 
@@ -16,8 +16,8 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, rng.gen()).unwrap()),
+        Box::new(Ram::new(0x1000, rng.gen()).unwrap()),
         Box::new(
             BufferedDisplay::new(
                 0x100,

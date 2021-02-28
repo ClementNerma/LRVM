@@ -3,7 +3,7 @@ use crate::mem::MappedMemory;
 
 /// Memory Management Unit (MMU)
 #[derive(Default)]
-pub struct MMU {}
+pub struct Mmu {}
 
 pub enum EntryDecodingResult {
     Decoded(u32),
@@ -12,7 +12,7 @@ pub enum EntryDecodingResult {
     HwException(u16),
 }
 
-impl MMU {
+impl Mmu {
     pub fn new() -> Self {
         Self {}
     }

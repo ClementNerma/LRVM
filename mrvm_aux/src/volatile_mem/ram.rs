@@ -7,13 +7,13 @@ use std::convert::TryInto;
 
 /// The RAM component offers a simple non-persistent storage.
 /// When it receives a RESET request from the motherboard, all the storage is zeroed.
-pub struct RAM {
+pub struct Ram {
     storage: Vec<u32>,
     size: u32,
     hw_id: u64,
 }
 
-impl RAM {
+impl Ram {
     /// Create a new RAM component
     /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
     pub fn new(size: u32, hw_id: u64) -> Result<Self, &'static str> {
@@ -94,7 +94,7 @@ impl RAM {
     }
 }
 
-impl Bus for RAM {
+impl Bus for Ram {
     fn name(&self) -> &'static str {
         "RAM"
     }

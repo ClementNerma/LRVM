@@ -2,8 +2,8 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use crossterm::terminal;
 use mrvm_aux::display::{BufferedDisplay, CharDisplay, NumberDisplay};
 use mrvm_aux::keyboard::{SyncCharKeyboard, SyncLineKeyboard};
-use mrvm_aux::storage::BootROM;
-use mrvm_aux::volatile_mem::RAM;
+use mrvm_aux::storage::BootRom;
+use mrvm_aux::volatile_mem::Ram;
 use mrvm_tools::debug::{exec_vm, RunConfig};
 use mrvm_tools::lasm::assemble_words;
 use rand::Rng;
@@ -15,13 +15,13 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     // BootROM containing the program
-    let bootrom = BootROM::with_size(program, 0x1000, rng.gen()).unwrap();
+    let bootrom = BootRom::with_size(program, 0x1000, rng.gen()).unwrap();
 
     // The first RAM, for the stack (calls & the brainfuck program's loops)
-    let stack = RAM::new(0x1000, rng.gen()).unwrap();
+    let stack = Ram::new(0x1000, rng.gen()).unwrap();
 
     // The second RAM, for the brainfuck program's memory
-    let bf_memory = RAM::new(0x1000, rng.gen()).unwrap();
+    let bf_memory = Ram::new(0x1000, rng.gen()).unwrap();
 
     // A buffered display, to allow the brainfuck program to display messages
     let display = BufferedDisplay::new_print_lossy(0x1000, rng.gen()).unwrap();

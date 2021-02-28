@@ -1,4 +1,4 @@
-use crate::storage::BootROM;
+use crate::storage::BootRom;
 use mrvm::board::MotherBoard;
 use mrvm_tools::asm::{Instr, Program, Reg};
 use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
@@ -8,7 +8,7 @@ fn prepare(instr: Instr) -> MotherBoard {
     let prog = Program::from_instr(vec![instr, Instr::Halt()]);
 
     prepare_vm(vec![Box::new(
-        BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap(),
+        BootRom::with_size(prog.encode_words(), 0x1000, 0x0).unwrap(),
     )])
 }
 

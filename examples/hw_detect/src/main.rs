@@ -1,6 +1,6 @@
 use mrvm::mem::MappedMemory;
-use mrvm_aux::storage::BootROM;
-use mrvm_aux::volatile_mem::RAM;
+use mrvm_aux::storage::BootRom;
+use mrvm_aux::volatile_mem::Ram;
 use mrvm_tools::bytes::words_to_bytes;
 use mrvm_tools::debug::{exec_vm, RunConfig};
 use mrvm_tools::exceptions::AuxHwException;
@@ -110,11 +110,11 @@ fn main() {
     let mut motherboard = exec_vm(
         vec![
             // BootROM containing the program's machine code
-            Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
+            Box::new(BootRom::with_size(program, 0x1000, rng.gen()).unwrap()),
             // RAM that will contain informations about each detected components
-            Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+            Box::new(Ram::new(0x1000, rng.gen()).unwrap()),
             // RAM that will be used for the stack
-            Box::new(RAM::new(0x20, rng.gen()).unwrap()),
+            Box::new(Ram::new(0x20, rng.gen()).unwrap()),
         ],
         RunConfig::halt_on_ex(),
     )

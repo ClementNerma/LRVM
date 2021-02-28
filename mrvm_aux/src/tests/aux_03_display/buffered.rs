@@ -1,5 +1,5 @@
 use crate::display::BufferedDisplay;
-use crate::storage::BootROM;
+use crate::storage::BootRom;
 use mrvm_tools::asm::{ExtInstr, Instr, Program, Reg};
 use mrvm_tools::debug::{exec_vm, RunConfig};
 use std::sync::{Arc, Mutex};
@@ -50,7 +50,7 @@ fn buffered_display() {
 
     let (_, state) = exec_vm(
         vec![
-            Box::new(BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
+            Box::new(BootRom::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
             Box::new(
                 BufferedDisplay::new(
                     0x100,

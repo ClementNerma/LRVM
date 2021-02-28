@@ -1,17 +1,17 @@
 use std::convert::TryFrom;
 use crate::board::HardwareBridge;
 use crate::mem::MappedMemory;
-use crate::mmu::{MMU, MemAction};
+use crate::mmu::{Mmu, MemAction};
 use super::Registers;
 
 /// Central Processing Unit (CPU)
-pub struct CPU {
+pub struct Cpu {
     /// Registers (available from the outside of the crate)
     pub regs: Registers,
     /// Mapped memory
     pub(crate) mem: MappedMemory,
     /// Memory Management Unit (MMU)
-    mmu: MMU,
+    mmu: Mmu,
     /// Hardware bridge
     hwb: HardwareBridge,
     /// Current cycle count (goes back to 0 after reaching maximum)
@@ -22,13 +22,13 @@ pub struct CPU {
     _cycle_changed_pc: bool
 }
 
-impl CPU {
+impl Cpu {
     /// Create a new CPU using an existing mapped memory (must be the same one the motherboard this CPU will be connected to uses).
     pub fn new(hwb: HardwareBridge, mem: MappedMemory) -> Self {
         let mut cpu = Self {
             regs: Registers::new(),
             mem,
-            mmu: MMU::new(),
+            mmu: Mmu::new(),
             hwb,
             cycles: 0,
             halted: true,

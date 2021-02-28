@@ -1,5 +1,5 @@
 use mrvm_aux::display::NumberDisplay;
-use mrvm_aux::storage::BootROM;
+use mrvm_aux::storage::BootRom;
 use mrvm_aux::time::RealtimeClock;
 use mrvm_tools::debug::{exec_vm, RunConfig};
 use mrvm_tools::lasm::assemble_words;
@@ -27,7 +27,7 @@ fn main() {
 
     exec_vm(
         vec![
-            Box::new(BootROM::with_size(program, 0x1000, 0x1).unwrap()),
+            Box::new(BootRom::with_size(program, 0x1000, 0x1).unwrap()),
             Box::new(RealtimeClock::new(0x2)),
             Box::new(NumberDisplay::new(
                 Box::new(|num, _format| {

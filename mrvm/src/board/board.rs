@@ -4,7 +4,7 @@
 //! The motherboard can also emulate a reset button through the [`reset`] function which propagates the even through all connected [`Bus`].
 
 use super::{Bus, HardwareBridge};
-use crate::cpu::CPU;
+use crate::cpu::Cpu;
 use crate::mem::MappedMemory;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -14,7 +14,7 @@ pub struct MotherBoard {
     /// Auxiliary components connected to the motherboard
     aux: Vec<Rc<RefCell<Box<dyn Bus>>>>,
     /// Central Processing Unit (CPU)
-    cpu: CPU,
+    cpu: Cpu,
 }
 
 impl MotherBoard {
@@ -34,7 +34,7 @@ impl MotherBoard {
         let mem = MappedMemory::new(HardwareBridge::new(aux.clone()));
 
         Self {
-            cpu: CPU::new(HardwareBridge::new(aux.clone()), mem),
+            cpu: Cpu::new(HardwareBridge::new(aux.clone()), mem),
             aux,
         }
     }
@@ -51,7 +51,7 @@ impl MotherBoard {
     }
 
     /// Get a mutable reference to the CPU (required to make the CPU advance)
-    pub fn cpu(&mut self) -> &mut CPU {
+    pub fn cpu(&mut self) -> &mut Cpu {
         &mut self.cpu
     }
 

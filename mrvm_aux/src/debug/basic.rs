@@ -44,7 +44,7 @@ pub enum DebugInfo {
     Boolean(bool),
     Utf8Char(Result<char, u32>),
     EncodingAgnosticChar(u32),
-    DEBUGMessage,
+    DebugMessage,
 }
 
 impl BasicDebug {
@@ -100,7 +100,7 @@ impl BasicDebug {
                         DebugInfo::EncodingAgnosticChar(c) => {
                             format!("<Encoding-agnostic character: {:#010X}>", c)
                         }
-                        DebugInfo::DEBUGMessage => String::from("debug point"),
+                        DebugInfo::DebugMessage => String::from("debug point"),
                     }
                 )
             }),
@@ -146,7 +146,7 @@ impl Bus for BasicDebug {
             12 => DebugInfo::Boolean(word != 0),
             13 => DebugInfo::Utf8Char(std::char::from_u32(word).ok_or(word)),
             14 => DebugInfo::EncodingAgnosticChar(word),
-            15 => DebugInfo::DEBUGMessage,
+            15 => DebugInfo::DebugMessage,
             _ => unreachable!("Tried to write to out-of-range address in basic debug interface"),
         };
 

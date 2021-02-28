@@ -1,5 +1,5 @@
 use crate::keyboard::SyncCharKeyboard;
-use crate::storage::BootROM;
+use crate::storage::BootRom;
 use mrvm_tools::asm::{ExtInstr, Instr, Program, Reg};
 use mrvm_tools::debug::{exec_vm, RunConfig};
 use std::sync::{Arc, Mutex};
@@ -25,7 +25,7 @@ fn sync_char() {
 
     let (mut vm, state) = exec_vm(
         vec![
-            Box::new(BootROM::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
+            Box::new(BootRom::with_size(prog.encode_words(), 0x1000, 0x0).unwrap()),
             Box::new(SyncCharKeyboard::new(
                 Box::new(move || {
                     let mut received_req = received_req_closure.lock().unwrap();

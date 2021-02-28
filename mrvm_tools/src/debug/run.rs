@@ -1,6 +1,6 @@
 use super::RunConfig;
 use crate::exceptions::NativeException;
-use mrvm::cpu::CPU;
+use mrvm::cpu::Cpu;
 use std::fmt;
 
 /// State of the VM when exited
@@ -29,7 +29,7 @@ pub struct ExWithMode {
 }
 
 /// Run a virtual machine until the CPU halt, eventually encounters an exception or reaches a given number of cycles.
-pub fn run_vm(cpu: &mut CPU, config: RunConfig) -> StoppedState {
+pub fn run_vm(cpu: &mut Cpu, config: RunConfig) -> StoppedState {
     // If the VM is stopped because of an exception, it will be put in here
     let mut stop_ex = None;
 

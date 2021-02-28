@@ -1,5 +1,5 @@
-use crate::storage::BootROM;
-use crate::volatile_mem::RAM;
+use crate::storage::BootRom;
+use crate::volatile_mem::Ram;
 use mrvm_tools::asm::{ExtInstr, Instr, Program};
 use mrvm_tools::debug::{exec_vm, RunConfig};
 
@@ -11,8 +11,8 @@ fn ram() {
 
     let (mut vm, state) = exec_vm(
         vec![
-            Box::new(BootROM::with_size(program.encode_words(), 0x1000, 0x0).unwrap()),
-            Box::new(RAM::new(0x1000, 0x1).unwrap()),
+            Box::new(BootRom::with_size(program.encode_words(), 0x1000, 0x0).unwrap()),
+            Box::new(Ram::new(0x1000, 0x1).unwrap()),
         ],
         RunConfig::halt_on_ex(),
     );

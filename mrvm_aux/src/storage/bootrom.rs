@@ -9,14 +9,14 @@ use std::convert::TryInto;
 /// The BootROM component contains a read-only storage that is initialized during its creation.
 /// All write requests are invalid but read requests are valid (reading outside initialization storage will return '0x00000000').
 /// The BootROM's size may be larger than its initialization storage. In such case, reading from the unitialized part will return `0x0000000`.
-pub struct BootROM {
+pub struct BootRom {
     storage: Vec<u32>,
     len: u32,
     size: u32,
     hw_id: u64,
 }
 
-impl BootROM {
+impl BootRom {
     /// Create a new BootROM component
     /// Returns an error message if the capacity is too large for the running CPU architecture.
     pub fn new(storage: Vec<u32>, hw_id: u64) -> Result<Self, &'static str> {
@@ -72,7 +72,7 @@ impl BootROM {
     }
 }
 
-impl Bus for BootROM {
+impl Bus for BootRom {
     fn name(&self) -> &'static str {
         "BootROM"
     }

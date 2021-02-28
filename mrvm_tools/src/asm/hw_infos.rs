@@ -2,8 +2,8 @@
 #[derive(Debug, Copy, Clone)]
 pub enum HwInfo {
     Count,
-    UIDUpper,
-    UIDLower,
+    UidUpper,
+    UidLower,
     NameLength,
     NameW1,
     NameW2,
@@ -29,8 +29,8 @@ impl HwInfo {
     pub fn decode(code: u8) -> Result<Self, ()> {
         match code {
             0x00 => Ok(Self::Count),
-            0x01 => Ok(Self::UIDUpper),
-            0x02 => Ok(Self::UIDLower),
+            0x01 => Ok(Self::UidUpper),
+            0x02 => Ok(Self::UidLower),
             0x10 => Ok(Self::NameLength),
             0x11 => Ok(Self::NameW1),
             0x12 => Ok(Self::NameW2),
@@ -57,8 +57,8 @@ impl HwInfo {
     pub fn code(self) -> u8 {
         match self {
             Self::Count => 0x00,
-            Self::UIDUpper => 0x01,
-            Self::UIDLower => 0x02,
+            Self::UidUpper => 0x01,
+            Self::UidLower => 0x02,
             Self::NameLength => 0x10,
             Self::NameW1 => 0x11,
             Self::NameW2 => 0x12,
@@ -84,8 +84,8 @@ impl HwInfo {
     pub fn to_lasm(self) -> &'static str {
         match self {
             Self::Count => "HWD_COUNT",
-            Self::UIDUpper => "HWD_UID_UPPER",
-            Self::UIDLower => "HWD_UID_LOWER",
+            Self::UidUpper => "HWD_UID_UPPER",
+            Self::UidLower => "HWD_UID_LOWER",
             Self::NameLength => "HWD_NAME_LEN",
             Self::NameW1 => "HWD_NAME_W1",
             Self::NameW2 => "HWD_NAME_W2",

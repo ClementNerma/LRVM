@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use mrvm_aux::storage::BootROM;
+use mrvm_aux::storage::BootRom;
 use mrvm_tools::debug::{exec_vm, RunConfig};
 use mrvm_tools::lasm::assemble_words;
 
@@ -16,7 +16,7 @@ fn main() {
     let time = Instant::now();
 
     let (mut motherboard, state) = exec_vm(
-        vec![Box::new(BootROM::new(program, 0x0).unwrap())],
+        vec![Box::new(BootRom::new(program, 0x0).unwrap())],
         RunConfig::quiet().with_halt_on_exception(true),
     );
 
