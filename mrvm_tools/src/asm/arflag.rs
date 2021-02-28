@@ -81,20 +81,20 @@ impl TryFrom<u8> for ArFlag {
     }
 }
 
-impl Into<u8> for ArFlag {
-    fn into(self) -> u8 {
-        self.code()
+impl From<ArFlag> for u8 {
+    fn from(flag: ArFlag) -> u8 {
+        flag.code()
     }
 }
 
-impl Into<RegOrLit1> for ArFlag {
-    fn into(self) -> RegOrLit1 {
-        self.code().into()
+impl From<ArFlag> for RegOrLit1 {
+    fn from(flag: ArFlag) -> RegOrLit1 {
+        flag.code().into()
     }
 }
 
-impl Into<RegOrLit2> for ArFlag {
-    fn into(self) -> RegOrLit2 {
-        self.code().into()
+impl From<ArFlag> for RegOrLit2 {
+    fn from(flag: ArFlag) -> RegOrLit2 {
+        flag.code().into()
     }
 }

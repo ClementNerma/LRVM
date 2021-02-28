@@ -78,9 +78,9 @@ macro_rules! declare_val {
             }
         }
 
-        impl Into<$num> for $typename {
-            fn into(self) -> $num {
-                self.value()
+        impl From<$typename> for $num {
+            fn from(reg_or_lit: $typename) -> $num {
+                reg_or_lit.value()
             }
         }
 

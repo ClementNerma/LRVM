@@ -103,7 +103,7 @@ impl Bus for Ram {
         DeviceMetadata::new(
             self.hw_id,
             self.size * 4,
-            MemoryType::RAM.into(),
+            MemoryType::Ram.into(),
             None,
             None,
         )

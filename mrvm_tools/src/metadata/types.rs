@@ -32,9 +32,9 @@ macro_rules! impl_device_type {
             }
         }
 
-        impl Into<DeviceCategory> for $type_enum {
-            fn into(self) -> DeviceCategory {
-                self.wrap()
+        impl From<$type_enum> for DeviceCategory {
+            fn from(typ: $type_enum) -> DeviceCategory {
+                typ.wrap()
             }
         }
 
@@ -72,7 +72,7 @@ impl_device_type!(Keyboard, as KeyboardType => {
 });
 
 impl_device_type!(Memory, as MemoryType => {
-    RAM => 0x0000_0100
+    Ram => 0x0000_0100
 });
 
 impl_device_type!(Storage, as StorageType => {

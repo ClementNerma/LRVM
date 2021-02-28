@@ -220,9 +220,9 @@ impl TryFrom<u8> for Reg {
     }
 }
 
-impl Into<u8> for Reg {
-    fn into(self) -> u8 {
-        self.code()
+impl From<Reg> for u8 {
+    fn from(reg: Reg) -> u8 {
+        reg.code()
     }
 }
 

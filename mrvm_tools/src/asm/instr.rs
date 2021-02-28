@@ -615,9 +615,9 @@ pub enum InstrDecodingError {
     UnknownRegister { param: usize, code: u8 },
 }
 
-impl Into<ProgramWord> for Instr {
-    fn into(self) -> ProgramWord {
-        ProgramWord::Instr(self)
+impl From<Instr> for ProgramWord {
+    fn from(instr: Instr) -> ProgramWord {
+        ProgramWord::Instr(instr)
     }
 }
 

@@ -108,8 +108,8 @@ impl HwInfo {
     }
 }
 
-impl Into<u8> for HwInfo {
-    fn into(self) -> u8 {
-        self.code()
+impl From<HwInfo> for u8 {
+    fn from(info: HwInfo) -> u8 {
+        info.code()
     }
 }

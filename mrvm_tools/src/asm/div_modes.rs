@@ -96,9 +96,9 @@ impl TryFrom<u8> for DivSignMode {
     }
 }
 
-impl Into<u8> for DivSignMode {
-    fn into(self) -> u8 {
-        self.encode()
+impl From<DivSignMode> for u8 {
+    fn from(mode: DivSignMode) -> u8 {
+        mode.encode()
     }
 }
 
@@ -172,9 +172,9 @@ impl TryFrom<u8> for DivByZeroMode {
     }
 }
 
-impl Into<u8> for DivByZeroMode {
-    fn into(self) -> u8 {
-        self.encode()
+impl From<DivByZeroMode> for u8 {
+    fn from(mode: DivByZeroMode) -> u8 {
+        mode.encode()
     }
 }
 
@@ -248,9 +248,9 @@ impl TryFrom<u8> for DivOverflowMode {
     }
 }
 
-impl Into<u8> for DivOverflowMode {
-    fn into(self) -> u8 {
-        self.encode()
+impl From<DivOverflowMode> for u8 {
+    fn from(mode: DivOverflowMode) -> u8 {
+        mode.encode()
     }
 }
 
@@ -361,8 +361,8 @@ impl TryFrom<u8> for DivMode {
     }
 }
 
-impl Into<u8> for DivMode {
-    fn into(self) -> u8 {
-        self.encode()
+impl From<DivMode> for u8 {
+    fn from(mode: DivMode) -> u8 {
+        mode.encode()
     }
 }

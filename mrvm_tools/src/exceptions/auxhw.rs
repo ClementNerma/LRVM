@@ -107,9 +107,9 @@ impl AuxHwException {
     }
 }
 
-impl Into<u16> for AuxHwException {
-    fn into(self) -> u16 {
-        self.encode()
+impl From<AuxHwException> for u16 {
+    fn from(ex: AuxHwException) -> u16 {
+        ex.encode()
     }
 }
 
