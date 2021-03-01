@@ -220,7 +220,7 @@ dependencies = [
 
 [[package]]
 name = "lrvm_tools"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "customasm",
  "lrvm",
