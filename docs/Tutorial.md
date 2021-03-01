@@ -17,6 +17,8 @@ The final code can be found in the [`examples/hello_world`](../examples/hello_wo
 - [5. Tips & traps](#5-tips--traps)
   - [Supervisor vs Userland](#supervisor-vs-userland)
   - [The stack pointer](#the-stack-pointer)
+  - [Debugging values](#debugging-values)
+  - [Resetting](#resetting)
 - [6. Next?](#6-next)
 
 ## 0. Preparing a Rust project
@@ -847,6 +849,20 @@ By default, the stack points to the `0x00000000` address, which is often the Boo
 The other trap is that pushing a value to the stack (with `PUSH` or `CALL`) doesn't increase the stack pointer by a word like you would expect, but instead _decreases_ it. This means that, if `ssp` is set to `0x2000`, pushing to it will update the register to `0x1FFD` and not `0x2004`. The same applies, in the reverse order, for popping values (with `POP` or `RET`).
 
 Finally, when pushing / popping a value to / from the stack, the stack pointer is updated _before_ performing the operation. This means that setting `ssp` to `0x2000` and pushing a value will write it to `0x1FFD` instead of `0x2000`. This may seem strange at first but is in reality very pratictal, as it usually allows you to set the stack pointer to a round address. For instance, if you have a RAM component mapped from `0x0000` with a length of `0x2000`, it will go up to `0x1FFD`, which means you'll set your stack pointer to `0x2000`.
+
+### Debugging values
+
+Debugging is difficult inside a VM, so to ease it up a bit you can use [debug components](../lrvm_aux/src/debug/) such as [`BasicDebug`](../lrvm_aux/src/debug/basic.rs), which is a very simple component designed to print boolean and numeric values as well as characters and strings in the console.
+
+You can map it as an easy-to-remember address, such as `0xFFFFFF00` for instance, if it is not used for anything else in your application.
+
+### Resetting
+ 
+The CPU as well as individual components can be reset using their `.reset()` method. Resetting the CPU will simply halt it, set all its registers to 0 (except `smt` which is set to 1) and reset its cycles counter.
+
+Resetting a component is, if the component handles the signal correctly, set it to the same state it was when it was initially created.
+
+It's also possible to reset the motherboard using the same method name, which will reset the CPU as well as every single auxiliary components.
 
 ## 6. Next?
 
