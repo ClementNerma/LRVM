@@ -57,16 +57,20 @@ MRVM uses a lightweight language assembly called LASM (Lightweight Assembly). LA
 
 Here is an example of a simple LASM program:
 
-```asm
+```lasm
 main:
     add a0, 1
+
     cmp a0, 10
     ifeq
     halt
-    jpr -16
+
+    jp main
 ```
 
 This program adds `1` to the `a0` register until it reaches `10`, then it halts the processor.
+
+To see more about the LASM language, see [the tutorial](docs/Tutorial.md).
 
 ### Syntax highlighting
 
