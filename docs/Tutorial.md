@@ -864,6 +864,8 @@ Resetting a component is, if the component handles the signal correctly, set it 
 
 It's also possible to reset the motherboard using the same method name, which will reset the CPU as well as every single auxiliary components.
 
+Note that halting the CPU **does not** reset it! Reset is only needed to make the CPU start again after halting, or to make it start for the first time after the VM was created, but halting is not resetting!
+
 ## 6. Next?
 
 After completing this tutorial, you can take a look at the [architecture document](Architecture.md), which describes exactly how the VM works: the registers, all LASM instructions, the MMU, etc.
