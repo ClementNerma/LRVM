@@ -4,6 +4,20 @@ This tutorial will show you how to use LRVM and associated tools to run and debu
 
 The final code can be found in the [`examples/hello_world`](../examples/hello_world/) directory.
 
+## Table of contents
+
+- [Table of contents](#table-of-contents)
+- [0. Preparing a Rust project](#0-preparing-a-rust-project)
+- [1. Setting up the VM](#1-setting-up-the-vm)
+- [2. Prepare the program](#2-prepare-the-program)
+- [3. Starting up the VM](#3-starting-up-the-vm)
+  - [Adding a little more output](#adding-a-little-more-output)
+  - [A note on performances](#a-note-on-performances)
+- [4. Using the native debugging tools](#4-using-the-native-debugging-tools)
+- [5. Tips & traps](#5-tips--traps)
+  - [Supervisor vs Userland](#supervisor-vs-userland)
+  - [The stack pointer](#the-stack-pointer)
+
 ## 0. Preparing a Rust project
 
 First, create a new cargo project and add [`lrvm`](../lrvm/), [`lrvm_aux`](../lrvm_aux/) and [`lrvm_tools`](../lrvm_tools/) as dependencies.
@@ -809,7 +823,7 @@ fn main() {
 }
 ```
 
-## Tips & traps
+## 5. Tips & traps
 
 This section contains tips & tricks on LRVM.
 

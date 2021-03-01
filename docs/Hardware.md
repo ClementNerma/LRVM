@@ -1,5 +1,9 @@
 # Hardware management
 
+- [Communications](#communications)
+- [Bus interface](#bus-interface)
+- [Metadata](#metadata)
+
 Virtual hardware (named _auxiliary components_) can be connected to the motherboard, communicating through a _bus_.
 
 ## Communications
