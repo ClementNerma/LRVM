@@ -1,6 +1,6 @@
-use mrvm_aux::storage::BootRom;
-use mrvm_tools::debug::{exec_vm, RunConfig};
-use mrvm_tools::lasm::assemble_words;
+use lrvm_aux::storage::BootRom;
+use lrvm_tools::debug::{exec_vm, RunConfig};
+use lrvm_tools::lasm::assemble_words;
 
 fn main() {
     let program = assemble_words("halt").unwrap();

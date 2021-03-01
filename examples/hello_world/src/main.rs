@@ -1,8 +1,8 @@
-use mrvm::board::{Bus, MotherBoard};
-use mrvm_aux::display::BufferedDisplay;
-use mrvm_aux::storage::BootRom;
-use mrvm_aux::volatile_mem::Ram;
-use mrvm_tools::lasm::assemble_words;
+use lrvm::board::{Bus, MotherBoard};
+use lrvm_aux::display::BufferedDisplay;
+use lrvm_aux::storage::BootRom;
+use lrvm_aux::volatile_mem::Ram;
+use lrvm_tools::lasm::assemble_words;
 use rand::Rng;
 
 fn main() {

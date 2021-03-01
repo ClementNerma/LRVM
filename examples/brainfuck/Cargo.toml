@@ -7,6 +7,6 @@ edition = "2018"
 [dependencies]
 rand = "0.8.3"
 crossterm = "0.19.0"
-mrvm = { path = "../../mrvm" }
-mrvm_aux = { path = "../../mrvm_aux" }
-mrvm_tools = { path = "../../mrvm_tools" }
+lrvm = { path = "../../lrvm" }
+lrvm_aux = { path = "../../lrvm_aux" }
+lrvm_tools = { path = "../../lrvm_tools" }

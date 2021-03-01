@@ -1,12 +1,12 @@
 # Tutorial
 
-This tutorial will show you how to use MRVM and associated tools to run and debug a VM.
+This tutorial will show you how to use LRVM and associated tools to run and debug a VM.
 
 The final code can be found in the [`examples/hello_world`](../examples/hello_world/) directory.
 
 ## 0. Preparing a Rust project
 
-First, create a new cargo project and add [`mrvm`](../mrvm/), [`mrvm_aux`](../mrvm_aux/) and [`mrvm_tools`](../mrvm_tools/) as dependencies.
+First, create a new cargo project and add [`lrvm`](../lrvm/), [`lrvm_aux`](../lrvm_aux/) and [`lrvm_tools`](../lrvm_tools/) as dependencies.
 Also add the [`rand`](https://crates.io/crates/rand) crate dependency as we will use it to generate pseudo-unique identifiers.
 
 ## 1. Setting up the VM
@@ -14,7 +14,7 @@ Also add the [`rand`](https://crates.io/crates/rand) crate dependency as we will
 It's time to create our VM. In the `src/main.rs` file, let's prepare the motherboard that will receive the components:
 
 ```rust
-use mrvm::board::MotherBoard;
+use lrvm::board::MotherBoard;
 
 fn main() {
     let motherboard = MotherBoard::new(vec![
@@ -33,9 +33,9 @@ We also need to choose an _hardware identifier_ for each component, which is a 6
 
 ```rust
 use rand::Rng;
-use mrvm::board::{MotherBoard, Bus};
-use mrvm_aux::storage::BootROM;
-use mrvm_aux::display::BufferedDisplay;
+use lrvm::board::{MotherBoard, Bus};
+use lrvm_aux::storage::BootROM;
+use lrvm_aux::display::BufferedDisplay;
 
 fn main() {
     let mut rng = rand::thread_rng();
@@ -53,8 +53,8 @@ We'll also need a writable memory to store informations, as the BootROM is read-
 
 ```rust
 use rand::Rng;
-use mrvm::board::{MotherBoard, Bus};
-use mrvm_aux::storage::BootROM;
+use lrvm::board::{MotherBoard, Bus};
+use lrvm_aux::storage::BootROM;
 use volatile_mem::RAM;
 
 fn main() {
@@ -73,10 +73,10 @@ Finally, we'll add a small display component called a _buffered display_. The co
 
 ```rust
 use rand::Rng;
-use mrvm::board::{MotherBoard, Bus};
-use mrvm_aux::storage::BootROM;
+use lrvm::board::{MotherBoard, Bus};
+use lrvm_aux::storage::BootROM;
 use volatile_mem::RAM;
-use mrvm_aux::display::BufferedDisplay;
+use lrvm_aux::display::BufferedDisplay;
 
 fn main() {
     let mut rng = rand::thread_rng();
@@ -97,11 +97,11 @@ Our motherboard is now ready. But we still have a thing to do: prepare our progr
 
 ## 2. Prepare the program
 
-MRVM uses a small assembly language called LASM (Lightweight Assembly). We'll start by making a simple program that displays `Hello, world!`.
+LRVM uses a small assembly language called LASM (Lightweight Assembly). We'll start by making a simple program that displays `Hello, world!`.
 
 So, we first need to encode the message in our program. A first method is to check what bytes `Hello, world!` is made of and write these bytes directly in our assembly program. But that's tricky, and we'll not be able to change this message easily later.
 
-So we'll use a simple directive called `#d`, provided by the assembling library MRVM uses under the hood, [CustomASM](https://github.com/hlorenzi/customasm).
+So we'll use a simple directive called `#d`, provided by the assembling library LRVM uses under the hood, [CustomASM](https://github.com/hlorenzi/customasm).
 
 Let's make a label that contains the message:
 
@@ -410,11 +410,11 @@ But as we didn't use any exception handling, this will make the CPU jump to the 
 So, let's now prepare our BootROM. First, create in the same directory as your `main.rs` file a source file named `display.lasm`, and put inside the
 assembly program we made.
 
-We'll now be able to call MRVM's assembler to generate machine code from our source file. This can be achieved this way:
+We'll now be able to call LRVM's assembler to generate machine code from our source file. This can be achieved this way:
 
 ```rust
 // ...
-use mrvm_tools::lasm::assemble_words;
+use lrvm_tools::lasm::assemble_words;
 
 fn main() {
     let program = assemble_words(include_str!("display.lasm"))
@@ -450,11 +450,11 @@ And our BootROM is ready! The final code is:
 
 ```rust
 use rand::Rng;
-use mrvm::board::{MotherBoard, Bus};
-use mrvm_aux::storage::BootROM;
+use lrvm::board::{MotherBoard, Bus};
+use lrvm_aux::storage::BootROM;
 use volatile_mem::RAM;
-use mrvm_aux::display::BufferedDisplay;
-use mrvm_tools::lasm::assemble_words;
+use lrvm_aux::display::BufferedDisplay;
+use lrvm_tools::lasm::assemble_words;
 
 fn main() {
     let program = assemble_words(include_str!("display.lasm"))
@@ -520,11 +520,11 @@ Here is the final code:
 
 ```rust
 use rand::Rng;
-use mrvm::board::{MotherBoard, Bus};
-use mrvm_aux::storage::BootROM;
+use lrvm::board::{MotherBoard, Bus};
+use lrvm_aux::storage::BootROM;
 use volatile_mem::RAM;
-use mrvm_aux::display::BufferedDisplay;
-use mrvm_tools::lasm::assemble_words;
+use lrvm_aux::display::BufferedDisplay;
+use lrvm_tools::lasm::assemble_words;
 
 fn main() {
     println!("> Assembling LASM code...");
@@ -594,7 +594,7 @@ On larger programs like the [`benchmark` example](../examples/benchmark/), the p
 
 ## 4. Using the native debugging tools
 
-The `mrvm_tools` crate also provides useful debugging tools for MRVM in its `mrvm_tools::debug` module. For instance, the `prepare_vm` function takes a list of components and returns a fully-ready motherboard, with contiguously-mapped memory and already reset components. It also displays in the console the memory mappings of each component, along with their hardware identifier.
+The `lrvm_tools` crate also provides useful debugging tools for LRVM in its `lrvm_tools::debug` module. For instance, the `prepare_vm` function takes a list of components and returns a fully-ready motherboard, with contiguously-mapped memory and already reset components. It also displays in the console the memory mappings of each component, along with their hardware identifier.
 
 To use it, we simply need to replace this part of the code:
 
@@ -625,7 +625,7 @@ By this one:
 
 ```rust
 // ...
-use mrvm_tools::debug::prepare_vm;
+use lrvm_tools::debug::prepare_vm;
 
 fn main() {
     // ...
@@ -671,7 +671,7 @@ By this one:
 
 ```rust
 // ...
-use mrvm_tools::debug::{run_vm, RunConfig};
+use lrvm_tools::debug::{run_vm, RunConfig};
 
 fn main() {
   // ...
@@ -682,13 +682,13 @@ fn main() {
 If the VM halts normally, we will get a message like:
 
 ```
-[mrvm] Cycle 0x00000025: CPU halted at address 0x00000030
+[lrvm] Cycle 0x00000025: CPU halted at address 0x00000030
 ```
 
 But if one happens (let's say we replace the `halt` instruction by a `#d64 0x00`, which gives an invalid opcode of `0x00`), we'll get something like:
 
 ```
-[mrvm] Cycle 0x00000025: CPU halted at address 0x00000030 because of exception in supervisor mode: Unknown opcode 0x00
+[lrvm] Cycle 0x00000025: CPU halted at address 0x00000030 because of exception in supervisor mode: Unknown opcode 0x00
 ```
 
 Which is a lot more readable than the old debug message we had in our previous version.
@@ -697,11 +697,11 @@ We now have the following code:
 
 ```rust
 use rand::Rng;
-use mrvm_aux::storage::BootROM;
+use lrvm_aux::storage::BootROM;
 use volatile_mem::RAM;
-use mrvm_aux::display::BufferedDisplay;
-use mrvm_tools::lasm::assemble_words;
-use mrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
+use lrvm_aux::display::BufferedDisplay;
+use lrvm_tools::lasm::assemble_words;
+use lrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
 
 fn main() {
     println!("> Assembling LASM code...");
@@ -752,7 +752,7 @@ fn main() {
 }
 ```
 
-We can even use the `exec_vm` function from the `mrvm_tools::debug` module as we don't do anything between the `prepare_vm` and the `run_vm` calls:
+We can even use the `exec_vm` function from the `lrvm_tools::debug` module as we don't do anything between the `prepare_vm` and the `run_vm` calls:
 
 ```rust
 // ...
@@ -811,11 +811,11 @@ fn main() {
 
 ## Tips & traps
 
-This section contains tips & tricks on MRVM.
+This section contains tips & tricks on LRVM.
 
 ### Supervisor vs Userland
 
-MRVM has two execution modes: _supervisor_ and _userland_.
+LRVM has two execution modes: _supervisor_ and _userland_.
 
 The former is the default one, with no limitation, while the second one can be enabled by setting the `smt` register to `1`.
 

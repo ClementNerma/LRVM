@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests;
 
-use mrvm_tools::asm::Program;
-use mrvm_tools::lasm::assemble;
+use lrvm_tools::asm::Program;
+use lrvm_tools::lasm::assemble;
 
 static SOURCE: &str = include_str!("source.lasm");
 

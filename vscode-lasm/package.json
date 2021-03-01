@@ -1,7 +1,7 @@
 {
-    "name": "mrvm-lasm",
-    "displayName": "MRVM Lightweight Assembly (LASM) language",
-    "description": "Syntax highlighting for MRVM's Lightweight Assembly (LASM) language",
+    "name": "lrvm-lasm",
+    "displayName": "LRVM Lightweight Assembly (LASM) language",
+    "description": "Syntax highlighting for LRVM's Lightweight Assembly (LASM) language",
     "repository": {
         "type": "git",
         "url": "https://github.com/ClementNerma/RustVM.git"

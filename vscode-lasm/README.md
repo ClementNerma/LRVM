@@ -1,3 +1,3 @@
-# MRVM LASM
+# LRVM LASM
 
-Language support for [MRVM's](https://github.com/ClementNerma/RustVM) [Lightweight Assembly language](https://github.com/ClementNerma/RustVM/blob/master/docs/Architecture.md#assembly-language).
+Language support for [LRVM's](https://github.com/ClementNerma/RustVM) [Lightweight Assembly language](https://github.com/ClementNerma/RustVM/blob/master/docs/Architecture.md#assembly-language).

@@ -1,6 +1,6 @@
-# MRVM Examples
+# LRVM Examples
 
-This directory contains a list of examples of usage for MRVM.
+This directory contains a list of examples of usage for LRVM.
 
 All programs include a boilerplate code to create the VM and run it.
 
@@ -11,7 +11,7 @@ All programs include a boilerplate code to create the VM and run it.
 | [`minimal`](minimal/)           | The most simple VM                                              |
 | [`async_hw`](async_hw/)         | Create an asynchronous clock component living in another thread |
 | [`disassemble`](disassemble/)   | Assemble then disassemble a LASM program                        |
-| [`benchmark`](benchmark/)       | Benchmark the speed of MRVM on your computer                    |
+| [`benchmark`](benchmark/)       | Benchmark the speed of LRVM on your computer                    |
 
 There are also a few advanced examples:
 

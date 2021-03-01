@@ -1,0 +1,9 @@
+[package]
+name = "lrvm_aux"
+version = "0.2.1"
+authors = ["Clément Nerma <clement.nerma@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+lrvm = { path = "../lrvm" }
+lrvm_tools = { path = "../lrvm_tools" }

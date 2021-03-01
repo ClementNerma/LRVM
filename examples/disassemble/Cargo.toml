@@ -5,4 +5,4 @@ authors = ["Clément Nerma <clement.nerma@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-mrvm_tools = { path = "../../mrvm_tools" }
+lrvm_tools = { path = "../../lrvm_tools" }

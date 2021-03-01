@@ -1,6 +1,6 @@
-use mrvm::board::Bus;
-use mrvm_tools::exceptions::AuxHwException;
-use mrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
+use lrvm::board::Bus;
+use lrvm_tools::exceptions::AuxHwException;
+use lrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;

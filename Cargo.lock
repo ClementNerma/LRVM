@@ -6,9 +6,9 @@ version = 3
 name = "async_hw"
 version = "0.1.0"
 dependencies = [
- "mrvm",
- "mrvm_aux",
- "mrvm_tools",
+ "lrvm",
+ "lrvm_aux",
+ "lrvm_tools",
  "rand",
 ]
 
@@ -22,8 +22,8 @@ checksum = "f8aac770f1885fd7e387acedd76065302551364496e46b3dd00860b2f8359b9d"
 name = "benchmark"
 version = "0.1.0"
 dependencies = [
- "mrvm_aux",
- "mrvm_tools",
+ "lrvm_aux",
+ "lrvm_tools",
 ]
 
 [[package]]
@@ -37,9 +37,9 @@ name = "brainfuck"
 version = "0.1.0"
 dependencies = [
  "crossterm",
- "mrvm",
- "mrvm_aux",
- "mrvm_tools",
+ "lrvm",
+ "lrvm_aux",
+ "lrvm_tools",
  "rand",
 ]
 
@@ -116,15 +116,15 @@ dependencies = [
 name = "disassemble"
 version = "0.1.0"
 dependencies = [
- "mrvm_tools",
+ "lrvm_tools",
 ]
 
 [[package]]
 name = "elapsed_time"
 version = "0.1.0"
 dependencies = [
- "mrvm_aux",
- "mrvm_tools",
+ "lrvm_aux",
+ "lrvm_tools",
 ]
 
 [[package]]
@@ -151,9 +151,9 @@ dependencies = [
 name = "hello_world"
 version = "0.1.0"
 dependencies = [
- "mrvm",
- "mrvm_aux",
- "mrvm_tools",
+ "lrvm",
+ "lrvm_aux",
+ "lrvm_tools",
  "rand",
 ]
 
@@ -161,9 +161,9 @@ dependencies = [
 name = "hw_detect"
 version = "0.1.0"
 dependencies = [
- "mrvm",
- "mrvm_aux",
- "mrvm_tools",
+ "lrvm",
+ "lrvm_aux",
+ "lrvm_tools",
  "rand",
 ]
 
@@ -207,11 +207,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "lrvm"
+version = "0.2.0"
+
+[[package]]
+name = "lrvm_aux"
+version = "0.2.1"
+dependencies = [
+ "lrvm",
+ "lrvm_tools",
+]
+
+[[package]]
+name = "lrvm_tools"
+version = "0.2.0"
+dependencies = [
+ "customasm",
+ "lrvm",
+]
+
+[[package]]
 name = "minimal"
 version = "0.1.0"
 dependencies = [
- "mrvm_aux",
- "mrvm_tools",
+ "lrvm_aux",
+ "lrvm_tools",
 ]
 
 [[package]]
@@ -235,26 +255,6 @@ checksum = "07b88fb9795d4d36d62a012dfbf49a8f5cf12751f36d31a9dbe66d528e58979e"
 dependencies = [
  "socket2",
  "winapi",
-]
-
-[[package]]
-name = "mrvm"
-version = "0.2.0"
-
-[[package]]
-name = "mrvm_aux"
-version = "0.2.1"
-dependencies = [
- "mrvm",
- "mrvm_tools",
-]
-
-[[package]]
-name = "mrvm_tools"
-version = "0.2.0"
-dependencies = [
- "customasm",
- "mrvm",
 ]
 
 [[package]]

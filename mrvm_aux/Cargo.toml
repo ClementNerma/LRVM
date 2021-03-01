@@ -1,9 +1,0 @@
-[package]
-name = "mrvm_aux"
-version = "0.2.1"
-authors = ["Clément Nerma <clement.nerma@gmail.com>"]
-edition = "2018"
-
-[dependencies]
-mrvm = { path = "../mrvm" }
-mrvm_tools = { path = "../mrvm_tools" }

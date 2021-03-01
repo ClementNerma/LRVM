@@ -1,8 +1,8 @@
-use mrvm_aux::display::NumberDisplay;
-use mrvm_aux::storage::BootRom;
-use mrvm_aux::time::RealtimeClock;
-use mrvm_tools::debug::{exec_vm, RunConfig};
-use mrvm_tools::lasm::assemble_words;
+use lrvm_aux::display::NumberDisplay;
+use lrvm_aux::storage::BootRom;
+use lrvm_aux::time::RealtimeClock;
+use lrvm_tools::debug::{exec_vm, RunConfig};
+use lrvm_tools::lasm::assemble_words;
 
 static LASM_SOURCE: &str = "
 main:

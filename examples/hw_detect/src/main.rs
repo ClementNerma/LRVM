@@ -1,11 +1,11 @@
-use mrvm::mem::MappedMemory;
-use mrvm_aux::storage::BootRom;
-use mrvm_aux::volatile_mem::Ram;
-use mrvm_tools::bytes::words_to_bytes;
-use mrvm_tools::debug::{exec_vm, RunConfig};
-use mrvm_tools::exceptions::AuxHwException;
-use mrvm_tools::lasm::assemble_words;
-use mrvm_tools::metadata::DeviceCategory;
+use lrvm::mem::MappedMemory;
+use lrvm_aux::storage::BootRom;
+use lrvm_aux::volatile_mem::Ram;
+use lrvm_tools::bytes::words_to_bytes;
+use lrvm_tools::debug::{exec_vm, RunConfig};
+use lrvm_tools::exceptions::AuxHwException;
+use lrvm_tools::lasm::assemble_words;
+use lrvm_tools::metadata::DeviceCategory;
 use rand::Rng;
 
 struct Component {

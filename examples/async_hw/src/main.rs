@@ -1,11 +1,11 @@
 mod counter;
 
 use counter::AsyncCounter;
-use mrvm_aux::display::NumberDisplay;
-use mrvm_aux::storage::BootRom;
-use mrvm_aux::volatile_mem::Ram;
-use mrvm_tools::debug::{exec_vm, RunConfig};
-use mrvm_tools::lasm::assemble_words;
+use lrvm_aux::display::NumberDisplay;
+use lrvm_aux::storage::BootRom;
+use lrvm_aux::volatile_mem::Ram;
+use lrvm_tools::debug::{exec_vm, RunConfig};
+use lrvm_tools::lasm::assemble_words;
 use rand::Rng;
 
 fn main() {

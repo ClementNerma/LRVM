@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "mrvm",
-    "mrvm_aux",
-    "mrvm_tools",
+    "lrvm",
+    "lrvm_aux",
+    "lrvm_tools",
     "examples/minimal",
     "examples/hello_world",
     "examples/elapsed_time",
