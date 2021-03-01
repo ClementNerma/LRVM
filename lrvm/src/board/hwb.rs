@@ -30,7 +30,12 @@ impl AuxWithCache {
     pub fn create_from_aux(id: usize, shared_bus: Rc<RefCell<Box<dyn Bus>>>) -> Self {
         let bus = shared_bus.borrow();
 
-        let name = bus.name().chars().take(32).collect::<String>();
+        let mut name = bus.name().to_string();
+
+        while name.bytes().count() > 32 {
+            name.pop();
+        }
+
         let metadata = bus.metadata();
         let hw_id = ((metadata[0] as u64) << 32) + metadata[1] as u64;
         let size = metadata[2];

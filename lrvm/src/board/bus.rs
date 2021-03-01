@@ -6,7 +6,7 @@
 /// All components must implement this type in order to be connected to the motherboard.
 pub trait Bus {
     /// Get the component's generic name.
-    /// Any name longer than 32 bytes will be cut to 32.
+    /// Any name longer than 32 bytes will be cut from the right to the maximum length not exceeding 32 bytes in size.
     fn name(&self) -> &'static str;
 
     /// Get the component's metadata.
