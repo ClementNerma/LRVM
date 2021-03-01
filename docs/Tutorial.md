@@ -17,6 +17,7 @@ The final code can be found in the [`examples/hello_world`](../examples/hello_wo
 - [5. Tips & traps](#5-tips--traps)
   - [Supervisor vs Userland](#supervisor-vs-userland)
   - [The stack pointer](#the-stack-pointer)
+- [6. Next?](#6-next)
 
 ## 0. Preparing a Rust project
 
@@ -846,3 +847,9 @@ By default, the stack points to the `0x00000000` address, which is often the Boo
 The other trap is that pushing a value to the stack (with `PUSH` or `CALL`) doesn't increase the stack pointer by a word like you would expect, but instead _decreases_ it. This means that, if `ssp` is set to `0x2000`, pushing to it will update the register to `0x1FFD` and not `0x2004`. The same applies, in the reverse order, for popping values (with `POP` or `RET`).
 
 Finally, when pushing / popping a value to / from the stack, the stack pointer is updated _before_ performing the operation. This means that setting `ssp` to `0x2000` and pushing a value will write it to `0x1FFD` instead of `0x2000`. This may seem strange at first but is in reality very pratictal, as it usually allows you to set the stack pointer to a round address. For instance, if you have a RAM component mapped from `0x0000` with a length of `0x2000`, it will go up to `0x1FFD`, which means you'll set your stack pointer to `0x2000`.
+
+## 6. Next?
+
+After completing this tutorial, you can take a look at the [architecture document](Architecture.md), which describes exactly how the VM works: the registers, all LASM instructions, the MMU, etc.
+
+You may also check the [hardware document](Hardware.md) to learn how to make custom auxiliary components. It contains a small tutorial on how to make an basic asynchronous clock component.
