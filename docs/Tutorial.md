@@ -871,6 +871,8 @@ Note that halting the CPU **does not** reset it! Reset is only needed to make th
 
 Some components may run some tasks in the background, which _won't be stopped_ when halting. The components need to be dropped for them to be cleaned up (if they have a correct cleanup code), which needs to drop the motherboard instance.
 
+The motherboard also exposes a `drop()` method to drop it directly.
+
 ## 6. Next?
 
 After completing this tutorial, you can take a look at the [architecture document](Architecture.md), which describes exactly how the VM works: the registers, all LASM instructions, the MMU, etc.

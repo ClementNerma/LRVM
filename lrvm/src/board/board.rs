@@ -70,4 +70,9 @@ impl MotherBoard {
     pub fn count(&self) -> usize {
         self.aux.len()
     }
+
+    /// Drop the motherboard
+    pub fn drop(self) {
+        std::mem::drop(self)
+    }
 }
