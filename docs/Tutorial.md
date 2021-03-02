@@ -19,6 +19,7 @@ The final code can be found in the [`examples/hello_world`](../examples/hello_wo
   - [The stack pointer](#the-stack-pointer)
   - [Debugging values](#debugging-values)
   - [Resetting](#resetting)
+  - [Dropping components](#dropping-components)
 - [6. Next?](#6-next)
 
 ## 0. Preparing a Rust project
@@ -865,6 +866,10 @@ Resetting a component is, if the component handles the signal correctly, set it 
 It's also possible to reset the motherboard using the same method name, which will reset the CPU as well as every single auxiliary components.
 
 Note that halting the CPU **does not** reset it! Reset is only needed to make the CPU start again after halting, or to make it start for the first time after the VM was created, but halting is not resetting!
+
+### Dropping components
+
+Some components may run some tasks in the background, which _won't be stopped_ when halting. The components need to be dropped for them to be cleaned up (if they have a correct cleanup code), which needs to drop the motherboard instance.
 
 ## 6. Next?
 
