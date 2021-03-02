@@ -1,7 +1,8 @@
 use lrvm::board::Bus;
 use lrvm_tools::exceptions::AuxHwException;
 use lrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
-use std::sync::{Arc, RwLock};
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
@@ -9,13 +10,13 @@ use std::time::Duration;
 /// The counter is incremented each second, asynchronously.
 pub struct AsyncCounter {
     hw_id: u64,
-    counter: Arc<RwLock<u32>>,
+    counter: Arc<AtomicU32>,
 }
 
 impl AsyncCounter {
     pub fn new(hw_id: u64) -> Self {
         // Create a shared counter
-        let counter = Arc::new(RwLock::new(0));
+        let counter = Arc::new(AtomicU32::new(0));
 
         // Clone its lock to use it from another thread
         let thread_counter = Arc::clone(&counter);
@@ -25,7 +26,7 @@ impl AsyncCounter {
             // Forever, wait for 1 second...
             thread::sleep(Duration::from_millis(1000));
             // ...and then increment the counter
-            *(thread_counter.write().unwrap()) += 1;
+            thread_counter.fetch_add(1, Ordering::SeqCst);
         });
 
         // Return the component
@@ -47,7 +48,7 @@ impl Bus for AsyncCounter {
     // Read an address inside the component
     // There is only one possible address here, so we don't have to worry about its value
     fn read(&mut self, _addr: u32, _ex: &mut u16) -> u32 {
-        *(self.counter.read().unwrap())
+        self.counter.load(Ordering::SeqCst)
     }
 
     // Write an address inside the component
@@ -58,6 +59,6 @@ impl Bus for AsyncCounter {
 
     // Reset the component
     fn reset(&mut self) {
-        *(self.counter.write().unwrap()) = 0;
+        self.counter.store(0, Ordering::SeqCst);
     }
 }

@@ -4,6 +4,8 @@
 - [Bus interface](#bus-interface)
 - [Metadata](#metadata)
 - [Example program](#example-program)
+  - [1. Basics](#1-basics)
+  - [2. Bus implementation](#2-bus-implementation)
 
 Virtual hardware (named _auxiliary components_) can be connected to the motherboard, communicating through a _bus_.
 
@@ -48,6 +50,8 @@ Note that the size should NEVER change after the component's creation. The size 
 
 ## Example program
 
+### 1. Basics
+
 Below is an advanced example of an asynchronous Rust component, acting as a realtime clock for counting seconds elapsed since the VM started.
 
 This example is taken from the [`AsyncCounter`](../examples/async_hw/src/counter.rs) component from the [`async_hw`](../examples/async_hw/) example.
@@ -55,11 +59,12 @@ This example is taken from the [`AsyncCounter`](../examples/async_hw/src/counter
 We first declare our component:
 
 ```rust
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use std::sync::atomic::AtomicU32;
 
 pub struct AsyncCounter {
     hw_id: u64,
-    counter: Arc<RwLock<u32>>,
+    counter: Arc<AtomicU32>,
 }
 ```
 
@@ -70,7 +75,7 @@ Conventionally, the ID generation is left to the user, so we'll make this counte
 ```rust
 impl AsyncCounter {
     pub fn new(hw_id: u64) -> Self {
-        Self { hw_id, counter: todo!() }
+        Self { hw_id, counter: Arc::default() }
     }
 }
 ```
@@ -81,11 +86,12 @@ Now we have to make our asynchronous counter. For that, we're going to create a 
 // ...
 use std::thread;
 use std::time::Duration;
+use std::sync::atomic::Ordering;
 
 // ...
     pub fn new(hw_id: u64) -> Self {
         // Create a shared counter
-        let counter = Arc::new(RwLock::new(0));
+        let counter = Arc::new(AtomicU32::new(0));
 
         // Clone its lock to use it from another thread
         let thread_counter = Arc::clone(&counter);
@@ -95,13 +101,15 @@ use std::time::Duration;
             // Forever, wait for 1 second...
             thread::sleep(Duration::from_millis(1000));
             // ...and then increment the counter
-            *(thread_counter.write().unwrap()) += 1;
+            thread_counter.fetch_add(1, Ordering::SeqCst);
         });
 
         // Return the component
         Self { hw_id, counter }
     }
 ```
+
+### 2. Bus implementation
 
 Well done! Now, we have to make this component pluggable into our VM. For that, we have to implement the `lrvm::board::Bus` trait on it:
 
@@ -195,7 +203,7 @@ As our component is a single-word one (4 bytes), we don't have to care about the
 ```rust
     // ...
     fn read(&mut self, _addr: u32, _ex: &mut u16) -> u32 {
-        *(self.counter.read().unwrap())
+        self.counter.load(Ordering::SeqCst)
     }
     // ...
 ```
@@ -221,20 +229,12 @@ Its goal is to reset the component's state like it was when it was initially cre
 ```rust
     // ...
     fn reset(&mut self) {
-        *(self.counter.write().unwrap()) = 0;
+        self.counter.store(0, Ordering::SeqCst);
     }
     // ...
 ```
 
-Ideally, we should even reset the thread itself, as when we'll reset a new second, the thread will increment less than one second later. But that would involve messages passing, which is beyong this tutorial, so we'll simply stick with:
-
-```rust
-    // ...
-    fn reset(&mut self) {
-        *(self.counter.write().unwrap()) = 0;
-    }
-    // ...
-```
+Ideally, we should even reset the thread itself, as when we'll reset a new second, the thread will increment less than one second later. But that would involve messages passing, which is a bit more complicated so we'll see it in the next section. Also, components should never start when instanciated, only when they receive their first RESET signal (when `reset` is called for the first time).
 
 We did it! Here is our component's complete code (with unused arguments prefixed with `_` for the linter):
 
@@ -242,7 +242,8 @@ We did it! Here is our component's complete code (with unused arguments prefixed
 use lrvm::board::Bus;
 use lrvm_tools::exceptions::AuxHwException;
 use lrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::thread;
 use std::time::Duration;
 
@@ -250,13 +251,13 @@ use std::time::Duration;
 /// The counter is incremented each second, asynchronously.
 pub struct AsyncCounter {
     hw_id: u64,
-    counter: Arc<RwLock<u32>>,
+    counter: Arc<AtomicU32>,
 }
 
 impl AsyncCounter {
     pub fn new(hw_id: u64) -> Self {
         // Create a shared counter
-        let counter = Arc::new(RwLock::new(0));
+        let counter = Arc::new(AtomicU32::new(0));
 
         // Clone its lock to use it from another thread
         let thread_counter = Arc::clone(&counter);
@@ -266,7 +267,7 @@ impl AsyncCounter {
             // Forever, wait for 1 second...
             thread::sleep(Duration::from_millis(1000));
             // ...and then increment the counter
-            *(thread_counter.write().unwrap()) += 1;
+            thread_counter.fetch_add(1, Ordering::SeqCst);
         });
 
         // Return the component
@@ -288,7 +289,7 @@ impl Bus for AsyncCounter {
     // Read an address inside the component
     // There is only one possible address here, so we don't have to worry about its value
     fn read(&mut self, _addr: u32, _ex: &mut u16) -> u32 {
-        *(self.counter.read().unwrap())
+        self.counter.load(Ordering::SeqCst)
     }
 
     // Write an address inside the component
@@ -299,7 +300,7 @@ impl Bus for AsyncCounter {
 
     // Reset the component
     fn reset(&mut self) {
-        *(self.counter.write().unwrap()) = 0;
+        self.counter.store(0, Ordering::SeqCst);
     }
 }
 ```
