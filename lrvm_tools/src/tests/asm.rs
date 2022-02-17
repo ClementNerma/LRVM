@@ -64,7 +64,7 @@ fn asm_conversion() {
         );
     }
 
-    for i in 0..lasm.iter().count() {
+    for i in 0..lasm.len() {
         if lasm[i] != assembled[i] {
             panic!("Assembled program differs from expected one.\nExpected: {}\nGot     : {}\nAt line {}.", assembled[i], lasm[i], i + 1);
         }

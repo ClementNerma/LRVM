@@ -52,7 +52,7 @@ impl Instr {
             };
 
             (
-                move |param: usize| _decode_reg(param),
+                _decode_reg,
                 move |param: usize| {
                     if bytes[0] & (1 << (3 - param)) == 0 {
                         Ok(RegOrLit1::lit(bytes[param]))

@@ -121,7 +121,7 @@ fn main() {
     .0;
 
     // We read the memory from inside this handler as the mapped memory object cannot be moved out of the motherboard instance.
-    motherboard.map(|mut mem| {
+    motherboard.map(|mem| {
         // Address of the data RAM
         let ram_addr = 0x1000;
 
@@ -152,7 +152,7 @@ fn main() {
                 aux_addr
             );
 
-            let component = decode_component(&mut mem, aux_addr).unwrap_or_else(|err| panic!("{}", err));
+            let component = decode_component(mem, aux_addr).unwrap_or_else(|err| panic!("{}", err));
 
             println!("> UID      : {:#018X}", component.uid);
             println!("> Name     : {}", component.name);
