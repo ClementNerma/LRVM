@@ -57,14 +57,14 @@ macro_rules! declare_val {
                 }
             }
 
-            /// Convert the value to its LASM representation  
+            /// Convert the value to its LASM representation
             /// Represent literals as signed numbers
             pub fn to_lasm_signed(self) -> String {
                 match self {
                     Self::Reg(reg) => reg.name().to_string(),
                     Self::Lit(num) => match num as $inum {
-                        num @ std::$inum::MIN..=-1 => format!("-{:#X}", -num),
-                        num @ 0..=std::$inum::MAX => format!("{:#X}", num),
+                        num @ $inum::MIN..=-1 => format!("-{:#X}", -num),
+                        num @ 0..=$inum::MAX => format!("{:#X}", num),
                     },
                 }
             }

@@ -26,7 +26,7 @@ impl MotherBoard {
             .collect::<Vec<_>>();
 
         assert!(
-            aux.len() <= std::u32::MAX as usize,
+            aux.len() <= u32::MAX as usize,
             "Cannot connect more than 2^32 components!"
         );
 

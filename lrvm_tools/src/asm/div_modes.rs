@@ -115,9 +115,9 @@ impl DivByZeroMode {
     pub fn result(self) -> u32 {
         match self {
             Self::Forbid => 0,
-            Self::EqToMin => std::i32::MIN as u32,
+            Self::EqToMin => i32::MIN as u32,
             Self::EqToZero => 0,
-            Self::EqToMax => std::i32::MAX as u32,
+            Self::EqToMax => i32::MAX as u32,
         }
     }
 }
@@ -191,9 +191,9 @@ impl DivOverflowMode {
     pub fn result(self) -> u32 {
         match self {
             Self::Forbid => 0,
-            Self::EqToMin => std::i32::MIN as u32,
+            Self::EqToMin => i32::MIN as u32,
             Self::EqToZero => 0,
-            Self::EqToMax => std::i32::MAX as u32,
+            Self::EqToMax => i32::MAX as u32,
         }
     }
 }

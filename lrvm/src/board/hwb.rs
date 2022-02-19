@@ -70,7 +70,7 @@ impl HardwareBridge {
                 .enumerate()
                 .map(|(id, shared_bus)| {
                     assert!(
-                        id < std::u32::MAX as usize,
+                        id < u32::MAX as usize,
                         "Hardware bridge cannot handle more than 2^32 components!"
                     );
 
