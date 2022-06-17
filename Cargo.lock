@@ -90,7 +90,7 @@ dependencies = [
 [[package]]
 name = "customasm"
 version = "0.11.14"
-source = "git+https://github.com/hlorenzi/customasm.git?branch=main#cc0572130b311950083a3d26187c689aef6a3997"
+source = "git+https://github.com/hlorenzi/customasm.git?tag=v0.11.14#efa079edbc13217acb4b1b12f6f15e0419e5b10e"
 dependencies = [
  "getopts",
  "num-bigint",
