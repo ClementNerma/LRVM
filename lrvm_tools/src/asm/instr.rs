@@ -377,7 +377,7 @@ impl Instr {
             (opcode << 3)
                 + if is_reg[0] { 1 << 2 } else { 0 }
                 + if is_reg[1] { 1 << 1 } else { 0 }
-                + if is_reg[2] { 1 } else { 0 },
+                + u8::from(is_reg[2]),
             params[0],
             params[1],
             params[2],

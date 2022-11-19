@@ -881,13 +881,8 @@ impl Cpu {
             0x25 => cache.metadata[7],
 
             // Check if the component is mapped in memory
-            0xA0 => {
-                if mapping_opt.is_some() {
-                    1
-                } else {
-                    0
-                }
-            }
+            0xA0 => u32::from(mapping_opt.is_some()),
+
             // Mapping's start address
             0xA1 => {
                 mapping_opt

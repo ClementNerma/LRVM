@@ -46,7 +46,7 @@ fn decode_component(mem: &mut MappedMemory, aux_addr: u32) -> Result<Component, 
     let uid = ((read(aux_addr)? as u64) << 32) + read(aux_addr + 0x04)? as u64;
 
     // Get the component's name
-    let name = String::from_utf8_lossy(&words_to_bytes(&[
+    let name = String::from_utf8_lossy(&words_to_bytes([
         read(aux_addr + 0x08)?,
         read(aux_addr + 0x0C)?,
         read(aux_addr + 0x10)?,

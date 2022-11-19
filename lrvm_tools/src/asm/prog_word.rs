@@ -20,11 +20,11 @@ impl ProgramWord {
     }
 
     pub fn is_instr(&self) -> bool {
-        return matches!(self, Self::Instr(_));
+        matches!(self, Self::Instr(_))
     }
 
     pub fn is_raw(&self) -> bool {
-        return matches!(self, Self::Raw(_));
+        matches!(self, Self::Raw(_))
     }
 
     pub fn encode(&self) -> [u8; 4] {

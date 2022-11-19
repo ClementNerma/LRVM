@@ -45,7 +45,7 @@ impl DeviceMetadata {
 
     pub fn encode(&self) -> [u32; 8] {
         let mut words = [0; 8];
-        words.copy_from_slice(&bytes_to_words(&self.to_bytes()));
+        words.copy_from_slice(&bytes_to_words(self.to_bytes()));
         words
     }
 }

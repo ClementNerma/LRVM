@@ -32,7 +32,7 @@ impl AuxWithCache {
 
         let mut name = bus.name().to_string();
 
-        while name.bytes().count() > 32 {
+        while name.len() > 32 {
             name.pop();
         }
 

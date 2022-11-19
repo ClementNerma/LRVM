@@ -5,7 +5,7 @@ pub fn bytes_to_words(bytes: impl AsRef<[u8]>) -> Vec<u32> {
     let bytes = bytes.as_ref();
 
     let rem = bytes.len() % 4;
-    let mut words = Vec::with_capacity(bytes.len() / 4 + if rem == 0 { 1 } else { 0 });
+    let mut words = Vec::with_capacity(bytes.len() / 4 + usize::from(rem == 0));
     let mut word = 0;
 
     for (i, byte) in bytes.iter().enumerate() {
@@ -29,7 +29,6 @@ pub fn words_to_bytes(bytes: impl AsRef<[u32]>) -> Vec<u8> {
     bytes
         .as_ref()
         .iter()
-        .map(|word| word.to_be_bytes().to_vec())
-        .flatten()
+        .flat_map(|word| word.to_be_bytes().to_vec())
         .collect()
 }
