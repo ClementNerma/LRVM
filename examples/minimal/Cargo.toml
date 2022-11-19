@@ -2,7 +2,7 @@
 name = "minimal"
 version = "0.1.0"
 authors = ["Clément Nerma <clement.nerma@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 lrvm_aux = { path = "../../lrvm_aux" }

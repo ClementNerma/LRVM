@@ -2,6 +2,6 @@
 name = "lrvm"
 version = "0.2.1"
 authors = ["Clément Nerma <clement.nerma@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
