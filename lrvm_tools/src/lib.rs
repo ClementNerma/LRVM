@@ -1,7 +1,7 @@
 //! This crates contains a set of tools to deal more easily with LRVM, including a full-powered assembler.
 
 #![forbid(unsafe_code)]
-#![deny(unused_must_use)]
+#![forbid(unused_must_use)]
 #![allow(clippy::module_inception)]
 #![allow(clippy::wrong_self_convention)]
 #![allow(clippy::result_unit_err)]

@@ -3,7 +3,7 @@
 //! Auxiliary components can be connected to the motherboard through a [`Bus`] interface.
 
 #![forbid(unsafe_code)]
-#![deny(unused_must_use)]
+#![forbid(unused_must_use)]
 #![allow(clippy::module_inception)]
 
 pub mod board;

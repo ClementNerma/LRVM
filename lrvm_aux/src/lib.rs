@@ -1,7 +1,7 @@
 //! This crate contains a set of auxiliary components to connect to the virtual motherboard.
 
 #![forbid(unsafe_code)]
-#![deny(unused_must_use)]
+#![forbid(unused_must_use)]
 #![allow(clippy::len_without_is_empty)]
 
 // Re-export the LRVM crate
