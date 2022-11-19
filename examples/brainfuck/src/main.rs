@@ -1,4 +1,4 @@
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use crossterm::terminal;
 use lrvm_aux::display::{BufferedDisplay, CharDisplay, NumberDisplay};
 use lrvm_aux::keyboard::{SyncCharKeyboard, SyncLineKeyboard};
@@ -47,6 +47,8 @@ fn main() {
                 if let Event::Key(KeyEvent {
                     code: KeyCode::Char(c),
                     modifiers: _,
+                    kind: KeyEventKind::Release,
+                    state: _,
                 }) = event::read().unwrap()
                 {
                     break c;
