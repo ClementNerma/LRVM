@@ -1,8 +1,8 @@
-use std::convert::TryFrom;
+use super::Registers;
 use crate::board::HardwareBridge;
 use crate::mem::MappedMemory;
-use crate::mmu::{Mmu, MemAction};
-use super::Registers;
+use crate::mmu::{MemAction, Mmu};
+use std::convert::TryFrom;
 
 /// Central Processing Unit (CPU)
 pub struct Cpu {
@@ -19,7 +19,7 @@ pub struct Cpu {
     /// Is the CPU halted?
     halted: bool,
     /// (Internal) Did the current cycle change the PC register?
-    _cycle_changed_pc: bool
+    _cycle_changed_pc: bool,
 }
 
 impl Cpu {
@@ -32,7 +32,7 @@ impl Cpu {
             hwb,
             cycles: 0,
             halted: true,
-            _cycle_changed_pc: false
+            _cycle_changed_pc: false,
         };
 
         // Enable supervisor mode by default
@@ -58,7 +58,7 @@ impl Cpu {
     pub fn next(&mut self) {
         // Do not run if the CPU is halted
         if self.halted {
-            return ;
+            return;
         }
 
         // Cycle goes back to 0 when overflowing
@@ -67,13 +67,17 @@ impl Cpu {
         // Get the instruction to run
         let instr = match self.mem_exec(self.regs.pc) {
             Err(_) => return,
-            Ok(bytes) => bytes.to_be_bytes()
+            Ok(bytes) => bytes.to_be_bytes(),
         };
 
         // Get its opcode (5 first bits of the first byte)
         let opcode = instr[0] >> 3;
         // Determine which parameters are registers by reading the 3 last bits of the first byte
-        let opregs = [instr[0] & 0b100 != 0, instr[0] & 0b10 != 0, instr[0] & 0b1 != 0];
+        let opregs = [
+            instr[0] & 0b100 != 0,
+            instr[0] & 0b10 != 0,
+            instr[0] & 0b1 != 0,
+        ];
         // Get the instruction's parameters
         let params = [instr[1], instr[2], instr[3]];
 
@@ -82,7 +86,7 @@ impl Cpu {
 
         // Run the decoded instruction
         if self.run_instr(opcode, opregs, params).is_err() {
-            return
+            return;
         }
 
         // By default, the program counter (located in the PC register) is incremented of 4 bytes to make the CPU retrieve the next instruction
@@ -114,23 +118,61 @@ impl Cpu {
         // 'REG_OR_LIT_1' = parameter is either a register or a 1-byte literal
         // 'REG_OR_LIT_2' = parameter is either a register or a 2-bytes literal
         macro_rules! args {
-            (REG) => { params[0] };
-            (REG_OR_LIT_1) => { __reg_or_lit!(0, 1) };
-            (REG_OR_LIT_2) => { __reg_or_lit!(0, 2) };
-            (REG, REG) => { (params[0], params[1]) };
-            (REG, REG_OR_LIT_1) => { (params[0], __reg_or_lit!(1, 1)) };
-            (REG, REG_OR_LIT_2) => { (params[0], __reg_or_lit!(1, 2)) };
-            (REG_OR_LIT_1, REG) => { (__reg_or_lit!(0, 1), params[1]) };
-            (REG_OR_LIT_1, REG_OR_LIT_1) => { (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1)) };
-            (REG_OR_LIT_1, REG_OR_LIT_2) => { (__reg_or_lit!(0, 1), __reg_or_lit!(1, 2)) };
-            (REG, REG, REG) => { (params[0], params[1], params[2]) };
-            (REG, REG, REG_OR_LIT_1) => { (params[0], params[1], __reg_or_lit!(2, 1)) };
-            (REG, REG_OR_LIT_1, REG) => { (params[0], __reg_or_lit!(1, 1), params[2]) };
-            (REG, REG_OR_LIT_1, REG_OR_LIT_1) => { (params[0], __reg_or_lit!(1, 1), __reg_or_lit!(2, 1)) };
-            (REG_OR_LIT_1, REG, REG) => { (__reg_or_lit!(0, 1), params[1], params[2]) };
-            (REG_OR_LIT_1, REG, REG_OR_LIT_1) => { (__reg_or_lit!(0, 1), params[1], __reg_or_lit!(2, 1)) };
-            (REG_OR_LIT_1, REG_OR_LIT_1, REG) => { (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1), params[2]) };
-            (REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1) => { (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1), __reg_or_lit!(2, 1)) };
+            (REG) => {
+                params[0]
+            };
+            (REG_OR_LIT_1) => {
+                __reg_or_lit!(0, 1)
+            };
+            (REG_OR_LIT_2) => {
+                __reg_or_lit!(0, 2)
+            };
+            (REG, REG) => {
+                (params[0], params[1])
+            };
+            (REG, REG_OR_LIT_1) => {
+                (params[0], __reg_or_lit!(1, 1))
+            };
+            (REG, REG_OR_LIT_2) => {
+                (params[0], __reg_or_lit!(1, 2))
+            };
+            (REG_OR_LIT_1, REG) => {
+                (__reg_or_lit!(0, 1), params[1])
+            };
+            (REG_OR_LIT_1, REG_OR_LIT_1) => {
+                (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1))
+            };
+            (REG_OR_LIT_1, REG_OR_LIT_2) => {
+                (__reg_or_lit!(0, 1), __reg_or_lit!(1, 2))
+            };
+            (REG, REG, REG) => {
+                (params[0], params[1], params[2])
+            };
+            (REG, REG, REG_OR_LIT_1) => {
+                (params[0], params[1], __reg_or_lit!(2, 1))
+            };
+            (REG, REG_OR_LIT_1, REG) => {
+                (params[0], __reg_or_lit!(1, 1), params[2])
+            };
+            (REG, REG_OR_LIT_1, REG_OR_LIT_1) => {
+                (params[0], __reg_or_lit!(1, 1), __reg_or_lit!(2, 1))
+            };
+            (REG_OR_LIT_1, REG, REG) => {
+                (__reg_or_lit!(0, 1), params[1], params[2])
+            };
+            (REG_OR_LIT_1, REG, REG_OR_LIT_1) => {
+                (__reg_or_lit!(0, 1), params[1], __reg_or_lit!(2, 1))
+            };
+            (REG_OR_LIT_1, REG_OR_LIT_1, REG) => {
+                (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1), params[2])
+            };
+            (REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1) => {
+                (
+                    __reg_or_lit!(0, 1),
+                    __reg_or_lit!(1, 1),
+                    __reg_or_lit!(2, 1),
+                )
+            };
         }
 
         // Decode a register-or-literal parameter
@@ -269,7 +311,7 @@ impl Cpu {
                 }
 
                 let is_flag_set = (self.regs.af & (1 << (7 - flag))) != 0;
-                
+
                 if is_flag_set != (opcode == 0x11) {
                     self.regs.pc = self.regs.pc.wrapping_add(4);
                 }
@@ -299,7 +341,7 @@ impl Cpu {
                 if !result {
                     self.regs.pc = self.regs.pc.wrapping_add(4);
                 }
-                
+
                 Ok(())
             },
 
@@ -351,7 +393,7 @@ impl Cpu {
                 let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
 
                 self.mem_write(stack_v_addr, word)?;
-                
+
                 if self.sv_mode() {
                     self.regs.ssp = stack_v_addr;
                 } else {
@@ -385,7 +427,7 @@ impl Cpu {
                 let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
 
                 self.mem_write(stack_v_addr, self.regs.pc + 4)?;
-                
+
                 if self.sv_mode() {
                     self.regs.ssp = stack_v_addr;
                 } else {
@@ -397,7 +439,7 @@ impl Cpu {
 
                 Ok(())
             },
-            
+
             // HWD
             0x1C => {
                 let (reg_dest, aux_id, hw_info) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
@@ -408,7 +450,7 @@ impl Cpu {
 
                 let aux_id = usize::try_from(aux_id)
                     .map_err(|_| self.exception(0x10, Some(aux_id as u16)))?;
-                
+
                 let hw_data = self.get_hw_info(hw_info, aux_id)?;
 
                 self.write_reg(reg_dest, hw_data)
@@ -446,7 +488,7 @@ impl Cpu {
                     0x1 => {
                         let id = usize::try_from(self.regs.avr)
                             .map_err(|_| self.exception(0x10, Some(self.regs.avr as u16)))?;
-                        
+
                             self.hwb.reset(id)
                                 .ok_or_else(|| self.exception(0x10, Some(self.regs.avr as u16)))?;
                     },
@@ -530,12 +572,12 @@ impl Cpu {
 
         if code >= 0x17 && !self.sv_mode() {
             self.exception(0x04, Some(code.into()));
-            return Err(())
+            return Err(());
         }
 
         if code == 0x17 || code == 0x1A || code == 0x1B {
             self.exception(0x04, Some(code.into()));
-            return Err(())
+            return Err(());
         }
 
         // If we change PC, indicate it has been changed to the CPU won't jump 4 bytes ahead.
@@ -561,10 +603,10 @@ impl Cpu {
             0x1F => self.regs.smt = word,
             _ => {
                 self.exception(0x02, Some(code.into()));
-                return Err(())
+                return Err(());
             }
         }
-        
+
         Ok(())
     }
 
@@ -578,17 +620,17 @@ impl Cpu {
             Op::Add => {
                 let (result, has_carry) = op1.overflowing_add(op2);
                 (result, has_carry, iop1.overflowing_add(iop2).1)
-            },
+            }
 
             Op::Sub => {
                 let (result, has_carry) = op1.overflowing_sub(op2);
                 (result, has_carry, iop1.overflowing_sub(iop2).1)
-            },
+            }
 
             Op::Mul => {
                 let (result, has_carry) = iop1.overflowing_mul(iop2);
                 (result as u32, has_carry, has_carry)
-            },
+            }
 
             // This one is a bit tricky
             Op::Div { mode } | Op::Mod { mode } => {
@@ -601,15 +643,15 @@ impl Cpu {
                         // Forbid
                         0b00 => {
                             self.exception(0x0A, None);
-                            return Err(())
-                        },
+                            return Err(());
+                        }
                         // Result in the minimum signed value
                         0b01 => (0x8000_0000, true, true),
                         // Result in zero
                         0b10 => (0x0000_0000, true, true),
                         // Result in the maximum signed value
                         0b11 => (0x7FFF_FFFF, true, true),
-                        _ => unreachable!()
+                        _ => unreachable!(),
                     },
 
                     // Minimum signed value divided / moduled by -1 (overflowing multiplication)
@@ -617,15 +659,15 @@ impl Cpu {
                         // Forbid
                         0b00 => {
                             self.exception(0x0B, None);
-                            return Err(())
-                        },
+                            return Err(());
+                        }
                         // Result in the minimum signed value
                         0b01 => (0x8000_0000, true, true),
                         // Result in zero
                         0b10 => (0x0000_0000, true, true),
                         // Result in the maximum signed value
                         0b11 => (0x7FFF_FFFF, true, true),
-                        _ => unreachable!()
+                        _ => unreachable!(),
                     },
 
                     // Safe unsigned division
@@ -638,9 +680,9 @@ impl Cpu {
                     (true, false, _, _) => (op1 / op2, false, false),
 
                     // Safe signed modulus
-                    (false, false, _, _) => (op1 % op2, false, false)
+                    (false, false, _, _) => (op1 % op2, false, false),
                 }
-            },
+            }
 
             Op::And => (op1 & op2, false, false),
 
@@ -651,14 +693,14 @@ impl Cpu {
             Op::Shl => {
                 let (result, has_carry) = op1.overflowing_shl(op2);
                 (result, has_carry, has_carry)
-            },
+            }
 
             Op::Shr => {
                 let (result, has_carry) = op1.overflowing_shr(op2);
                 (result, has_carry, has_carry)
             }
         };
-        
+
         // => Compute and assign arithmetic flags to the `af` register
 
         self.regs.af = 0;
@@ -677,7 +719,7 @@ impl Cpu {
             // Zero-Upper Flag
             result <= 0xFFFF,
             // Zero-Lower Flag
-            (result >> 16).trailing_zeros() == 0
+            (result >> 16).trailing_zeros() == 0,
         ];
 
         for (bit, flag) in flags.iter().enumerate() {
@@ -698,10 +740,9 @@ impl Cpu {
     /// Returns the related exception object.
     fn exception(&mut self, code: u8, associated: Option<u16>) {
         // Assign the Exception Type `et` register.
-        self.regs.et =
-            (if self.sv_mode() { 1 << 24 } else { 0 }) +
-            (u32::from(code) << 16) +
-            u32::from(associated.unwrap_or(0));
+        self.regs.et = (if self.sv_mode() { 1 << 24 } else { 0 })
+            + (u32::from(code) << 16)
+            + u32::from(associated.unwrap_or(0));
 
         // Jump to the Exception Vector address
         self.regs.pc = self.regs.ev;
@@ -731,10 +772,18 @@ impl Cpu {
     /// * A mutable reference to the exception variable
     ///
     /// The handler is expected to return a value (of any type), which will be turned into an Err() if an exception occurred.
-    fn mem_do<T>(&mut self, action: MemAction, v_addr: u32, handler: &mut dyn FnMut(&mut MappedMemory, u32, &mut u16) -> T) -> Result<T, ()> {
+    fn mem_do<T>(
+        &mut self,
+        action: MemAction,
+        v_addr: u32,
+        handler: &mut dyn FnMut(&mut MappedMemory, u32, &mut u16) -> T,
+    ) -> Result<T, ()> {
         let v_addr = self.ensure_aligned(v_addr)?;
-        
-        match self.mmu.translate(&mut self.mem, &self.regs, v_addr, action) {
+
+        match self
+            .mmu
+            .translate(&mut self.mem, &self.regs, v_addr, action)
+        {
             Ok(p_addr) => {
                 let mut ex = 0;
                 let ret = handler(&mut self.mem, p_addr, &mut ex);
@@ -745,12 +794,12 @@ impl Cpu {
                 } else {
                     Ok(ret)
                 }
-            },
+            }
 
             Err(None) => {
                 self.exception(0x06, Some(v_addr as u16));
                 Err(())
-            },
+            }
 
             Err(Some(ex)) => {
                 self.exception(0xA0, Some(ex));
@@ -762,27 +811,35 @@ impl Cpu {
     /// Read an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept reading this address in the current mode.
     fn mem_read(&mut self, v_addr: u32) -> Result<u32, ()> {
-        self.mem_do(MemAction::Read, v_addr, &mut |mem, p_addr, ex| mem.read(p_addr, ex))
+        self.mem_do(MemAction::Read, v_addr, &mut |mem, p_addr, ex| {
+            mem.read(p_addr, ex)
+        })
     }
 
     /// Write an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept writing this address in the current mode.
     fn mem_write(&mut self, v_addr: u32, word: u32) -> Result<(), ()> {
-        self.mem_do(MemAction::Write, v_addr, &mut |mem, p_addr, ex| mem.write(p_addr, word, ex))
+        self.mem_do(MemAction::Write, v_addr, &mut |mem, p_addr, ex| {
+            mem.write(p_addr, word, ex)
+        })
     }
 
     /// Execute (read) an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept executing this address in the current mode.
     fn mem_exec(&mut self, v_addr: u32) -> Result<u32, ()> {
-        self.mem_do(MemAction::Exec, v_addr, &mut |mem, p_addr, ex| mem.read(p_addr, ex))
+        self.mem_do(MemAction::Exec, v_addr, &mut |mem, p_addr, ex| {
+            mem.read(p_addr, ex)
+        })
     }
 
     /// Get informations about an auxiliary comopnent, after retrieving its name and raw metadata
     fn get_hw_info(&mut self, hw_info: u32, aux_id: usize) -> Result<u32, ()> {
         // Get the auxiliary component's name and metadata (if it exists) as well as its optional mapping
-        let cache = self.hwb.cache_of(aux_id).cloned().ok_or_else(||
-            self.exception(0x10, Some(aux_id as u16))
-        )?;
+        let cache = self
+            .hwb
+            .cache_of(aux_id)
+            .cloned()
+            .ok_or_else(|| self.exception(0x10, Some(aux_id as u16)))?;
 
         let mapping_opt = self.mem.get_mapping(aux_id).cloned();
 
@@ -808,7 +865,7 @@ impl Cpu {
                     name_bytes.next().unwrap_or(0),
                     name_bytes.next().unwrap_or(0),
                 ])
-            },
+            }
 
             // Component's size
             0x20 => cache.metadata[2],
@@ -824,16 +881,28 @@ impl Cpu {
             0x25 => cache.metadata[7],
 
             // Check if the component is mapped in memory
-            0xA0 => if mapping_opt.is_some() { 1 } else { 0 },
+            0xA0 => {
+                if mapping_opt.is_some() {
+                    1
+                } else {
+                    0
+                }
+            }
             // Mapping's start address
-            0xA1 => mapping_opt.ok_or_else(|| self.exception(0x12, Some(aux_id as u16)))?.addr,
+            0xA1 => {
+                mapping_opt
+                    .ok_or_else(|| self.exception(0x12, Some(aux_id as u16)))?
+                    .addr
+            }
             // Mapping's end address
-            0xA2 => mapping_opt.ok_or_else(|| self.exception(0x12, Some(aux_id as u16)))?.end_addr(),
+            0xA2 => mapping_opt
+                .ok_or_else(|| self.exception(0x12, Some(aux_id as u16)))?
+                .end_addr(),
 
             // Invalid information code
             _ => {
                 self.exception(0x11, Some(hw_info as u16));
-                return Err(())
+                return Err(());
             }
         };
 
@@ -843,4 +912,15 @@ impl Cpu {
 
 /// (Internal) Numeric operation
 #[derive(PartialEq, Debug)]
-enum Op { Add, Sub, Mul, Div { mode: u8 }, Mod { mode: u8 }, And, Bor, Xor, Shl, Shr }
+enum Op {
+    Add,
+    Sub,
+    Mul,
+    Div { mode: u8 },
+    Mod { mode: u8 },
+    And,
+    Bor,
+    Xor,
+    Shl,
+    Shr,
+}

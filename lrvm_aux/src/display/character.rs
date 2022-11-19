@@ -22,11 +22,14 @@ impl CharDisplay {
 
     /// Create a println!-based character display component, tolerating invalid UTF-8 characters ('�' displayed instead)
     pub fn new_print_lossy(hw_id: u64) -> Self {
-        Self::new(Box::new(|result| {
-            print!("{}", result.unwrap_or('�'));
+        Self::new(
+            Box::new(|result| {
+                print!("{}", result.unwrap_or('�'));
 
-            stdout().flush().expect("Failed to flush STDOUT");
-        }), hw_id)
+                stdout().flush().expect("Failed to flush STDOUT");
+            }),
+            hw_id,
+        )
     }
 }
 
