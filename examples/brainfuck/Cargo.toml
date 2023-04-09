@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
-crossterm = "0.25.0"
+crossterm = "0.26.1"
 lrvm = { path = "../../lrvm" }
 lrvm_aux = { path = "../../lrvm_aux" }
 lrvm_tools = { path = "../../lrvm_tools" }
