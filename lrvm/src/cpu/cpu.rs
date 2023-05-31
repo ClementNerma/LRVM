@@ -776,7 +776,7 @@ impl Cpu {
         &mut self,
         action: MemAction,
         v_addr: u32,
-        handler: &mut dyn FnMut(&mut MappedMemory, u32, &mut u16) -> T,
+        mut handler: impl FnMut(&mut MappedMemory, u32, &mut u16) -> T,
     ) -> Result<T, ()> {
         let v_addr = self.ensure_aligned(v_addr)?;
 
@@ -811,7 +811,7 @@ impl Cpu {
     /// Read an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept reading this address in the current mode.
     fn mem_read(&mut self, v_addr: u32) -> Result<u32, ()> {
-        self.mem_do(MemAction::Read, v_addr, &mut |mem, p_addr, ex| {
+        self.mem_do(MemAction::Read, v_addr, |mem, p_addr, ex| {
             mem.read(p_addr, ex)
         })
     }
@@ -819,7 +819,7 @@ impl Cpu {
     /// Write an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept writing this address in the current mode.
     fn mem_write(&mut self, v_addr: u32, word: u32) -> Result<(), ()> {
-        self.mem_do(MemAction::Write, v_addr, &mut |mem, p_addr, ex| {
+        self.mem_do(MemAction::Write, v_addr, |mem, p_addr, ex| {
             mem.write(p_addr, word, ex)
         })
     }
@@ -827,7 +827,7 @@ impl Cpu {
     /// Execute (read) an address in the mapped memory.
     /// Raises an exception if address is unaligned or if the MMU doesn't accept executing this address in the current mode.
     fn mem_exec(&mut self, v_addr: u32) -> Result<u32, ()> {
-        self.mem_do(MemAction::Exec, v_addr, &mut |mem, p_addr, ex| {
+        self.mem_do(MemAction::Exec, v_addr, |mem, p_addr, ex| {
             mem.read(p_addr, ex)
         })
     }
