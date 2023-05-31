@@ -389,7 +389,7 @@ fn main() {
 }
 ```
 
-The `.unwrap()` makes our program panic if an exception occurred. This is better than leaving the VM run in an invalid state, as our program should _not_ generate any exception.
+The `.unwrap()` makes our program panic if an exception occurred. This is better than leaving the VM run in an invalid state, as our program is not supposed to generate any exception - so if one happens, we better look at it.
 
 We now have this code:
 
@@ -425,8 +425,7 @@ If you try to run this program, the VM will run undefinitely and nothing will be
 
 But as we didn't use any exception handling, this will make the CPU jump to the default value of `ev`, which is `0x00000000` - the start address of the BootROM. This is an infinite loop: the CPU reads this address, finds an unknown instruction, jumps to the address provided by `ev`, which is the same that caused the error.
 
-So, let's now prepare our BootROM. First, create in the same directory as your `main.rs` file a source file named `display.lasm`, and put inside the
-assembly program we made.
+So, let's now prepare our BootROM. First, create in the same directory as your `main.rs` file a source file named `display.lasm`, and put inside the assembly program we made.
 
 We'll now be able to call LRVM's assembler to generate machine code from our source file. This can be achieved this way:
 
@@ -522,7 +521,9 @@ We may also add a little code in our `while !cpu.halted() {` loop to indicate, i
 We can simply replace our `cpu.next();` line by:
 
 ```rust
-cpu.next().expect(&format!("Exception occurred at address {:#010X}", cpu.regs.pc));
+    // ...
+    cpu.next().expect(&format!("Exception occurred at address {:#010X}", cpu.regs.pc));
+    // ...
 ```
 
 As the `pc` registers contains the current instruction. But that wouldn't work, as when an exception occurrs, the CPU instantly jumps to the exception vector, so we would always get the `0x00000000` address in our debug output.
@@ -530,8 +531,10 @@ As the `pc` registers contains the current instruction. But that wouldn't work, 
 The solution is to get the value of `pc` _before_ asking the CPU to run the instruction, as the register contains the address of the instruction that is _going to be_ run on the next CPU cycle. Which leads us to the following code:
 
 ```rust
-let was_at = cpu.regs.pc;
-cpu.next().expect(&format!("Exception occurred at address {:#010X}", was_at));
+    // ...
+    let was_at = cpu.regs.pc;
+    cpu.next().expect(&format!("Exception occurred at address {:#010X}", was_at));
+    // ...
 ```
 
 Here is the final code:
@@ -845,11 +848,11 @@ Each mode has its own _stack pointer_, which is used by four instructions: `PUSH
 
 There are three traps when using these instructions:
 
-By default, the stack points to the `0x00000000` address, which is often the BootROM, which will make the writing fail. Think to set the `ssp` (supervisor stack pointer) and if you use the userland mode the `usp` (userland stack pointer) registers at the beginning of your program.
+By default, the stack points to the `0x00000000` address, which is often the BootROM, meaning it will make the writing fail. Think to set the `ssp` (supervisor stack pointer) and if you use the userland mode the `usp` (userland stack pointer) registers at the beginning of your program.
 
 The other trap is that pushing a value to the stack (with `PUSH` or `CALL`) doesn't increase the stack pointer by a word like you would expect, but instead _decreases_ it. This means that, if `ssp` is set to `0x2000`, pushing to it will update the register to `0x1FFD` and not `0x2004`. The same applies, in the reverse order, for popping values (with `POP` or `RET`).
 
-Finally, when pushing / popping a value to / from the stack, the stack pointer is updated _before_ performing the operation. This means that setting `ssp` to `0x2000` and pushing a value will write it to `0x1FFD` instead of `0x2000`. This may seem strange at first but is in reality very pratictal, as it usually allows you to set the stack pointer to a round address. For instance, if you have a RAM component mapped from `0x0000` with a length of `0x2000`, it will go up to `0x1FFD`, which means you'll set your stack pointer to `0x2000`.
+Finally, when pushing / popping a value to / from the stack, the stack pointer is updated _before_ performing the operation. This means that setting `ssp` to `0x2000` and pushing a value will write it to `0x1FFD` instead of `0x2000`. This may seem strange at first but is in reality very pratictal, as it usually allows you to set the stack pointer to a round address. For instance, if you have a RAM component (where you'll typically store your stack) mapped from `0x0000` with a length of `0x2000`, it will go up to `0x1FFD`, which means you'll set your stack pointer to `0x2000`.
 
 ### Debugging values
 
@@ -861,7 +864,7 @@ You can map it as an easy-to-remember address, such as `0xFFFFFF00` for instance
  
 The CPU as well as individual components can be reset using their `.reset()` method. Resetting the CPU will simply halt it, set all its registers to 0 (except `smt` which is set to 1) and reset its cycles counter.
 
-Resetting a component is, if the component handles the signal correctly, set it to the same state it was when it was initially created.
+Resetting a component is, if the component handles the signal correctly, setting it to the same state it was when it was initially created.
 
 It's also possible to reset the motherboard using the same method name, which will reset the CPU as well as every single auxiliary components.
 
@@ -877,4 +880,4 @@ The motherboard also exposes a `drop()` method to drop it directly.
 
 After completing this tutorial, you can take a look at the [architecture document](Architecture.md), which describes exactly how the VM works: the registers, all LASM instructions, the MMU, etc.
 
-You may also check the [hardware document](Hardware.md) to learn how to make custom auxiliary components. It contains a small tutorial on how to make an basic asynchronous clock component.
+You may also check the [hardware document](Hardware.md) to learn how to make custom auxiliary components. It contains a small tutorial on how to make a basic asynchronous clock component.
