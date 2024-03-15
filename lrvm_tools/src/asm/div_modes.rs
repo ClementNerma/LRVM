@@ -19,10 +19,6 @@ pub trait DivSubMode: Sized + Debug + Copy + Clone + PartialEq + Eq {
     /// Encode the sub mode
     fn encode(self) -> u8;
 
-    /// Convert the sub mode to a full division mode.  
-    /// All default
-    fn to_mode(self) -> DivMode;
-
     /// Convert the sub mode to its LASM representation (constant name)
     fn to_lasm(self) -> &'static str;
 }
@@ -67,10 +63,6 @@ impl DivSubMode for DivSignMode {
             Self::Unsigned => cst::DIV_USG,
             Self::Signed => cst::DIV_SIG,
         }
-    }
-
-    fn to_mode(self) -> DivMode {
-        DivMode::from_sub_modes(self, DivByZeroMode::default(), DivOverflowMode::default())
     }
 
     fn to_lasm(self) -> &'static str {
@@ -143,10 +135,6 @@ impl DivSubMode for DivByZeroMode {
         }
     }
 
-    fn to_mode(self) -> DivMode {
-        DivMode::from_sub_modes(DivSignMode::default(), self, DivOverflowMode::default())
-    }
-
     fn to_lasm(self) -> &'static str {
         match self {
             Self::Forbid => "DIV_ZRO_FRB",
@@ -217,10 +205,6 @@ impl DivSubMode for DivOverflowMode {
             Self::EqToZero => cst::DIV_OFW_ZRO,
             Self::EqToMax => cst::DIV_OFW_MAX,
         }
-    }
-
-    fn to_mode(self) -> DivMode {
-        DivMode::from_sub_modes(DivSignMode::default(), DivByZeroMode::default(), self)
     }
 
     fn to_lasm(self) -> &'static str {
