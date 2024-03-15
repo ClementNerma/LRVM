@@ -10,8 +10,10 @@ members = [
     "examples/async_hw",
     "examples/disassemble",
     "examples/brainfuck",
-    "examples/benchmark"
+    "examples/benchmark",
 ]
+
+resolver = "2"
 
 [profile.release]
 lto = true
