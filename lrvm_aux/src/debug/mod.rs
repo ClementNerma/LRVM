@@ -1,3 +1,3 @@
 mod basic;
 
-pub use basic::{BasicDebug, DebugInfo};
+pub use self::basic::{BasicDebug, DebugInfo};

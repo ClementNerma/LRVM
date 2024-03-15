@@ -14,13 +14,15 @@ mod prog_word;
 mod reg;
 mod val;
 
-pub use arflag::ArFlag;
-pub use cond::If2Cond;
-pub use div_modes::{DivByZeroMode, DivMode, DivOverflowMode, DivSignMode};
-pub use extinstr::ExtInstr;
-pub use hw_infos::HwInfo;
-pub use instr::{Instr, InstrDecodingError};
-pub use prog::Program;
-pub use prog_word::ProgramWord;
-pub use reg::Reg;
-pub use val::{RegOrLit1, RegOrLit2};
+pub use self::{
+    arflag::ArFlag,
+    cond::If2Cond,
+    div_modes::{DivByZeroMode, DivMode, DivOverflowMode, DivSignMode},
+    extinstr::ExtInstr,
+    hw_infos::HwInfo,
+    instr::{Instr, InstrDecodingError},
+    prog::Program,
+    prog_word::ProgramWord,
+    reg::Reg,
+    val::{RegOrLit1, RegOrLit2},
+};

@@ -3,6 +3,5 @@ mod board;
 mod bus;
 mod hwb;
 
-pub use board::*;
-pub use bus::*;
-pub(crate) use hwb::*;
+pub(crate) use self::hwb::*;
+pub use self::{board::*, bus::*};

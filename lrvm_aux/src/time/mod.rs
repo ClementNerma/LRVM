@@ -1,3 +1,3 @@
 mod realtime;
 
-pub use realtime::RealtimeClock;
+pub use self::realtime::RealtimeClock;

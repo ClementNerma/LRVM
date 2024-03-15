@@ -1,5 +1,4 @@
 mod auxhw;
 mod native;
 
-pub use auxhw::AuxHwException;
-pub use native::NativeException;
+pub use self::{auxhw::AuxHwException, native::NativeException};

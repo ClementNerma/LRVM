@@ -1,5 +1,4 @@
 mod mappings;
 mod mem;
 
-pub use mappings::*;
-pub use mem::*;
+pub use self::{mappings::*, mem::*};

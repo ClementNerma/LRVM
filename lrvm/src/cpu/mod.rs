@@ -2,5 +2,4 @@
 mod cpu;
 mod regs;
 
-pub use cpu::*;
-pub use regs::*;
+pub use self::{cpu::*, regs::*};
