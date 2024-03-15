@@ -1,5 +1,4 @@
 use super::{RegOrLit1, RegOrLit2};
-use std::convert::TryFrom;
 use std::fmt;
 
 /// CPU register

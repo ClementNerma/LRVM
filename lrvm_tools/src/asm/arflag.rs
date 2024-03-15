@@ -1,5 +1,4 @@
 use super::{RegOrLit1, RegOrLit2};
-use std::convert::TryFrom;
 
 /// Arithmetic flag
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

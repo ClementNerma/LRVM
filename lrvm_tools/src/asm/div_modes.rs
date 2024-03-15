@@ -1,7 +1,6 @@
 //! Strongly-typed interfaces for division modes
 
 use super::{cst, RegOrLit1};
-use std::convert::TryFrom;
 use std::fmt::Debug;
 
 /// Division sub mode

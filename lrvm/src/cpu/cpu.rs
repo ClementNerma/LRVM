@@ -2,7 +2,6 @@ use super::Registers;
 use crate::board::HardwareBridge;
 use crate::mem::MappedMemory;
 use crate::mmu::{MemAction, Mmu};
-use std::convert::TryFrom;
 
 /// Central Processing Unit (CPU)
 pub struct Cpu {
