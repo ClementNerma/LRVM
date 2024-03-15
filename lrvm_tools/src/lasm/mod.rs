@@ -3,8 +3,8 @@
 
 use crate::asm::{InstrDecodingError, Program};
 use crate::bytes::{bytes_to_words, words_to_bytes};
-use customasm::asm::Assembler;
-use customasm::diagn::RcReport;
+use customasm::asm::{self, AssemblyOptions};
+use customasm::diagn::Report;
 use customasm::util::FileServerMock;
 
 static CUSTOMASM_HEADER: &str = include_str!("customasm.def");
@@ -20,22 +20,20 @@ pub fn assemble(source: &str) -> Result<Vec<u8>, String> {
     fileserver.add("header.lasm", CUSTOMASM_HEADER);
     fileserver.add("src.lasm", src);
 
-    let assemble =
-        |report: RcReport, fileserver: &FileServerMock, filename: &str| -> Result<Vec<u8>, ()> {
-            let mut asm = Assembler::new();
-            asm.register_file(filename);
-            let output = asm.assemble(report, fileserver, 10)?;
+    let opts = AssemblyOptions::new();
+    let mut report = Report::new();
 
-            Ok(output.binary.format_binary())
-        };
+    let assembly = asm::assemble(&mut report, &opts, &mut fileserver, &["src.lasm"]);
 
-    let report = RcReport::new();
+    match assembly.output {
+        Some(output) if !report.has_errors() && !assembly.error => Ok(output.format_binary()),
 
-    assemble(report.clone(), &fileserver, "src.lasm").map_err(|_| {
-        let mut err = vec![];
-        report.print_all(&mut err, &fileserver);
-        String::from_utf8(err).unwrap()
-    })
+        Some(_) | None => {
+            let mut err = vec![];
+            report.print_all(&mut err, &fileserver, false);
+            Err(String::from_utf8_lossy(&err).into_owned())
+        }
+    }
 }
 
 /// Assemble a LASM source code to machine code and split it to words.
