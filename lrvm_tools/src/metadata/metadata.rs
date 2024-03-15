@@ -1,5 +1,6 @@
-use super::DeviceCategory;
 use crate::bytes::bytes_to_words;
+
+use super::DeviceCategory;
 
 pub struct DeviceMetadata {
     pub hw_id: u64,

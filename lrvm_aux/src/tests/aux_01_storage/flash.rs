@@ -1,6 +1,9 @@
+use lrvm_tools::{
+    asm::{ExtInstr, Instr, Program},
+    debug::{exec_vm, RunConfig},
+};
+
 use crate::storage::{BootRom, FlashMem};
-use lrvm_tools::asm::{ExtInstr, Instr, Program};
-use lrvm_tools::debug::{exec_vm, RunConfig};
 
 #[test]
 fn flash_mem() {

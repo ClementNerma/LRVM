@@ -1,8 +1,11 @@
-use crate::display::BufferedDisplay;
-use crate::storage::BootRom;
-use lrvm_tools::asm::{ExtInstr, Instr, Program, Reg};
-use lrvm_tools::debug::{exec_vm, RunConfig};
 use std::sync::{Arc, Mutex};
+
+use lrvm_tools::{
+    asm::{ExtInstr, Instr, Program, Reg},
+    debug::{exec_vm, RunConfig},
+};
+
+use crate::{display::BufferedDisplay, storage::BootRom};
 
 fn display_prog(text: &str, display_addr: u32, display_final_addr: u32) -> Result<Program, ()> {
     let mut instr = ExtInstr::SetReg(Reg::ac0, display_addr).to_instr();

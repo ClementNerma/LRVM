@@ -3,11 +3,11 @@
 //!
 //! The motherboard can also emulate a reset button through the [`reset`] function which propagates the even through all connected [`Bus`].
 
+use std::{cell::RefCell, rc::Rc};
+
+use crate::{cpu::Cpu, mem::MappedMemory};
+
 use super::{Bus, HardwareBridge};
-use crate::cpu::Cpu;
-use crate::mem::MappedMemory;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 /// Virtual motherboard
 pub struct MotherBoard {

@@ -1,10 +1,13 @@
 //! The real time clock component provides a way to get informations about the current time.  
 //! See [`RealtimeClock`] for more details.
 
-use lrvm::board::Bus;
-use lrvm_tools::exceptions::AuxHwException;
-use lrvm_tools::metadata::{ClockType, DeviceMetadata};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
+
+use lrvm::board::Bus;
+use lrvm_tools::{
+    exceptions::AuxHwException,
+    metadata::{ClockType, DeviceMetadata},
+};
 
 /// The realtime clock component is a 6-word-long readonly component.  
 ///

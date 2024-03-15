@@ -1,13 +1,18 @@
 //! The persistent memory component offers a simple non-volatile storage that persists on the disk.
 //! See [`PersistentMem`] for more details.
 
+use std::{
+    cmp::Ordering,
+    fs::{File, OpenOptions},
+    io::{Read, Result as IOResult, Seek, SeekFrom, Write},
+    path::Path,
+};
+
 use lrvm::board::Bus;
-use lrvm_tools::exceptions::AuxHwException;
-use lrvm_tools::metadata::{DeviceMetadata, StorageType};
-use std::cmp::Ordering;
-use std::fs::{File, OpenOptions};
-use std::io::{Read, Result as IOResult, Seek, SeekFrom, Write};
-use std::path::Path;
+use lrvm_tools::{
+    exceptions::AuxHwException,
+    metadata::{DeviceMetadata, StorageType},
+};
 
 /// The persistent memory component contains a read-only or writable, persistent storage that does not reset with the motherboard.
 /// It uses a real file to store its data and is perfect for storing data that persists after the VM is destroyed.

@@ -1,5 +1,6 @@
-use super::types::*;
 use std::fmt;
+
+use super::types::*;
 
 #[derive(Copy, Clone, Debug)]
 pub enum DeviceCategory {

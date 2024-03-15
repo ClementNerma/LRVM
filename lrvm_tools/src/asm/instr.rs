@@ -1,6 +1,6 @@
-use super::{cst, ProgramWord};
-use super::{ArFlag, DivMode, HwInfo, If2Cond, Reg, RegOrLit1, RegOrLit2};
 use std::fmt;
+
+use super::{cst, ArFlag, DivMode, HwInfo, If2Cond, ProgramWord, Reg, RegOrLit1, RegOrLit2};
 
 /// Native assembly instruction
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

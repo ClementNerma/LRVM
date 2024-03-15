@@ -1,5 +1,6 @@
-use super::DeviceCategory;
 use std::fmt;
+
+use super::DeviceCategory;
 
 macro_rules! impl_device_type {
     ($type_name: ident, as $type_enum: ident => { $($dev_name: ident => $dev_code: expr),* }) => {

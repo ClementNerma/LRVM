@@ -1,5 +1,6 @@
-use super::{RegOrLit1, RegOrLit2};
 use std::fmt;
+
+use super::{RegOrLit1, RegOrLit2};
 
 /// CPU register
 #[allow(non_camel_case_types)]

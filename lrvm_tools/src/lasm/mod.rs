@@ -1,11 +1,16 @@
 //! LRVM uses an assembly language called LASM (Lightweight Assembly).
 //! This module allows to assemble LASM source code through the [CustomAsm](https://github.com/hlorenzi/customasm) library.
 
-use crate::asm::{InstrDecodingError, Program};
-use crate::bytes::{bytes_to_words, words_to_bytes};
-use customasm::asm::{self, AssemblyOptions};
-use customasm::diagn::Report;
-use customasm::util::FileServerMock;
+use customasm::{
+    asm::{self, AssemblyOptions},
+    diagn::Report,
+    util::FileServerMock,
+};
+
+use crate::{
+    asm::{InstrDecodingError, Program},
+    bytes::{bytes_to_words, words_to_bytes},
+};
 
 static CUSTOMASM_HEADER: &str = include_str!("customasm.def");
 

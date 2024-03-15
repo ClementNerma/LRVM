@@ -1,5 +1,6 @@
-use super::{AuxMappingStatus, ContiguousMappingResult, Mapping, MappingError, MappingRange};
 use crate::board::HardwareBridge;
+
+use super::{AuxMappingStatus, ContiguousMappingResult, Mapping, MappingError, MappingRange};
 
 /// Mapped memory
 pub struct MappedMemory {

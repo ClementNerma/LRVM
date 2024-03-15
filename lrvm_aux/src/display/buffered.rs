@@ -1,11 +1,14 @@
 //! The buffered display component offers a simple UTF-8 display system.
 //! See [`BufferedDisplay`] for more details.
 
-use lrvm::board::Bus;
-use lrvm_tools::bytes::words_to_bytes;
-use lrvm_tools::exceptions::AuxHwException;
-use lrvm_tools::metadata::{DeviceMetadata, DisplayType};
 use std::str::{from_utf8, Utf8Error};
+
+use lrvm::board::Bus;
+use lrvm_tools::{
+    bytes::words_to_bytes,
+    exceptions::AuxHwException,
+    metadata::{DeviceMetadata, DisplayType},
+};
 
 pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, &'a [u8])>;
 

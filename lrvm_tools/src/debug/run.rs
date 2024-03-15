@@ -1,7 +1,10 @@
-use super::RunConfig;
-use crate::exceptions::NativeException;
-use lrvm::cpu::Cpu;
 use std::fmt;
+
+use lrvm::cpu::Cpu;
+
+use crate::exceptions::NativeException;
+
+use super::RunConfig;
 
 /// State of the VM when exited
 #[derive(Debug, Clone)]

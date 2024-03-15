@@ -4,8 +4,10 @@
 use std::io::{stdout, Write};
 
 use lrvm::board::Bus;
-use lrvm_tools::exceptions::AuxHwException;
-use lrvm_tools::metadata::{DeviceMetadata, DisplayType};
+use lrvm_tools::{
+    exceptions::AuxHwException,
+    metadata::{DeviceMetadata, DisplayType},
+};
 
 /// Formatting for the number display
 #[derive(Debug, Clone, Copy)]

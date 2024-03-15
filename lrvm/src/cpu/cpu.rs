@@ -1,7 +1,10 @@
+use crate::{
+    board::HardwareBridge,
+    mem::MappedMemory,
+    mmu::{MemAction, Mmu},
+};
+
 use super::Registers;
-use crate::board::HardwareBridge;
-use crate::mem::MappedMemory;
-use crate::mmu::{MemAction, Mmu};
 
 /// Central Processing Unit (CPU)
 pub struct Cpu {

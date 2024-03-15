@@ -1,5 +1,7 @@
-use lrvm::board::{Bus, MotherBoard};
-use lrvm::mem::{ContiguousMappingResult, MappingRange};
+use lrvm::{
+    board::{Bus, MotherBoard},
+    mem::{ContiguousMappingResult, MappingRange},
+};
 
 /// Prepare a motherboard from a list of components.
 /// The mapping status of all components is displayed.

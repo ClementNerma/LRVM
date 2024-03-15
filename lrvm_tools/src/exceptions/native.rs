@@ -1,6 +1,6 @@
-use crate::asm::Reg;
-use crate::exceptions::AuxHwException;
 use std::fmt;
+
+use crate::{asm::Reg, exceptions::AuxHwException};
 
 /// Describe a native exception
 pub enum NativeException {

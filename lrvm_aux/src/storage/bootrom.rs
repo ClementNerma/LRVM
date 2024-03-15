@@ -2,8 +2,10 @@
 //! See [`BootROM`] for more details.
 
 use lrvm::board::Bus;
-use lrvm_tools::exceptions::AuxHwException;
-use lrvm_tools::metadata::{DeviceMetadata, StorageType};
+use lrvm_tools::{
+    exceptions::AuxHwException,
+    metadata::{DeviceMetadata, StorageType},
+};
 
 /// The BootROM component contains a read-only storage that is initialized during its creation.
 /// All write requests are invalid but read requests are valid (reading outside initialization storage will return '0x00000000').

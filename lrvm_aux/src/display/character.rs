@@ -4,8 +4,10 @@
 use std::io::{stdout, Write};
 
 use lrvm::board::Bus;
-use lrvm_tools::exceptions::AuxHwException;
-use lrvm_tools::metadata::{DeviceMetadata, DisplayType};
+use lrvm_tools::{
+    exceptions::AuxHwException,
+    metadata::{DeviceMetadata, DisplayType},
+};
 
 // The character display works by sending to a display callback the character written in the only word of the display.
 // It may be an invalid UTF-8 character, in which case the invalid word will be sent to the header instead of the decoded string.

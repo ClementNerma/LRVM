@@ -1,6 +1,6 @@
+use std::{cell::RefCell, rc::Rc};
+
 use super::Bus;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 /// Auxiliary component's bus and internal data cache
 struct AuxWithCache {

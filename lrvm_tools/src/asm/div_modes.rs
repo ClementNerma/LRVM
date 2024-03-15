@@ -1,7 +1,8 @@
 //! Strongly-typed interfaces for division modes
 
-use super::{cst, RegOrLit1};
 use std::fmt::Debug;
+
+use super::{cst, RegOrLit1};
 
 /// Division sub mode
 pub trait DivSubMode: Sized + Debug + Copy + Clone + PartialEq + Eq {

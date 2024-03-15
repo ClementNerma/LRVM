@@ -1,8 +1,11 @@
-use crate::storage::BootRom;
 use lrvm::board::MotherBoard;
-use lrvm_tools::asm::{Instr, Program, Reg};
-use lrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
-use lrvm_tools::exceptions::{AuxHwException, NativeException};
+use lrvm_tools::{
+    asm::{Instr, Program, Reg},
+    debug::{prepare_vm, run_vm, RunConfig},
+    exceptions::{AuxHwException, NativeException},
+};
+
+use crate::storage::BootRom;
 
 fn prepare(instr: Instr) -> MotherBoard {
     let prog = Program::from_instr(vec![instr, Instr::Halt()]);

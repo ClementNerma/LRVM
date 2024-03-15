@@ -1,5 +1,4 @@
-use crate::cpu::Registers;
-use crate::mem::MappedMemory;
+use crate::{cpu::Registers, mem::MappedMemory};
 
 /// Memory Management Unit (MMU)
 #[derive(Default)]

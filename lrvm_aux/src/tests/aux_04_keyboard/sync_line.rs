@@ -1,8 +1,11 @@
-use crate::keyboard::SyncLineKeyboard;
-use crate::storage::BootRom;
-use lrvm_tools::asm::{ExtInstr, Instr, Program, Reg};
-use lrvm_tools::debug::{exec_vm, RunConfig};
 use std::sync::{Arc, Mutex};
+
+use lrvm_tools::{
+    asm::{ExtInstr, Instr, Program, Reg},
+    debug::{exec_vm, RunConfig},
+};
+
+use crate::{keyboard::SyncLineKeyboard, storage::BootRom};
 
 static PLACEHOLDER_KEYB_INPUT: &str = "Placeholder keyboard input";
 

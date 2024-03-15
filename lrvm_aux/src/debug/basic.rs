@@ -1,8 +1,10 @@
 //! The basic debug component offers a simple debugging system.
 //! See [`BasicDebug`] for more details.
 use lrvm::board::Bus;
-use lrvm_tools::exceptions::AuxHwException;
-use lrvm_tools::metadata::{DebugType, DeviceCategory, DeviceMetadata};
+use lrvm_tools::{
+    exceptions::AuxHwException,
+    metadata::{DebugType, DeviceCategory, DeviceMetadata},
+};
 
 /// The Basic Debug Interface (BDI) is a simple debug tool that provides a set of writable words to debug informations:
 ///

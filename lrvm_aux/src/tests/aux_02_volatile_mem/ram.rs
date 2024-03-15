@@ -1,7 +1,9 @@
-use crate::storage::BootRom;
-use crate::volatile_mem::Ram;
-use lrvm_tools::asm::{ExtInstr, Instr, Program};
-use lrvm_tools::debug::{exec_vm, RunConfig};
+use lrvm_tools::{
+    asm::{ExtInstr, Instr, Program},
+    debug::{exec_vm, RunConfig},
+};
+
+use crate::{storage::BootRom, volatile_mem::Ram};
 
 #[test]
 fn ram() {
