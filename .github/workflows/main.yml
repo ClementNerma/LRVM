@@ -19,7 +19,7 @@ jobs:
             cargo install --git https://github.com/ClementNerma/broken-md-links.git
           fi
       - name: Look for broken MD links
-        run: broken-md-links ${GITHUB_WORKSPACE} --recursive
+        run: broken-md-links ${GITHUB_WORKSPACE}
 
   tests:
     runs-on: ubuntu-latest
