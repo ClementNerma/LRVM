@@ -5,7 +5,6 @@ use lrvm::board::Bus;
 use lrvm_tools::bytes::words_to_bytes;
 use lrvm_tools::exceptions::AuxHwException;
 use lrvm_tools::metadata::{DeviceMetadata, DisplayType};
-use std::convert::TryInto;
 use std::str::{from_utf8, Utf8Error};
 
 pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, &'a [u8])>;

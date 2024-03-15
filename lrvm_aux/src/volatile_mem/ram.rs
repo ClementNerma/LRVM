@@ -3,7 +3,6 @@
 
 use lrvm::board::Bus;
 use lrvm_tools::metadata::{DeviceMetadata, MemoryType};
-use std::convert::TryInto;
 
 /// The RAM component offers a simple non-persistent storage.
 /// When it receives a RESET request from the motherboard, all the storage is zeroed.

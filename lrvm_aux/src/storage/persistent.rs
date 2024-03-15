@@ -5,7 +5,6 @@ use lrvm::board::Bus;
 use lrvm_tools::exceptions::AuxHwException;
 use lrvm_tools::metadata::{DeviceMetadata, StorageType};
 use std::cmp::Ordering;
-use std::convert::TryInto;
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Result as IOResult, Seek, SeekFrom, Write};
 use std::path::Path;

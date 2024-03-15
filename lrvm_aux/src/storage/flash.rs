@@ -3,7 +3,6 @@
 
 use lrvm::board::Bus;
 use lrvm_tools::metadata::{DeviceMetadata, StorageType};
-use std::convert::TryInto;
 
 /// The flash memory component contains a writable, persistent storage that does not reset with the motherboard.
 /// It is though reset when the VM is destroyed.
