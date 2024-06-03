@@ -11,7 +11,7 @@ pub enum DeviceCategory {
     Memory(MemoryType),
     Storage(StorageType),
     PlatformSpecific(u32),
-    Uncategorized(),
+    Uncategorized,
 }
 
 impl DeviceCategory {
@@ -31,7 +31,7 @@ impl DeviceCategory {
             0x0002_1000 => Ok(Self::Memory(MemoryType::decode(typ)?)),
             0x0002_2000 => Ok(Self::Storage(StorageType::decode(typ)?)),
             0xEEEE_EEEE => Ok(Self::PlatformSpecific(typ)),
-            0xFFFF_FFFF => Ok(Self::Uncategorized()),
+            0xFFFF_FFFF => Ok(Self::Uncategorized),
 
             _ => Err(()),
         }
@@ -46,7 +46,7 @@ impl DeviceCategory {
             Self::Memory(_) => 0x0002_1000,
             Self::Storage(_) => 0x0002_2000,
             Self::PlatformSpecific(_) => 0xEEEE_EEEE,
-            Self::Uncategorized() => 0xFFFF_FFFF,
+            Self::Uncategorized => 0xFFFF_FFFF,
         }
     }
 
@@ -59,7 +59,7 @@ impl DeviceCategory {
             Self::Memory(t) => t.code(),
             Self::Storage(t) => t.code(),
             Self::PlatformSpecific(typ) => typ,
-            Self::Uncategorized() => 0x0000_0000,
+            Self::Uncategorized => 0x0000_0000,
         }
     }
 
@@ -81,7 +81,7 @@ impl fmt::Display for DeviceCategory {
                 Self::Memory(m) => format!("Memory:{}", m),
                 Self::Storage(s) => format!("Storage:{}", s),
                 Self::PlatformSpecific(code) => format!("PlatformSpecific:(Code={:#010X})", code),
-                Self::Uncategorized() => "Uncategorized".to_string(),
+                Self::Uncategorized => "Uncategorized".to_string(),
             }
         )
     }

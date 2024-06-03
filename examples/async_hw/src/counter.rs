@@ -51,7 +51,7 @@ impl Bus for AsyncCounter {
 
     // The component's metadata, giving informations on what the component is
     fn metadata(&self) -> [u32; 8] {
-        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized(), None, None).encode()
+        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized, None, None).encode()
     }
 
     // Read an address inside the component
