@@ -19,6 +19,10 @@ It is split into several crates:
 - [`lrvm_aux`](lrvm_aux/): A set of useful auxiliary components
 - [`lrvm_tools`](lrvm_tools/): A set of tools to deal more easily with LRVM, including a strongly-typed assembler and a string-based one
 
+## Examples
+
+Various examples can be found in the [`examples/`](examples/README.md) directory.
+
 ## Additional components
 
 An arbitrary number of components can be connected to the virtual motherboard and accessed through memory mapping (MMIO).
@@ -84,10 +88,6 @@ vsce package
 code --install-extension lrvm-lasm-*.vsix
 # Enjoy!
 ```
-
-## Examples
-
-Examples can be found in the [`examples/`](examples/README.md) directory.
 
 ## Testing
 
