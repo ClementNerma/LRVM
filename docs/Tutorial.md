@@ -25,7 +25,6 @@ The final code can be found in the [`examples/hello_world`](../examples/hello_wo
 ## 0. Preparing a Rust project
 
 First, create a new cargo project and add [`lrvm`](../lrvm/), [`lrvm_aux`](../lrvm_aux/) and [`lrvm_tools`](../lrvm_tools/) as dependencies.
-Also add the [`rand`](https://crates.io/crates/rand) crate dependency as we will use it to generate pseudo-unique identifiers.
 
 ## 1. Setting up the VM
 
@@ -47,19 +46,16 @@ As we will not be able to access the components once the motherboard has been cr
 
 Because it's easier to work with easy-to-memorize addresses, we will make our BootROM `0x1000` bytes long. This means that, while our program is shorter than this size, the start address of the next component will always be `0x1000` if we map them contiguously in the memory.
 
-We also need to choose an _hardware identifier_ for each component, which is a 64-bit-long identifier that is unique to each component - we must not have any duplicate. The de-facto way for this is to generate random unique identifiers, but as that's a bit complex we'll simply generate pseudo-unique identifiers using the [`rand`](https://crates.io/crates/rand) crate, the chances of getting a collision with as few components as we'll have being extremely low.
+We also need to choose an _hardware identifier_ for each component, which is a 64-bit-long identifier that is unique to each component - we must not have any duplicate. We can of course generate random numbers for that, but we can also the `gen_aux_id` helper function, which produces a random-looking 64-bit identifier from a name we give it (it uses a simple hash function under the hood).
 
 ```rust
-use rand::Rng;
 use lrvm::board::{MotherBoard, Bus};
+use lrvm_tools::ids::gen_aux_id;
 use lrvm_aux::storage::BootROM;
-use lrvm_aux::display::BufferedDisplay;
 
 fn main() {
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap())
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap())
     ];
 
     let motherboard = MotherBoard::new(components);
@@ -70,17 +66,17 @@ fn main() {
 We'll also need a writable memory to store informations, as the BootROM is read-only - which prevents us from rewriting our own program accidentally.
 
 ```rust
-use rand::Rng;
 use lrvm::board::{MotherBoard, Bus};
-use lrvm_aux::storage::BootROM;
-use volatile_mem::RAM;
+use lrvm_tools::ids::gen_aux_id;
+use lrvm_aux::{
+    storage::BootRoM,
+    volatile_mem::RAM
+};
 
 fn main() {
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap())
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap())
     ];
 
     let motherboard = MotherBoard::new(components);
@@ -90,21 +86,21 @@ fn main() {
 Finally, we'll add a small display component called a _buffered display_. The concept is pretty simple: we write the bytes to display in a buffer, then ask the component to display the buffer's content.
 
 ```rust
-use rand::Rng;
 use lrvm::board::{MotherBoard, Bus};
-use lrvm_aux::storage::BootROM;
-use volatile_mem::RAM;
-use lrvm_aux::display::BufferedDisplay;
+use lrvm_tools::ids::gen_aux_id;
+use lrvm_aux::{
+    storage::BootRoM,
+    volatile_mem::Ram,
+    display::BufferedDisplay
+};
 
 fn main() {
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
-        ), rng.gen()).unwrap())
+        ), gen_aux_id("display")).unwrap())
     ];
 
     let motherboard = MotherBoard::new(components);
@@ -321,14 +317,12 @@ Let's take back our previous Rust code:
 // import statements
 
 fn main() {
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
-        ), rng.gen()).unwrap())
+        ), gen_aux_id("display")).unwrap())
     ];
 
     let motherboard = MotherBoard::new(components);
@@ -395,14 +389,12 @@ We now have this code:
 
 ```rust
 fn main() {
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(vec![], 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
-        ), rng.gen()).unwrap())
+        ), gen_aux_id("display")).unwrap())
     ];
 
     let mut motherboard = MotherBoard::new(components);
@@ -452,10 +444,8 @@ fn main() {
     let program = assemble_words(include_str!("display.lasm"))
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(program /* <- HERE */, 0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(program /* <- HERE */, 0x1000, gen_aux_id("bootrom")).unwrap()),
         // ...
     ];
 
@@ -466,25 +456,27 @@ fn main() {
 And our BootROM is ready! The final code is:
 
 ```rust
-use rand::Rng;
 use lrvm::board::{MotherBoard, Bus};
-use lrvm_aux::storage::BootROM;
-use volatile_mem::RAM;
-use lrvm_aux::display::BufferedDisplay;
-use lrvm_tools::lasm::assemble_words;
+use lrvm_tools::{
+    ids::gen_aux_id,
+    lasm::assemble_words
+};
+use lrvm_aux::{
+    storage::BootRoM,
+    volatile_mem::Ram,
+    display::BufferedDisplay
+};
 
 fn main() {
     let program = assemble_words(include_str!("display.lasm"))
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
-        ), rng.gen()).unwrap())
+        ), gen_aux_id("display")).unwrap())
     ];
 
     let mut motherboard = MotherBoard::new(components);
@@ -540,12 +532,16 @@ The solution is to get the value of `pc` _before_ asking the CPU to run the inst
 Here is the final code:
 
 ```rust
-use rand::Rng;
 use lrvm::board::{MotherBoard, Bus};
-use lrvm_aux::storage::BootROM;
-use volatile_mem::RAM;
-use lrvm_aux::display::BufferedDisplay;
-use lrvm_tools::lasm::assemble_words;
+use lrvm_tools::{
+    ids::gen_aux_id,
+    lasm::assemble_words
+};
+use lrvm_aux::{
+    storage::BootRoM,
+    volatile_mem::Ram,
+    display::BufferedDisplay
+};
 
 fn main() {
     println!("> Assembling LASM code...");
@@ -555,14 +551,12 @@ fn main() {
 
     println!("> Preparing components and motherboard...");
 
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
-        ), rng.gen()).unwrap())
+        ), gen_aux_id("display")).unwrap())
     ];
 
     let mut motherboard = MotherBoard::new(components);
@@ -625,11 +619,11 @@ To use it, we simply need to replace this part of the code:
 fn main() {
     // ...
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
-            |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
-        ), rng.gen()).unwrap())
+            |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
+        ), gen_aux_id("display")).unwrap())
     ];
 
     let mut motherboard = MotherBoard::new(components);
@@ -640,6 +634,7 @@ fn main() {
 
     motherboard.reset();
     // ...
+}
 ```
 
 By this one:
@@ -651,13 +646,14 @@ use lrvm_tools::debug::prepare_vm;
 fn main() {
     // ...
     let mut motherboard = prepare_vm(vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
-            |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
-        ), rng.gen()).unwrap())
+            |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
+        ), gen_aux_id("display")).unwrap())
     ]);
     // ...
+}
 ```
 
 The output will be something like:
@@ -668,7 +664,7 @@ The output will be something like:
 => Component 0002 'Buffered Display                ': ✓ 0x00002000 -> 0x000020FF (HW ID: 0xF1 51 D3 C2 F4 91 DC AE)
 ```
 
-The addresses are the component mapping's start and end address, and the `HW ID` is their hardware identifier (the unique identifier we generated using the `rand` crate).
+The addresses are the component mapping's start and end address, and the `HW ID` is their hardware identifier (the unique identifier we generated using the `gen_aux_id` function).
 
 We can also run the VM using the builtin `run_vm` tool, which we can use to display human-readable informations when an exception occurs or when the VM simply halts.
 
@@ -686,6 +682,7 @@ fn main() {
         cpu.next().expect(&format!("Exception occurred at address {:#010X}", was_at));
     }
     // ...
+}
 ```
 
 By this one:
@@ -696,8 +693,9 @@ use lrvm_tools::debug::{run_vm, RunConfig};
 
 fn main() {
   // ...
-  run_vm(motherboard.cpu(), &RunConfig::halt_on_ex());
+  run_vm(motherboard.cpu(), RunConfig::halt_on_ex());
   // ...
+}
 ```
 
 If the VM halts normally, we will get a message like:
@@ -717,12 +715,16 @@ Which is a lot more readable than the old debug message we had in our previous v
 We now have the following code:
 
 ```rust
-use rand::Rng;
-use lrvm_aux::storage::BootROM;
-use volatile_mem::RAM;
-use lrvm_aux::display::BufferedDisplay;
-use lrvm_tools::lasm::assemble_words;
-use lrvm_tools::debug::{prepare_vm, run_vm, RunConfig};
+use lrvm_tools::{
+    ids::gen_aux_id,
+    lasm::assemble_words,
+    debug::{prepare_vm, run_vm, RunConfig}
+};
+use lrvm_aux::{
+    storage::BootRoM,
+    volatile_mem::Ram,
+    display::BufferedDisplay
+};
 
 fn main() {
     println!("> Assembling LASM code...");
@@ -732,19 +734,17 @@ fn main() {
 
     println!("> Preparing components and motherboard...");
 
-    let mut rng = rand::thread_rng();
-
     let mut motherboard = prepare_vm(vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
-            |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
-        ), rng.gen()).unwrap())
+            |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
+        ), gen_aux_id("display")).unwrap())
     ]);
 
     println!("> Running the program...");
 
-    run_vm(motherboard.cpu(), &RunConfig::halt_on_ex());
+    run_vm(motherboard.cpu(), RunConfig::halt_on_ex());
 
     println!("> CPU halted.");
 }
@@ -759,17 +759,15 @@ fn main() {
     let program = assemble_words(include_str!("display.lasm"))
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
-    let mut rng = rand::thread_rng();
-
     let mut motherboard = prepare_vm(vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
-            |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
-        ), rng.gen()).unwrap())
+            |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
+        ), gen_aux_id("display")).unwrap())
     ]);
 
-    run_vm(motherboard.cpu(), &RunConfig::halt_on_ex());
+    run_vm(motherboard.cpu(), RunConfig::halt_on_ex());
 }
 ```
 
@@ -782,15 +780,13 @@ fn main() {
     let program = assemble_words(include_str!("display.lasm"))
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
-    let mut rng = rand::thread_rng();
-
     exec_vm(vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
-            |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
-        ), rng.gen()).unwrap())
-    ], &RunConfig::halt_on_ex());
+            |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
+        ), gen_aux_id("display")).unwrap())
+    ], RunConfig::halt_on_ex());
 }
 ```
 
@@ -803,14 +799,12 @@ fn main() {
     let program = assemble_words(include_str!("display.lasm"))
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
-    let mut rng = rand::thread_rng();
-
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootROM::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(RAM::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
-            |string| println!("[Display] {}", string.unwrap_or("<invalid input received>"))
-        ), rng.gen()).unwrap())
+            |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
+        ), gen_aux_id("display")).unwrap())
     ];
 
     let mut motherboard = MotherBoard::new(components);
