@@ -8,7 +8,7 @@ The main features are:
 
 - Motherboard emulation, allowing to plug-in virtual components ;
 - MMIO emulation for mapping components into memory ;
-- MMU emulation for translation virtual addresses into physical ones and managing userland permissions ;
+- MMU emulation for translating virtual addresses into physical ones and managing userland permissions ;
 - Supervisor/userland mode ;
 - A very simple and friendly API ;
 - Debugging tools such as a full-powered assembler and disassembler
