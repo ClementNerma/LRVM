@@ -23,8 +23,10 @@ pub enum NumberDisplayFormat {
 }
 
 /// The number display is a very simple 8-word long and write-only component.  
+///
 /// When a word is written to one of its 8 unique addresses, it calls the handler provided during the component's creation
-///   with the said word (the word index indicates the formatting to use for the number).  
+/// with the said word (the word index indicates the formatting to use for the number).
+///
 /// This allows to simply output a number to debug for instance.
 /// The first 4 addresses will print the number with a newline symbol at the end, while the 4 other won't print a newline.  
 pub struct NumberDisplay {

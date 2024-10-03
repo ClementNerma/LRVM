@@ -7,7 +7,10 @@ use lrvm_tools::{
     metadata::{DeviceMetadata, KeyboardType},
 };
 
-/// The keyboard works with a buffer and a handler. When it receives a read request, the data is read from the buffer.
+/// The keyboard works with a buffer and a handler.
+///
+/// When it receives a read request, the data is read from the buffer.
+///
 /// Writing into the buffer is forbidden but writing to the last word of the component results in it interpreting the provided action code:
 ///
 /// * `0xAA`: trigger a synchronous input and put the result in the buffer

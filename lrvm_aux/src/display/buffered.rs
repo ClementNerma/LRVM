@@ -12,7 +12,9 @@ use lrvm_tools::{
 
 pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, &'a [u8])>;
 
-/// The buffered display works with a buffer and a handler. When it receives a write request, it writes it into the buffer unless the
+/// The buffered display works with a buffer and a handler.
+///
+/// When it receives a write request, it writes it into the buffer unless the
 /// write address is on its last word ; in this case, in interprets the word as:
 ///
 /// * `0xAA`: display the buffer's content and clear it afterwards

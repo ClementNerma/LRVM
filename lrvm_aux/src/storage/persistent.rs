@@ -15,6 +15,7 @@ use lrvm_tools::{
 };
 
 /// The persistent memory component contains a read-only or writable, persistent storage that does not reset with the motherboard.
+///
 /// It uses a real file to store its data and is perfect for storing data that persists after the VM is destroyed.
 pub struct PersistentMem {
     handler: File,
