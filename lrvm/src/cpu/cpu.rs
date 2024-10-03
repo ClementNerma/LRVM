@@ -120,54 +120,71 @@ impl Cpu {
         // 'REG_OR_LIT_1' = parameter is either a register or a 1-byte literal
         // 'REG_OR_LIT_2' = parameter is either a register or a 2-bytes literal
         macro_rules! args {
+            // <register>
             (REG) => {
                 params[0]
             };
+            // <register or literal>
             (REG_OR_LIT_1) => {
                 __reg_or_lit!(0, 1)
             };
+            // <register or long literal>
             (REG_OR_LIT_2) => {
                 __reg_or_lit!(0, 2)
             };
+            // <register>, <register>
             (REG, REG) => {
                 (params[0], params[1])
             };
+            // <register>, <register or literal>
             (REG, REG_OR_LIT_1) => {
                 (params[0], __reg_or_lit!(1, 1))
             };
+            // <register>, <register or long literal>
             (REG, REG_OR_LIT_2) => {
                 (params[0], __reg_or_lit!(1, 2))
             };
+            // <register or literal>, <register>
             (REG_OR_LIT_1, REG) => {
                 (__reg_or_lit!(0, 1), params[1])
             };
+            // <register or literal>, <register or literal>
             (REG_OR_LIT_1, REG_OR_LIT_1) => {
                 (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1))
             };
+            // <register or literal>, <register or long literal>
             (REG_OR_LIT_1, REG_OR_LIT_2) => {
                 (__reg_or_lit!(0, 1), __reg_or_lit!(1, 2))
             };
+            // <register>, <register>, <register>
             (REG, REG, REG) => {
                 (params[0], params[1], params[2])
             };
+            // <register>, <register>, <register or literal>
             (REG, REG, REG_OR_LIT_1) => {
                 (params[0], params[1], __reg_or_lit!(2, 1))
             };
+            // <register>, <register or literal>, <register>
             (REG, REG_OR_LIT_1, REG) => {
                 (params[0], __reg_or_lit!(1, 1), params[2])
             };
+            // <register>, <register or literal>, <register or literal>
             (REG, REG_OR_LIT_1, REG_OR_LIT_1) => {
                 (params[0], __reg_or_lit!(1, 1), __reg_or_lit!(2, 1))
             };
+            // <register or literal>, <register>, <register>
             (REG_OR_LIT_1, REG, REG) => {
                 (__reg_or_lit!(0, 1), params[1], params[2])
             };
+            // <register or literal>, <register>, <register or literal>
             (REG_OR_LIT_1, REG, REG_OR_LIT_1) => {
                 (__reg_or_lit!(0, 1), params[1], __reg_or_lit!(2, 1))
             };
+            // <register or ltieral>, <register or ltieral>, <register>
             (REG_OR_LIT_1, REG_OR_LIT_1, REG) => {
                 (__reg_or_lit!(0, 1), __reg_or_lit!(1, 1), params[2])
             };
+            // <register or literal>, <register or literal>, <register or literal>
             (REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1) => {
                 (
                     __reg_or_lit!(0, 1),
@@ -179,20 +196,26 @@ impl Cpu {
 
         // Decode a register-or-literal parameter
         macro_rules! __reg_or_lit {
-            // '$param' is the parameter first byte's index (starting from 0)
-            // '$value' is the decoded parameter's value (combined bytes of params[$param..=$param+<param length>])
-            // If the specified parameter is marked as being a register, the provided value is considered to be a register ID and the we try
-            // to read its value. Else, the provided value is a plain number.
-            (with_val $param: expr, $value: expr) => {
-                if opregs[$param] { self.read_reg(params[$param])? } else { $value }
-            };
             // 1-byte long parameters
             ($param: expr, 1) => {
-                __reg_or_lit!(with_val $param, params[$param].into())
+                __reg_or_lit!(_with_val $param, params[$param].into())
             };
             // 2-bytes long parameters
             ($param: expr, 2) => {
-                __reg_or_lit!(with_val $param, u16::from_be_bytes([ params[$param], params[$param + 1] ]).into())
+                __reg_or_lit!(_with_val $param, u16::from_be_bytes([ params[$param], params[$param + 1] ]).into())
+            };
+            // <internal>
+            // '$param' is the parameter first byte's index (starting from 0)
+            // '$literal' is the decoded parameter's value in case it's not a register (combined bytes of params[$param..=$param+<param length>])
+            (_with_val $param: expr, $literal: expr) => {
+                // If the parameter is a register...
+                if opregs[$param] {
+                    // Try to read it
+                    self.read_reg(params[$param])?
+                } else {
+                    // Otherwise it's a literal
+                    $literal
+                }
             };
         }
 
@@ -536,18 +559,22 @@ impl Cpu {
     /// Try to read a register's value.
     /// Raises an exception if the specified register is only readable in supervisor mode and userland mode is active.
     fn read_reg(&mut self, code: u8) -> Result<u32, ()> {
+        // Prevent userland mode from accessing supervisor-reserved registers
         if code >= 0x18 && !self.sv_mode() {
             self.exception(0x03, Some(code.into()));
             return Err(());
         }
 
-        let ucode = usize::from(code);
-
         match code {
-            0x00..=0x07 => Ok(self.regs.a[ucode]),
-            0x08..=0x09 => Ok(self.regs.c[ucode - 0x08]),
-            0x0A..=0x0C => Ok(self.regs.ac[ucode - 0x0A]),
-            0x0D..=0x14 => Ok(self.regs.rr[ucode - 0x0D]),
+            // a* registers
+            0x00..=0x07 => Ok(self.regs.a[usize::from(code)]),
+            // c* registers
+            0x08..=0x09 => Ok(self.regs.c[usize::from(code) - 0x08]),
+            // ac* registers
+            0x0A..=0x0C => Ok(self.regs.ac[usize::from(code) - 0x0A]),
+            // rr* registers
+            0x0D..=0x14 => Ok(self.regs.rr[usize::from(code) - 0x0D]),
+            // individual registers
             0x15 => Ok(self.regs.avr),
             0x16 => Ok(self.regs.pc),
             0x17 => Ok(self.regs.af),
@@ -559,6 +586,7 @@ impl Cpu {
             0x1D => Ok(self.regs.mtt),
             0x1E => Ok(self.regs.pda),
             0x1F => Ok(self.regs.smt),
+            // unknown register
             _ => {
                 self.exception(0x02, Some(code.into()));
                 Err(())
@@ -572,26 +600,33 @@ impl Cpu {
     fn write_reg(&mut self, code: u8, word: u32) -> Result<(), ()> {
         let ucode = usize::from(code);
 
+        // Prevent userland mode from accessing supervisor-reserved registers
         if code >= 0x17 && !self.sv_mode() {
             self.exception(0x04, Some(code.into()));
             return Err(());
         }
 
+        // Prevent writing in read-only registers
         if code == 0x17 || code == 0x1A || code == 0x1B {
             self.exception(0x04, Some(code.into()));
             return Err(());
         }
 
-        // If we change PC, indicate it has been changed to the CPU won't jump 4 bytes ahead.
+        // If we change PC, indicate it has been changed so the CPU won't jump 4 bytes ahead
         if code == 0x16 {
             self._cycle_changed_pc = true;
         }
 
         match code {
+            // a* registers
             0x00..=0x07 => self.regs.a[ucode] = word,
+            // c* registers
             0x08..=0x09 => self.regs.c[ucode - 0x08] = word,
+            // ac* registers
             0x0A..=0x0C => self.regs.ac[ucode - 0x0A] = word,
+            // rr* registers
             0x0D..=0x14 => self.regs.rr[ucode - 0x0D] = word,
+            // individual registers
             0x15 => self.regs.avr = word,
             0x16 => self.regs.pc = word,
             0x17 => self.regs.af = word,
@@ -603,6 +638,7 @@ impl Cpu {
             0x1D => self.regs.mtt = word,
             0x1E => self.regs.pda = word,
             0x1F => self.regs.smt = word,
+            // unknown register
             _ => {
                 self.exception(0x02, Some(code.into()));
                 return Err(());
