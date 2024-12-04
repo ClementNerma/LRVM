@@ -18,6 +18,12 @@ impl DeviceMetadata {
         model: Option<u32>,
         data: Option<u64>,
     ) -> Self {
+        assert_eq!(
+            size_bytes % 4,
+            0,
+            "Components' size must be a multiple of 4 bytes"
+        );
+
         Self {
             hw_id,
             size_bytes,
