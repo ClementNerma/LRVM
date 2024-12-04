@@ -78,12 +78,12 @@ print_char:
 
 ; Display an integer from 'avr'
 print_hex:
-    cpy rr7, 0x500C
+    cpy rr7, 0x502C
     wea rr7
     ret
 
-; Display a decimal integer from 'avr'
-print_dec:
+; Display a decimal integer from 'avr' with a newline
+print_dec_newline:
     cpy rr7, 0x5014
     wea rr7
     ret
@@ -138,14 +138,14 @@ interpret_bf:
     call pre_error
     
     cpy avr, rr3
-    call print_dec
+    call print_dec_newline
 
     cpy rr6, err_not_closed_loop_after_count
     call print
 
     pop avr
     inc avr
-    call print_dec
+    call print_dec_newline
 
     call post_error
 
@@ -344,7 +344,7 @@ pre_error:
 
     cpy avr, rr2
     inc avr
-    call print_dec
+    call print_dec_newline
 
     cpy rr6, error_post_char_num
     call print
