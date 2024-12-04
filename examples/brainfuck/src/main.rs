@@ -44,12 +44,16 @@ fn main() {
             terminal::enable_raw_mode().unwrap();
 
             let c = loop {
+                // Wait for user input (blocking)
+                let evt = event::read().unwrap();
+
+                // Handle key presses
                 if let Event::Key(KeyEvent {
                     code: KeyCode::Char(c),
                     modifiers: _,
-                    kind: KeyEventKind::Release,
+                    kind: KeyEventKind::Press,
                     state: _,
-                }) = event::read().unwrap()
+                }) = evt
                 {
                     break c;
                 }
