@@ -1,3 +1,11 @@
+#bankdef program
+{
+    #addr 0
+    #outp 0
+    #bits 8
+    #labelalign 32
+}
+
 #subruledef reg
 {
     a0  => 0x00
