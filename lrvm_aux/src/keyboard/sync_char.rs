@@ -13,8 +13,8 @@ use lrvm_tools::{
 ///
 /// Writing into the buffer is forbidden but writing to the second word of the component results in it interpreting the provided action code:
 ///
-/// * `0xAA`: trigger a synchronous input and put the result in the buffer
-/// * `0xFF`: clear the buffer's content
+/// * `0x01`: trigger a synchronous input and put the result in the buffer
+/// * `0x02`: clear the buffer's content
 ///
 /// The buffer is guaranteed to contain a valid UTF-8 character.
 pub struct SyncCharKeyboard {
@@ -66,8 +66,8 @@ impl Bus for SyncCharKeyboard {
             *ex = 0x31 << 8;
         } else if addr == 4 {
             match word {
-                0xAA => self.buffer = (self.handler)(),
-                0xFF => self.reset(),
+                0x01 => self.buffer = (self.handler)(),
+                0x02 => self.reset(),
                 code => *ex = AuxHwException::UnknownOperation(code as u8).into(),
             }
         } else {

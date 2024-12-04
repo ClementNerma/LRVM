@@ -65,7 +65,7 @@ read_line:
 ; Read a single character to 'avr'
 read_char:
     cpy rr7, 0x5004
-    wsa rr7, 0, 0xAA ; trigger input
+    wsa rr7, 0, 0x01 ; trigger input
     cpy rr7, 0x5000
     lea rr7 ; read input
     ret
