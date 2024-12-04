@@ -11,7 +11,7 @@ static PLACEHOLDER_KEYB_INPUT: char = 'Z';
 
 fn keyb_prog(input_end_addr: u32) -> Program {
     let mut prog = Program::from_instr(ExtInstr::SetReg(Reg::ac0, input_end_addr).to_instr());
-    prog.append_all(ExtInstr::SetReg(Reg::avr, 0xAA).to_prog_words());
+    prog.append_all(ExtInstr::SetReg(Reg::avr, 0x01).to_prog_words());
     prog.append(Instr::Wea(Reg::ac0.into(), 0_u8.into(), 0_u8.into()).into());
 
     prog
