@@ -113,6 +113,11 @@ interpret_bf:
     ifeq
     jp .complete
 
+    ; same for line feeds
+    cmp a0, 10
+    ifeq
+    jp .complete
+
     ; [DEBUG] print the character which is going to be interpreted
     ; cpy avr, a0
     ; cpy rr5, rr0
