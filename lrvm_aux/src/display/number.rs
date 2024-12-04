@@ -72,7 +72,7 @@ impl Bus for NumberDisplay {
     }
 
     fn metadata(&self) -> [u32; 8] {
-        DeviceMetadata::new(self.hw_id, 16, DisplayType::Number.wrap(), None, None).encode()
+        DeviceMetadata::new(self.hw_id, 64, DisplayType::Number.wrap(), None, None).encode()
     }
 
     fn read(&mut self, _addr: u32, ex: &mut u16) -> u32 {
