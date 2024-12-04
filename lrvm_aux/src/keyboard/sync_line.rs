@@ -19,7 +19,7 @@ use lrvm_tools::{
 /// The buffer is guaranteed to contain valid UTF-8 data.
 pub struct SyncLineKeyboard {
     buffer: Vec<u32>,
-    words: u32,
+    capacity: u32,
     handler: Box<dyn FnMut() -> String>,
     hw_id: u64,
 }
@@ -50,7 +50,7 @@ impl SyncLineKeyboard {
 
         Ok(Self {
             buffer: vec![0; (capacity - 1) as usize],
-            words: capacity - 1,
+            capacity: capacity - 1,
             handler,
             hw_id,
         })
@@ -65,7 +65,7 @@ impl Bus for SyncLineKeyboard {
     fn metadata(&self) -> [u32; 8] {
         DeviceMetadata::new(
             self.hw_id,
-            self.words * 4 + 4,
+            self.capacity * 4 + 4,
             KeyboardType::ReadLineSynchronous.into(),
             None,
             None,
@@ -76,7 +76,7 @@ impl Bus for SyncLineKeyboard {
     fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
         let addr = addr / 4;
 
-        if addr == self.words {
+        if addr == self.capacity {
             0
         } else {
             self.buffer[addr as usize]
@@ -84,7 +84,7 @@ impl Bus for SyncLineKeyboard {
     }
 
     fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
-        if addr / 4 != self.words {
+        if addr / 4 != self.capacity {
             *ex = 0x31 << 8;
         } else {
             match word {
@@ -98,7 +98,7 @@ impl Bus for SyncLineKeyboard {
 
                         if byte_index == 3 {
                             if pos >= self.buffer.len() {
-                                eprintln!("Warning: input is too long for synchronous keyboard's buffer (max. {} bytes)", self.words * 4);
+                                eprintln!("Warning: input is too long for synchronous keyboard's buffer (max. {} bytes)", self.capacity * 4);
                                 return;
                             }
 
@@ -113,7 +113,7 @@ impl Bus for SyncLineKeyboard {
 
                     if byte_index > 0 {
                         if pos >= self.buffer.len() {
-                            eprintln!("Warning: input is too long for synchronous keyboard's buffer (max. {} bytes)", self.words * 4);
+                            eprintln!("Warning: input is too long for synchronous keyboard's buffer (max. {} bytes)", self.capacity * 4);
                             return;
                         }
 
