@@ -1,135 +1,123 @@
-//! The persistent memory component offers a simple non-volatile storage that persists on the disk.
+//! The persistent memory component offers a simple storage that remains after reboot.
 //! See [`PersistentMem`] for more details.
 
-use std::{
-    cmp::Ordering,
-    fs::{File, OpenOptions},
-    io::{Read, Result as IOResult, Seek, SeekFrom, Write},
-    path::Path,
-};
-
 use lrvm::board::Bus;
-use lrvm_tools::{
-    exceptions::AuxHwException,
-    metadata::{DeviceMetadata, StorageType},
-};
+use lrvm_tools::metadata::{DeviceMetadata, StorageType};
 
-/// The persistent memory component contains a read-only or writable, persistent storage that does not reset with the motherboard.
-///
-/// It uses a real file to store its data and is perfect for storing data that persists after the VM is destroyed.
+/// The flash memory component contains a writable, persistent storage that does not reset with the motherboard.
+/// It is though reset when the VM is destroyed.
 pub struct PersistentMem {
-    handler: File,
+    storage: Vec<u32>,
     size: u32,
-    real_size: u32,
-    writable: bool,
     hw_id: u64,
 }
 
 impl PersistentMem {
-    /// (Internal) open the provided path file in read-only or writable mode
-    fn open(path: impl AsRef<Path>, writable: bool, hw_id: u64) -> IOResult<Self> {
-        let handler = OpenOptions::new().read(true).write(writable).open(path)?;
+    /// Create a new flash memory component
+    /// Returns an error message if the capacity is 0, not a multiple or 4 bytes or too large for the running CPU architecture.
+    pub fn new(size: u32, hw_id: u64) -> Result<Self, &'static str> {
+        if size == 0 {
+            Err("Flash memory's size cannot be 0")
+        } else if size % 4 != 0 {
+            Err("Flash memory's size must be a multiple of 4 bytes")
+        } else {
+            Ok(Self {
+                storage: vec![
+                    0;
+                    size.try_into().map_err(|_| {
+                        "Flash memory size cannot exceed your CPU architecture's supported size"
+                    })?
+                ],
+                size: size / 4,
+                hw_id,
+            })
+        }
+    }
 
-        let unaligned_real_size: u32 = handler
-            .metadata()?
+    /// Create a new flash memory component from the provided storage
+    /// Returns an error message if the capacity is too large for the running CPU architecture.
+    pub fn from(storage: Vec<u32>, hw_id: u64) -> Result<Self, &'static str> {
+        let size: u32 = storage
             .len()
             .try_into()
-            .expect("Cannot open files larger than 4 GB due to 32-bit addressing mode");
-
-        let real_size = (unaligned_real_size / 4) * 4;
-
-        if real_size != unaligned_real_size {
-            println!("Warning: opened unaligned file as aligned (rounded size to nearest lower multiple of 4 bytes)");
-        }
-
-        let _: usize = real_size.try_into().expect(
-            "Persistent memory size must not exceed your CPU architecture (e.g. 32-bit size)",
-        );
+            .map_err(|_| "Flash memory's length cannot be larger than 2^32 words")?;
 
         Ok(Self {
-            size: real_size,
-            real_size,
-            handler,
-            writable,
+            storage,
+            size: size / 4,
             hw_id,
         })
     }
 
-    /// Create a new writable persistent memory component
-    pub fn writable(path: impl AsRef<Path>, hw_id: u64) -> IOResult<Self> {
-        Self::open(path, true, hw_id)
-    }
+    /// Create a new flash memory component from the provided storage and with a larger size than its storage
+    /// Returns an error message in case of fail
+    pub fn from_with_size(
+        mut storage: Vec<u32>,
+        size: u32,
+        hw_id: u64,
+    ) -> Result<Self, &'static str> {
+        let _: u32 = storage
+            .len()
+            .try_into()
+            .map_err(|_| "Flash memory's length cannot be larger than 2^32 words")?;
+        let _: usize = size.try_into().map_err(|_| {
+            "Flash memory size cannot exceed your CPU architecture's supported size"
+        })?;
 
-    /// Create a new writable persistent memory component with a custom size
-    pub fn writable_with_size(path: impl AsRef<Path>, size: u32, hw_id: u64) -> IOResult<Self> {
-        let mut mem = Self::writable(path, hw_id)?;
-
-        match mem.real_size.cmp(&size) {
-            Ordering::Greater => mem.size = size,
-            Ordering::Less => mem.handler.set_len(size.into())?,
-            Ordering::Equal => {}
+        if storage.len() > size as usize {
+            return Err("Flash memory's size cannot be lower than its initial storage's size");
         }
 
-        Ok(mem)
+        if size == 0 {
+            return Err("Flash memory's size cannot be 0");
+        }
+
+        if size % 4 != 0 {
+            return Err("Flash memory's size must be a multiple of 4 bytes");
+        }
+
+        let size = size / 4;
+
+        storage.resize(size as usize, 0);
+
+        Ok(Self {
+            storage,
+            size,
+            hw_id,
+        })
     }
 
-    /// Create a new read-only persistent memory component
-    pub fn readonly(path: impl AsRef<Path>, hw_id: u64) -> IOResult<Self> {
-        Self::open(path, false, hw_id)
-    }
-
-    /// Create a new writable persistent memory component with a custom size
-    pub fn readonly_with_size(path: impl AsRef<Path>, size: u32, hw_id: u64) -> IOResult<Self> {
-        let mut mem = Self::readonly(path, hw_id)?;
-        mem.size = size;
-        Ok(mem)
+    /// Get the flash memory's size
+    pub fn size(&self) -> u32 {
+        self.size
     }
 }
 
 impl Bus for PersistentMem {
     fn name(&self) -> &'static str {
-        "Persistent Memory"
+        "Flash Memory"
     }
 
     fn metadata(&self) -> [u32; 8] {
         DeviceMetadata::new(
             self.hw_id,
             self.size * 4,
-            StorageType::Persistent.into(),
+            StorageType::Flash.into(),
             None,
             None,
         )
         .encode()
     }
 
-    fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
-        if addr >= self.real_size {
-            return 0;
-        }
-
-        let mut buffer = [0; 4];
-
-        if self.handler.seek(SeekFrom::Start(addr.into())).is_err() {
-            *ex = AuxHwException::GenericPhysicalReadError.into();
-            return 0;
-        }
-
-        if self.handler.read_exact(&mut buffer).is_err() {
-            *ex = AuxHwException::GenericPhysicalReadError.into();
-            return 0;
-        }
-
-        u32::from_be_bytes(buffer)
+    fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
+        self.storage[addr as usize / 4]
     }
 
-    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
-        if !self.writable {
-            *ex = AuxHwException::MemoryNotWritable.into();
-        } else if addr < self.real_size {
-            self.handler.seek(SeekFrom::Start(addr.into())).unwrap();
-            self.handler.write_all(&word.to_be_bytes()).unwrap();
-        }
+    fn write(&mut self, addr: u32, word: u32, _ex: &mut u16) {
+        self.storage[addr as usize / 4] = word;
     }
 
-    fn reset(&mut self) {}
+    fn reset(&mut self) {
+        self.storage = vec![0; self.storage.len()];
+    }
 }

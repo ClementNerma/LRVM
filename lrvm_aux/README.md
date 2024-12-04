@@ -22,11 +22,11 @@ All details related to how components work can be found in the [hardware documen
 
 ### Storage
 
-| Component name                                        | Description                                                             |
-| ----------------------------------------------------- | ----------------------------------------------------------------------- |
-| [`storage::BootROM`](src/storage/bootrom.rs)          | Read-only persistent storage meant to contain a program's code and data |
-| [`storage::FlashMem`](src/storage/flash.rs)           | Writable persistent memory                                              |
-| [`storage::PersistentMem`](src/storage/persistent.rs) | Persistent memory flushed to a real file                                |
+| Component name                                         | Description                                                             |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| [`storage::BootROM`](src/storage/bootrom.rs)           | Read-only persistent storage meant to contain a program's code and data |
+| [`storage::PersistentMem`](src/storage/persistent.rs)  | Writable persistent memory                                              |
+| [`storage::FileBackedMem`](src/storage/file_backed.rs) | Persistent memory flushed to a real file                                |
 
 ### Display
 

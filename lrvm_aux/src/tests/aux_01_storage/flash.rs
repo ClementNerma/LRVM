@@ -3,7 +3,7 @@ use lrvm_tools::{
     debug::{exec_vm, RunConfig},
 };
 
-use crate::storage::{BootRom, FlashMem};
+use crate::storage::{BootRom, PersistentMem};
 
 #[test]
 fn flash_mem() {
@@ -14,7 +14,7 @@ fn flash_mem() {
     let (mut vm, state) = exec_vm(
         vec![
             Box::new(BootRom::with_size(program.encode_words(), 0x1000, 0x0).unwrap()),
-            Box::new(FlashMem::new(0x1000, 0x1).unwrap()),
+            Box::new(PersistentMem::new(0x1000, 0x1).unwrap()),
         ],
         RunConfig::halt_on_ex(),
     );
