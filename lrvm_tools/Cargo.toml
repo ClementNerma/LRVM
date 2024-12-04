@@ -6,4 +6,4 @@ edition = "2021"
 
 [dependencies]
 lrvm = { path = "../lrvm" }
-customasm = "^0.13.5"
+customasm = "^0.13.7"
