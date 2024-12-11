@@ -1,4 +1,4 @@
-# Rust VM
+# LRVM Architecture
 
 - [Central Processing Unit](#central-processing-unit)
   - [Processor](#processor)
@@ -31,7 +31,7 @@
     - [Processor control instructions](#processor-control-instructions)
     - [Alias instructions](#alias-instructions)
 
-RustVM is a single-threaded, lightweight virtual machine created for challenge purposes as well as to study how hardware behaves.
+LRVM is a lightweight virtual machine created for challenge purposes as well as to study how hardware behaves.
 
 ## Central Processing Unit
 
