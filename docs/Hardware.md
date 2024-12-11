@@ -176,7 +176,7 @@ use lrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
         DeviceMetadata {
             hw_id: self.hw_id,
             size: 4,
-            category: DeviceCategory::Uncategorized(),
+            category: DeviceCategory::Uncategorized,
             model: None,
             data: None,
         }
@@ -190,7 +190,7 @@ Great. But, our method is a little verbose, so let's simplify it:
 ```rust
     // ...
     fn metadata(&self) -> [u32; 8] {
-        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized(), None, None).encode()
+        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized, None, None).encode()
     }
     // ...
 ```
@@ -284,7 +284,7 @@ impl Bus for AsyncCounter {
 
     // The component's metadata, giving informations on what the component is
     fn metadata(&self) -> [u32; 8] {
-        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized(), None, None).encode()
+        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized, None, None).encode()
     }
 
     // Read an address inside the component
@@ -480,7 +480,7 @@ impl Bus for AsyncCounter {
 
     // The component's metadata, giving informations on what the component is
     fn metadata(&self) -> [u32; 8] {
-        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized(), None, None).encode()
+        DeviceMetadata::new(self.hw_id, 4, DeviceCategory::Uncategorized, None, None).encode()
     }
 
     // Read an address inside the component
