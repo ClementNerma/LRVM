@@ -386,12 +386,13 @@ fn main() {
     let cpu = motherboard.cpu();
 
     while !cpu.halted() {
-        cpu.next().unwrap();
+        cpu.next();
+        assert_eq!(cpu.regs.et, 0);
     }
 }
 ```
 
-The `.unwrap()` makes our program panic if an exception occurred. This is better than leaving the VM run in an invalid state, as our program is not supposed to generate any exception - so if one happens, we better look at it.
+When an exception occurs, informations about it are stored in the `et` register. This `assert!` statement ensures our program will panic in such case, instead of continuing to run in an invalid state, as our program is not supposed to generate any exception - so if one happens, we better look at it.
 
 We now have this code:
 
@@ -416,7 +417,8 @@ fn main() {
     let cpu = motherboard.cpu();
 
     while !cpu.halted() {
-        cpu.next().unwrap();
+        cpu.next();
+        assert_eq!(cpu.regs.et, 0);
     }
 }
 ```
@@ -480,7 +482,7 @@ fn main() {
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, gen_aux_id("bootrom")).unwrap()),
         Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
@@ -498,7 +500,8 @@ fn main() {
     let cpu = motherboard.cpu();
 
     while !cpu.halted() {
-        cpu.next().unwrap();
+        cpu.next();
+        assert_eq!(cpu.regs.et, 0);
     }
 }
 ```
@@ -518,11 +521,11 @@ First, let's add `println!()` statements to indicate what our program is doing a
 
 We may also add a little code in our `while !cpu.halted() {` loop to indicate, if an exception happens, what was the faulty address as well as the exception code (they are all details in the [architecture document](Architecture.md#exceptions)).
 
-We can simply replace our `cpu.next();` line by:
+We can simply replace our `assert!` statement by:
 
 ```rust
     // ...
-    cpu.next().expect(&format!("Exception occurred at address {:#010X}", cpu.regs.pc));
+    assert_eq!(cpu.regs.et, 0, format!("Exception occurred at address {:#010X}", cpu.regs.pc));
     // ...
 ```
 
@@ -533,7 +536,8 @@ The solution is to get the value of `pc` _before_ asking the CPU to run the inst
 ```rust
     // ...
     let was_at = cpu.regs.pc;
-    cpu.next().expect(&format!("Exception occurred at address {:#010X}", was_at));
+    cpu.next();
+    assert_eq!(cpu.regs.et, 0, format!("Exception occurred at address {:#010X}", was_at));
     // ...
 ```
 
@@ -560,7 +564,7 @@ fn main() {
     println!("> Preparing components and motherboard...");
 
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, gen_aux_id("bootrom")).unwrap()),
         Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
@@ -627,7 +631,7 @@ To use it, we simply need to replace this part of the code:
 fn main() {
     // ...
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, gen_aux_id("bootrom")).unwrap()),
         Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
@@ -654,7 +658,7 @@ use lrvm_tools::debug::prepare_vm;
 fn main() {
     // ...
     let mut motherboard = prepare_vm(vec![
-        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, gen_aux_id("bootrom")).unwrap()),
         Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
@@ -687,7 +691,8 @@ fn main() {
 
     while !cpu.halted() {
         let was_at = cpu.regs.pc;
-        cpu.next().expect(&format!("Exception occurred at address {:#010X}", was_at));
+        cpu.next();
+        assert_eq!(cpu.regs.et, 0, format!("Exception occurred at address {:#010X}", was_at));
     }
     // ...
 }
@@ -743,7 +748,7 @@ fn main() {
     println!("> Preparing components and motherboard...");
 
     let mut motherboard = prepare_vm(vec![
-        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, gen_aux_id("bootrom")).unwrap()),
         Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
@@ -768,7 +773,7 @@ fn main() {
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     let mut motherboard = prepare_vm(vec![
-        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, gen_aux_id("bootrom")).unwrap()),
         Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
@@ -789,7 +794,7 @@ fn main() {
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     exec_vm(vec![
-        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, gen_aux_id("bootrom")).unwrap()),
         Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
@@ -808,7 +813,7 @@ fn main() {
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootRom::with_size(vec![], 0x1000, gen_aux_id("bootrom")).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, gen_aux_id("bootrom")).unwrap()),
         Box::new(Ram::new(0x1000, gen_aux_id("ram")).unwrap()),
         Box::new(BufferedDisplay::new(0x100, Box::new(
             |string| println!("[Display] {}", string.unwrap_or("<invalid UTF-8 input received>"))
@@ -827,7 +832,8 @@ fn main() {
 
     while !cpu.halted() {
         let was_at = cpu.regs.pc;
-        cpu.next().expect(&format!("Exception occurred at address {:#010X}", was_at));
+        cpu.next();
+        assert_eq!(cpu.regs.et, 0, format!("Exception occurred at address {:#010X}", was_at));
     }
 }
 ```
