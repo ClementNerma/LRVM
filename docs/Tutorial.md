@@ -14,7 +14,7 @@ The final code can be found in the [`examples/hello_world`](../examples/hello_wo
   - [Adding a little more output](#adding-a-little-more-output)
   - [A note on performances](#a-note-on-performances)
 - [4. Using the native debugging tools](#4-using-the-native-debugging-tools)
-- [5. Tips & traps](#5-tips--traps)
+- [5. Tips \& traps](#5-tips--traps)
   - [Supervisor vs Userland](#supervisor-vs-userland)
   - [The stack pointer](#the-stack-pointer)
   - [Debugging values](#debugging-values)
@@ -24,7 +24,15 @@ The final code can be found in the [`examples/hello_world`](../examples/hello_wo
 
 ## 0. Preparing a Rust project
 
-First, create a new cargo project and add [`lrvm`](../lrvm/), [`lrvm_aux`](../lrvm_aux/) and [`lrvm_tools`](../lrvm_tools/) as dependencies.
+First, create a new cargo project and add [`lrvm`](../lrvm/), [`lrvm_aux`](../lrvm_aux/) and [`lrvm_tools`](../lrvm_tools/) as dependencies:
+
+```shell
+cargo new learning-lrvm
+cd learning-lrvm
+
+# If you have cargo-edit:
+cargo add lrvm lrvm_aux lrvm_tools --git https://github.com/ClementNerma/LRVM
+```
 
 ## 1. Setting up the VM
 
