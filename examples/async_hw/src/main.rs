@@ -12,14 +12,14 @@ fn main() {
     let program = assemble_words(include_str!("source.lasm"))
         .unwrap_or_else(|err| panic!("Failed to assemble demo program: {}", err));
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     exec_vm(
         vec![
-            Box::new(BootRom::with_size(program, 0x1000, rng.gen()).unwrap()),
-            Box::new(Ram::new(0x1000, rng.gen()).unwrap()),
-            Box::new(AsyncCounter::new(rng.gen())),
-            Box::new(NumberDisplay::new_print(rng.gen())),
+            Box::new(BootRom::with_size(program, 0x1000, rng.random()).unwrap()),
+            Box::new(Ram::new(0x1000, rng.random()).unwrap()),
+            Box::new(AsyncCounter::new(rng.random())),
+            Box::new(NumberDisplay::new_print(rng.random())),
         ],
         RunConfig::halt_on_ex(),
     );

@@ -13,18 +13,18 @@ fn main() {
 
     println!("> Preparing components and motherboard...");
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     let components: Vec<Box<dyn Bus>> = vec![
-        Box::new(BootRom::with_size(program, 0x1000, rng.gen()).unwrap()),
-        Box::new(Ram::new(0x1000, rng.gen()).unwrap()),
+        Box::new(BootRom::with_size(program, 0x1000, rng.random()).unwrap()),
+        Box::new(Ram::new(0x1000, rng.random()).unwrap()),
         Box::new(
             BufferedDisplay::new(
                 0x100,
                 Box::new(|string| {
                     print!("[Display] {}", string.unwrap_or("<invalid input received>"))
                 }),
-                rng.gen(),
+                rng.random(),
             )
             .unwrap(),
         ),

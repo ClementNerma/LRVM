@@ -105,16 +105,16 @@ fn main() {
 
     println!("> Setting up and booting the VM...");
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     let mut motherboard = exec_vm(
         vec![
             // BootROM containing the program's machine code
-            Box::new(BootRom::with_size(program, 0x1000, rng.gen()).unwrap()),
+            Box::new(BootRom::with_size(program, 0x1000, rng.random()).unwrap()),
             // RAM that will contain informations about each detected components
-            Box::new(Ram::new(0x1000, rng.gen()).unwrap()),
+            Box::new(Ram::new(0x1000, rng.random()).unwrap()),
             // RAM that will be used for the stack
-            Box::new(Ram::new(0x20, rng.gen()).unwrap()),
+            Box::new(Ram::new(0x20, rng.random()).unwrap()),
         ],
         RunConfig::halt_on_ex(),
     )
