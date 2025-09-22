@@ -42,10 +42,11 @@ pub fn run_vm(cpu: &mut Cpu, config: RunConfig) -> StoppedState {
     // Run the VM until it halts
     while !cpu.halted() {
         // Ensure cycles limit isn't exceeded yet
-        if let Some(cycles_limit) = config.cycles_limit {
-            if cpu.cycles() > cycles_limit {
-                break;
-            }
+        if config
+            .cycles_limit
+            .is_some_and(|cycles_limit| cpu.cycles() > cycles_limit)
+        {
+            break;
         }
 
         // Update the current instruction address

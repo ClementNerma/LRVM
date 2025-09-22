@@ -2,7 +2,7 @@
 name = "lrvm_tools"
 version = "0.2.3"
 authors = ["Clément Nerma <clement.nerma@gmail.com>"]
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 lrvm = { path = "../lrvm" }

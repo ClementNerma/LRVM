@@ -1,6 +1,6 @@
 [package]
 authors = ["Clément Nerma <clement.nerma@gmail.com>"]
-edition = "2021"
+edition = "2024"
 name = "hw_detect"
 version = "0.1.0"
 
