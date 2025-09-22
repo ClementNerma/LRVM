@@ -49,7 +49,7 @@ impl BufferedDisplay {
             return Err("Buffered display's capacity cannot be 0");
         }
 
-        if capacity % 4 != 0 {
+        if !capacity.is_multiple_of(4) {
             return Err("Buffered display's capacity must be aligned");
         }
 

@@ -115,7 +115,7 @@ impl HardwareBridge {
     /// with the provided code and data.
     pub fn read(&mut self, aux_id: usize, addr: u32, ex: &mut u16) -> Option<u32> {
         assert!(
-            addr % 4 == 0,
+            addr.is_multiple_of(4),
             "Hardware bridge does not support reading from unaligned addresses"
         );
 
@@ -129,7 +129,7 @@ impl HardwareBridge {
     /// with the provided code and data.
     pub fn write(&mut self, aux_id: usize, addr: u32, word: u32, ex: &mut u16) -> Option<()> {
         assert!(
-            addr % 4 == 0,
+            addr.is_multiple_of(4),
             "Hardware bridge does not support writing to unaligned addresses"
         );
 

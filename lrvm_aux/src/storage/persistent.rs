@@ -18,7 +18,7 @@ impl PersistentMem {
     pub fn new(size: u32, hw_id: u64) -> Result<Self, &'static str> {
         if size == 0 {
             Err("Flash memory's size cannot be 0")
-        } else if size % 4 != 0 {
+        } else if !size.is_multiple_of(4) {
             Err("Flash memory's size must be a multiple of 4 bytes")
         } else {
             Ok(Self {
@@ -72,7 +72,7 @@ impl PersistentMem {
             return Err("Flash memory's size cannot be 0");
         }
 
-        if size % 4 != 0 {
+        if !size.is_multiple_of(4) {
             return Err("Flash memory's size must be a multiple of 4 bytes");
         }
 

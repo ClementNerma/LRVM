@@ -52,7 +52,7 @@ impl BootRom {
             return Err("Flash memory's size cannot be 0");
         }
 
-        if size % 4 != 0 {
+        if !size.is_multiple_of(4) {
             return Err("Flash memory's size must be a multiple of 4 bytes");
         }
 

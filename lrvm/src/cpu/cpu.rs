@@ -794,7 +794,7 @@ impl Cpu {
 
     /// Ensure an address is aligned, or raise an exception otherwise.
     fn ensure_aligned(&mut self, v_addr: u32) -> Result<u32, ()> {
-        if v_addr % 4 != 0 {
+        if !v_addr.is_multiple_of(4) {
             self.exception(0x05, Some((v_addr % 4) as u16));
             Err(())
         } else {

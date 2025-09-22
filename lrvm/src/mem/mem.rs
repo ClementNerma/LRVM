@@ -93,7 +93,7 @@ impl MappedMemory {
     /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
     pub fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
         assert!(
-            addr % 4 == 0,
+            addr.is_multiple_of(4),
             "Memory does not support reading from unaligned addresses"
         );
 
@@ -123,7 +123,7 @@ impl MappedMemory {
     /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
     pub fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
         assert!(
-            addr % 4 == 0,
+            addr.is_multiple_of(4),
             "Memory does not support writing to unaligned addresses"
         );
 
@@ -164,7 +164,7 @@ impl MappedMemory {
 
         let end_addr = end_addr.unwrap_or(start_addr + aux_size - 4);
 
-        if start_addr % 4 != 0 {
+        if !start_addr.is_multiple_of(4) {
             return Err(MappingError::UnalignedStartAddress);
         }
 
@@ -176,7 +176,7 @@ impl MappedMemory {
             return Err(MappingError::UnalignedBusSize);
         }
 
-        if end_addr % 4 != 0 {
+        if !end_addr.is_multiple_of(4) {
             return Err(MappingError::UnalignedEndAddress);
         }
 

@@ -38,7 +38,7 @@ impl SyncLineKeyboard {
             "Display's buffer's capacity must not exceed your CPU architecture (e.g. 32-bit size)"
         })?;
 
-        if capacity % 4 != 0 {
+        if !capacity.is_multiple_of(4) {
             return Err("Synchronous keyboard's buffer capacity must be aligned");
         }
 

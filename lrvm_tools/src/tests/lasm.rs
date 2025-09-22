@@ -7,7 +7,10 @@ fn lasm_test() {
     let asm_bytes = lasm::assemble(DEMO_ASM)
         .unwrap_or_else(|r| panic!("Failed to assemble demo program: {}", r));
 
-    assert!(asm_bytes.len() % 4 == 0, "Unaligned assembly output");
+    assert!(
+        asm_bytes.len().is_multiple_of(4),
+        "Unaligned assembly output"
+    );
 
     assert_eq!(
         asm_bytes,
