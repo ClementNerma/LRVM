@@ -141,6 +141,6 @@ impl Bus for SyncLineKeyboard {
     }
 
     fn reset(&self) {
-        self.buffer.borrow_mut().clear();
+        self.buffer.borrow_mut().fill(0);
     }
 }

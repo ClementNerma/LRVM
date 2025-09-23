@@ -120,6 +120,6 @@ impl Bus for Ram {
     }
 
     fn reset(&self) {
-        self.storage.borrow_mut().clear();
+        self.storage.borrow_mut().fill(0);
     }
 }

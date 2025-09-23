@@ -127,6 +127,6 @@ impl Bus for BufferedDisplay {
     }
 
     fn reset(&self) {
-        self.buffer.borrow_mut().clear();
+        self.buffer.borrow_mut().fill(0);
     }
 }
