@@ -133,18 +133,18 @@ impl Bus for AsyncCounter {
 
     // Read an address inside the component
     // There is only one possible address here, so we don't have to worry about its value
-    fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
+    fn read(&self, addr: u32, ex: &mut u16) -> u32 {
         todo!()
     }
 
     // Write an address inside the component
     // This is not allowed inside our component, which is read-only
-    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
+    fn write(&self, addr: u32, word: u32, ex: &mut u16) {
         todo!()
     }
 
     // Reset the component
-    fn reset(&mut self) {
+    fn reset(&self) {
         todo!()
     }
 }
@@ -215,7 +215,7 @@ For that, we have two options: either we encode the values ourselves, which is t
 
 ```rust
     // ...
-    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
+    fn write(&self, addr: u32, word: u32, ex: &mut u16) {
         *ex = AuxHwException::MemoryNotWritable.encode();
     }
     // ...
@@ -229,7 +229,7 @@ Its goal is to reset the component's state like it was when it was initially cre
 
 ```rust
     // ...
-    fn reset(&mut self) {
+    fn reset(&self) {
         self.counter.store(0, Ordering::SeqCst);
     }
     // ...
@@ -289,18 +289,18 @@ impl Bus for AsyncCounter {
 
     // Read an address inside the component
     // There is only one possible address here, so we don't have to worry about its value
-    fn read(&mut self, _addr: u32, _ex: &mut u16) -> u32 {
+    fn read(&self, _addr: u32, _ex: &mut u16) -> u32 {
         self.counter.load(Ordering::SeqCst)
     }
 
     // Write an address inside the component
     // This is not allowed inside our component, which is read-only
-    fn write(&mut self, _addr: u32, _word: u32, ex: &mut u16) {
+    fn write(&self, _addr: u32, _word: u32, ex: &mut u16) {
         *ex = AuxHwException::MemoryNotWritable.encode();
     }
 
     // Reset the component
-    fn reset(&mut self) {
+    fn reset(&self) {
         self.counter.store(0, Ordering::SeqCst);
     }
 }
@@ -320,6 +320,7 @@ First, let's update our structure to fit all those informations:
 
 ```rust
 // ...
+use std::cell::RefCell;
 use std::thread::JoinHandle;
 // ...
 
@@ -334,11 +335,13 @@ pub struct AsyncCounter {
     must_stop: Arc<AtomicBool>,
 
     /// Child thread incrementing the counter every second
-    counting_thread: Option<JoinHandle<()>>,
+    counting_thread: RefCell<Option<JoinHandle<()>>>,
 }
 ```
 
-Now let's rewrite its instanciation:
+The reason we use a `RefCell` here is because, as you may have noticed, all methods on a component take `&self` reference, which means we can't mutate our structure. So we use interior mutability instead.
+
+Now let's rewrite our component's instanciation:
 
 ```rust
 impl AsyncCounter {
@@ -362,8 +365,8 @@ First, let's make a `stop` method in the implementation, whose role will be, if 
     // ...
 
     /// Stop the counting thread (if any is alive)
-    fn stop(&mut self) {
-        if let Some(handle) = self.counting_thread.take() {
+    fn stop(&self) {
+        if let Some(handle) = self.counting_thread.borrow_mut().take() {
             self.must_stop.store(true, Ordering::SeqCst);
             handle.join().unwrap();
         }
@@ -381,10 +384,10 @@ And now the `reset` method, which will first halt the component (in case it hasn
         self.stop();
 
         // Create a shared counter
-        self.counter = Arc::new(AtomicU32::new(0));
+        self.counter.store(0, Ordering::SeqCst);
 
         // Create a "must stop" HALT signal
-        self.must_stop = Arc::new(AtomicBool::new(false));
+        self.must_stop.store(false, Ordering::SeqCst);
 
         // Clone its lock to use it from another thread
         let thread_counter = Arc::clone(&self.counter);
@@ -393,7 +396,7 @@ And now the `reset` method, which will first halt the component (in case it hasn
         let thread_must_stop = Arc::clone(&self.must_stop);
 
         // Create the thread which will increment the counter each second
-        self.counting_thread = Some(thread::spawn(move || loop {
+        *self.counting_thread.borrow_mut() = Some(thread::spawn(move || loop {
             // Forever, wait for 1 second...
             for _ in 1..100 {
                 thread::sleep(Duration::from_millis(10));
@@ -464,8 +467,8 @@ impl AsyncCounter {
     }
 
     /// Stop the counting thread (if any is alive)
-    pub fn stop(&mut self) {
-        if let Some(handle) = self.counting_thread.take() {
+    pub fn stop(&self) {
+        if let Some(handle) = self.counting_thread.borrow_mut().take() {
             self.must_stop.store(true, Ordering::SeqCst);
             handle.join().unwrap();
         }
@@ -485,26 +488,26 @@ impl Bus for AsyncCounter {
 
     // Read an address inside the component
     // There is only one possible address here, so we don't have to worry about its value
-    fn read(&mut self, _addr: u32, _ex: &mut u16) -> u32 {
+    fn read(&self, _addr: u32, _ex: &mut u16) -> u32 {
         self.counter.load(Ordering::SeqCst)
     }
 
     // Write an address inside the component
     // This is not allowed inside our component, which is read-only
-    fn write(&mut self, _addr: u32, _word: u32, ex: &mut u16) {
+    fn write(&self, _addr: u32, _word: u32, ex: &mut u16) {
         *ex = AuxHwException::MemoryNotWritable.encode();
     }
 
     // Reset the component
-    fn reset(&mut self) {
+    fn reset(&self) {
         // Stop the existing thread
         self.stop();
 
         // Create a shared counter
-        self.counter = Arc::new(AtomicU32::new(0));
+        self.counter.store(0, Ordering::SeqCst);
 
         // Create a "must stop" HALT signal
-        self.must_stop = Arc::new(AtomicBool::new(false));
+        self.must_stop.store(false, Ordering::SeqCst);
 
         // Clone its lock to use it from another thread
         let thread_counter = Arc::clone(&self.counter);
@@ -513,7 +516,7 @@ impl Bus for AsyncCounter {
         let thread_must_stop = Arc::clone(&self.must_stop);
 
         // Create the thread which will increment the counter each second
-        self.counting_thread = Some(thread::spawn(move || loop {
+        *self.counting_thread.borrow_mut() = Some(thread::spawn(move || loop {
             // Forever, wait for 1 second...
             for _ in 1..100 {
                 thread::sleep(Duration::from_millis(10));
