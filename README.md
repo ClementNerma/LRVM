@@ -41,7 +41,7 @@ cd examples/benchmark
 cargo run --release
 ```
 
-For reference, on an **Intel Core i5-1240P**, we get a result of ~ 120 MIPS (Million Instructions Per Second) with [LTO enabled](https://doc.rust-lang.org/cargo/reference/profiles.html#lto). On a **Ryzen 7940HX**, we get ~ 135 MIPS. As you can see, it scales with single-core performance, not multi-core.
+For reference, on an **Intel Core i5-1240P**, we get a result of ~ 65 MIPS (Million Instructions Per Second) with [LTO enabled](https://doc.rust-lang.org/cargo/reference/profiles.html#lto). On a **Ryzen 7940HX**, we get ~ 135 MIPS. As you can see, it scales with single-core performance, not multi-core.
 
 ## Documentation
 
