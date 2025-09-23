@@ -37,7 +37,7 @@ impl AsyncCounter {
 
     /// Stop the counting thread (if any is alive)
     pub fn stop(&self) {
-        if let Some(handle) = self.counting_thread.take() {
+        if let Some(handle) = self.counting_thread.borrow_mut().take() {
             self.must_stop.store(true, Ordering::SeqCst);
             handle.join().unwrap();
         }
