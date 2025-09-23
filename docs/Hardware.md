@@ -540,3 +540,17 @@ impl Drop for AsyncCounter {
     }
 }
 ```
+
+### 4. Going forward
+
+You may have noticed, but our component has a minor problem: when resetting it, we simply put the counter to zero. But the thread is still ticking, so the following may happen:
+
+* The separate thread spends 1s, increases the counter
+* 900ms after, we reset it
+* 100ms after that, the thread will tick again (1s - 900ms)!
+
+Which means only 0.1s after resetting our counter, it will be back to 1!
+
+Handling this problem requires to realign the thread's ticking, or to stop the thread and start a new one again. These are a little bit more complicated, so it can be a good exercise to practice.
+
+Note that these small details can cause big problems: if a program relies on the counter to perform tasks at a specific time or interval, it may become buggy because of that unaligned ticking! So it's important to always thing carefully about what the component is doing and how it will affect programs that use it.
