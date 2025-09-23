@@ -141,7 +141,6 @@ impl Bus for SyncLineKeyboard {
     }
 
     fn reset(&self) {
-        let mut buffer = self.buffer.borrow_mut();
-        *buffer = vec![0; buffer.len()];
+        self.buffer.borrow_mut().clear();
     }
 }

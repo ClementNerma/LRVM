@@ -120,7 +120,6 @@ impl Bus for Ram {
     }
 
     fn reset(&self) {
-        let mut storage = self.storage.borrow_mut();
-        *storage = vec![0; storage.len()];
+        self.storage.borrow_mut().clear();
     }
 }
