@@ -21,16 +21,16 @@ use lrvm_tools::{
 /// The buffer is guaranteed to contain a valid UTF-8 character.
 pub struct SyncCharKeyboard {
     buffer: RefCell<char>,
-    handler: RefCell<Box<dyn FnMut() -> char>>,
+    handler: Box<dyn Fn() -> char>,
     hw_id: u64,
 }
 
 impl SyncCharKeyboard {
     /// Create a synchronous character keyboard component.
-    pub fn new(handler: Box<dyn FnMut() -> char>, hw_id: u64) -> Self {
+    pub fn new(handler: Box<dyn Fn() -> char>, hw_id: u64) -> Self {
         Self {
             buffer: RefCell::new(0 as char),
-            handler: RefCell::new(handler),
+            handler,
             hw_id,
         }
     }
@@ -68,7 +68,7 @@ impl Bus for SyncCharKeyboard {
             *ex = 0x31 << 8;
         } else if addr == 4 {
             match word {
-                0x01 => *self.buffer.borrow_mut() = (self.handler.borrow_mut())(),
+                0x01 => *self.buffer.borrow_mut() = (self.handler)(),
                 0x02 => self.reset(),
                 code => *ex = AuxHwException::UnknownOperation(code as u8).into(),
             }

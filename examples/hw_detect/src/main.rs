@@ -2,7 +2,7 @@ use lrvm::mem::MappedMemory;
 use lrvm_aux::storage::BootRom;
 use lrvm_aux::volatile_mem::Ram;
 use lrvm_tools::bytes::words_to_bytes;
-use lrvm_tools::debug::{exec_vm, RunConfig};
+use lrvm_tools::debug::{RunConfig, exec_vm};
 use lrvm_tools::exceptions::AuxHwException;
 use lrvm_tools::lasm::assemble_words;
 use lrvm_tools::metadata::DeviceCategory;
@@ -23,7 +23,7 @@ struct Component {
 fn decode_component(mem: &mut MappedMemory, aux_addr: u32) -> Result<Component, String> {
     // This function reads an address in the memory and handles exceptions.
     // If an exception occurrs, it tries to decode it to show a human-readable error instead of an exception code.
-    let mut read = move |addr: u32| {
+    let read = move |addr: u32| {
         let mut ex = 0;
         let word = mem.read(addr, &mut ex);
 

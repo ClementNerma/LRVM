@@ -29,7 +29,7 @@ pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, &'a [u8])>;
 pub struct BufferedDisplay {
     buffer: RefCell<Vec<u32>>,
     words: u32,
-    handler: RefCell<Box<dyn FnMut(DecodedStr)>>,
+    handler: Box<dyn Fn(DecodedStr)>,
     hw_id: u64,
 }
 
@@ -41,7 +41,7 @@ impl BufferedDisplay {
     /// NOTE: The handler should not display a newline symbol at the end of the provided string.
     pub fn new(
         capacity: u32,
-        handler: Box<dyn FnMut(DecodedStr)>,
+        handler: Box<dyn Fn(DecodedStr)>,
         hw_id: u64,
     ) -> Result<Self, &'static str> {
         let _: usize = capacity.try_into().map_err(|_| {
@@ -61,7 +61,7 @@ impl BufferedDisplay {
         Ok(Self {
             buffer: RefCell::new(vec![0; (capacity - 1) as usize]),
             words: capacity - 1,
-            handler: RefCell::new(handler),
+            handler,
             hw_id,
         })
     }
@@ -112,12 +112,12 @@ impl Bus for BufferedDisplay {
         match word {
             0xAA => {
                 let bytes = words_to_bytes(self.buffer.borrow().as_slice());
-                (self.handler.borrow_mut())(from_utf8(&bytes).map_err(|err| (err, bytes.as_ref())))
+                (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.as_ref())))
             }
 
             0xBB => {
                 let bytes = words_to_bytes(self.buffer.borrow().as_slice());
-                (self.handler.borrow_mut())(Ok(&String::from_utf8_lossy(&bytes)))
+                (self.handler)(Ok(&String::from_utf8_lossy(&bytes)))
             }
 
             0xFF => self.reset(),

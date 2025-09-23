@@ -1,10 +1,7 @@
 //! The number display component offers a extremely simple way to display directly unsigned 32-bit numbers.
 //! See [`NumberDisplay`] for more details.
 
-use std::{
-    cell::RefCell,
-    io::{Write, stdout},
-};
+use std::io::{Write, stdout};
 
 use lrvm::board::Bus;
 use lrvm_tools::{
@@ -36,18 +33,15 @@ pub struct NumberDisplay {
     hw_id: u64,
 
     /// The parameters are the number to display, the format to use, and if a newline symbol should be printed afterwards.
-    handler: RefCell<Box<dyn FnMut(u32, NumberDisplayFormat, bool)>>,
+    handler: Box<dyn Fn(u32, NumberDisplayFormat, bool)>,
 }
 
 impl NumberDisplay {
     /// Create a number display.  
     /// The handler can is supposed to display the provided number, but this is not required.  
     /// The parameters are the number to display, the format to use, and if a newline symbol should be printed afterwards.
-    pub fn new(handler: Box<dyn FnMut(u32, NumberDisplayFormat, bool)>, hw_id: u64) -> Self {
-        Self {
-            hw_id,
-            handler: RefCell::new(handler),
-        }
+    pub fn new(handler: Box<dyn Fn(u32, NumberDisplayFormat, bool)>, hw_id: u64) -> Self {
+        Self { hw_id, handler }
     }
 
     /// Create a number display which print! the numbers
@@ -87,7 +81,7 @@ impl Bus for NumberDisplay {
     }
 
     fn write(&self, addr: u32, word: u32, _ex: &mut u16) {
-        (self.handler.borrow_mut())(
+        (self.handler)(
             word,
             match addr % 16 {
                 0 => NumberDisplayFormat::Hex,

@@ -1,7 +1,5 @@
 //! The basic debug component offers a simple debugging system.
 //! See [`BasicDebug`] for more details.
-use std::cell::RefCell;
-
 use lrvm::board::Bus;
 use lrvm_tools::{
     exceptions::AuxHwException,
@@ -28,7 +26,7 @@ use lrvm_tools::{
 /// * Word 15: "DEBUG" message
 pub struct BasicDebug {
     hw_id: u64,
-    debugger: RefCell<Box<dyn FnMut(DebugInfo)>>,
+    debugger: Box<dyn Fn(DebugInfo)>,
 }
 
 /// An information to debug
@@ -54,11 +52,8 @@ pub enum DebugInfo {
 impl BasicDebug {
     /// Create a new Basic Debug Interface (BDI).  
     /// The debugger is a function that takes an information to debug, see [`DebugInfo`] for more details.
-    pub fn new(hw_id: u64, debugger: Box<dyn FnMut(DebugInfo)>) -> Self {
-        Self {
-            hw_id,
-            debugger: RefCell::new(debugger),
-        }
+    pub fn new(hw_id: u64, debugger: Box<dyn Fn(DebugInfo)>) -> Self {
+        Self { hw_id, debugger }
     }
 
     /// Create a new Basic Debug Interface (BDI) with a println!-backed debugger
@@ -157,7 +152,7 @@ impl Bus for BasicDebug {
             _ => unreachable!("Tried to write to out-of-range address in basic debug interface"),
         };
 
-        (self.debugger.borrow_mut())(info);
+        (self.debugger)(info);
     }
 
     fn reset(&self) {}
