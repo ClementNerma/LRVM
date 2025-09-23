@@ -320,7 +320,7 @@ First, let's update our structure to fit all those informations:
 
 ```rust
 // ...
-use std::cell::RefCell;
+use std::sync::Mutex;
 use std::thread::JoinHandle;
 // ...
 
@@ -335,11 +335,11 @@ pub struct AsyncCounter {
     must_stop: Arc<AtomicBool>,
 
     /// Child thread incrementing the counter every second
-    counting_thread: RefCell<Option<JoinHandle<()>>>,
+    counting_thread: Mutex<Option<JoinHandle<()>>>,
 }
 ```
 
-The reason we use a `RefCell` here is because, as you may have noticed, all methods on a component take `&self` reference, which means we can't mutate our structure. So we use interior mutability instead.
+The reason we use a `Mutex` here is because, as you may have noticed, all methods on a component take `&self` reference, which means we can't mutate our structure. So we use interior mutability instead.
 
 Now let's rewrite our component's instanciation:
 
@@ -366,7 +366,7 @@ First, let's make a `stop` method in the implementation, whose role will be, if 
 
     /// Stop the counting thread (if any is alive)
     fn stop(&self) {
-        if let Some(handle) = self.counting_thread.borrow_mut().take() {
+        if let Some(handle) = self.counting_thread.lock().unwrap().take() {
             self.must_stop.store(true, Ordering::SeqCst);
             handle.join().unwrap();
         }

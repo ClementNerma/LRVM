@@ -2,11 +2,11 @@
 //! See [`FileBackedMem`] for more details.
 
 use std::{
-    cell::RefCell,
     cmp::Ordering,
     fs::{File, OpenOptions},
     io::{Read, Result as IOResult, Seek, SeekFrom, Write},
     path::Path,
+    sync::Mutex,
 };
 
 use lrvm::board::Bus;
@@ -19,7 +19,7 @@ use lrvm_tools::{
 ///
 /// It uses a real file to store its data and is perfect for storing data that persists after the VM is destroyed.
 pub struct FileBackedMem {
-    handler: RefCell<File>,
+    handler: Mutex<File>,
     size: u32,
     real_size: u32,
     writable: bool,
@@ -52,7 +52,7 @@ impl FileBackedMem {
         Ok(Self {
             size: real_size,
             real_size,
-            handler: RefCell::new(handler),
+            handler: Mutex::new(handler),
             writable,
             hw_id,
         })
@@ -69,7 +69,7 @@ impl FileBackedMem {
 
         match mem.real_size.cmp(&size) {
             Ordering::Greater => mem.size = size,
-            Ordering::Less => mem.handler.borrow_mut().set_len(size.into())?,
+            Ordering::Less => mem.handler.lock().unwrap().set_len(size.into())?,
             Ordering::Equal => {}
         }
 
@@ -112,7 +112,7 @@ impl Bus for FileBackedMem {
 
         let mut buffer = [0; 4];
 
-        let mut handler = self.handler.borrow_mut();
+        let mut handler = self.handler.lock().unwrap();
 
         if handler.seek(SeekFrom::Start(addr.into())).is_err() {
             *ex = AuxHwException::GenericPhysicalReadError.into();
@@ -131,7 +131,7 @@ impl Bus for FileBackedMem {
         if !self.writable {
             *ex = AuxHwException::MemoryNotWritable.into();
         } else if addr < self.real_size {
-            let mut handler = self.handler.borrow_mut();
+            let mut handler = self.handler.lock().unwrap();
 
             handler.seek(SeekFrom::Start(addr.into())).unwrap();
             handler.write_all(&word.to_be_bytes()).unwrap();

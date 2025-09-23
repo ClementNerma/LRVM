@@ -1,7 +1,7 @@
 //! The RAM component offers a simple RAM that resets with the motherboard.
 //! See [`RAM`] for more details.
 
-use std::cell::RefCell;
+use std::sync::Mutex;
 
 use lrvm::board::Bus;
 use lrvm_tools::metadata::{DeviceMetadata, MemoryType};
@@ -9,7 +9,7 @@ use lrvm_tools::metadata::{DeviceMetadata, MemoryType};
 /// The RAM component offers a simple non-persistent storage.
 /// When it receives a RESET request from the motherboard, all the storage is zeroed.
 pub struct Ram {
-    storage: RefCell<Vec<u32>>,
+    storage: Mutex<Vec<u32>>,
     size: u32,
     hw_id: u64,
 }
@@ -24,7 +24,7 @@ impl Ram {
             Err("RAM's size must be a multiple of 4 bytes")
         } else {
             Ok(Self {
-                storage: RefCell::new(vec![
+                storage: Mutex::new(vec![
                     0;
                     size.try_into().map_err(|_| {
                         "RAM size cannot exceed your CPU architecture's supported size"
@@ -45,7 +45,7 @@ impl Ram {
             .map_err(|_| "RAM's length cannot be larger than 2^32 words")?;
 
         Ok(Self {
-            storage: RefCell::new(storage),
+            storage: Mutex::new(storage),
             size: size / 4,
             hw_id,
         })
@@ -83,7 +83,7 @@ impl Ram {
         storage.resize(size as usize, 0);
 
         Ok(Self {
-            storage: RefCell::new(storage),
+            storage: Mutex::new(storage),
             size,
             hw_id,
         })
@@ -112,14 +112,14 @@ impl Bus for Ram {
     }
 
     fn read(&self, addr: u32, _ex: &mut u16) -> u32 {
-        self.storage.borrow()[addr as usize / 4]
+        self.storage.lock().unwrap()[addr as usize / 4]
     }
 
     fn write(&self, addr: u32, word: u32, _ex: &mut u16) {
-        self.storage.borrow_mut()[addr as usize / 4] = word;
+        self.storage.lock().unwrap()[addr as usize / 4] = word;
     }
 
     fn reset(&self) {
-        self.storage.borrow_mut().fill(0);
+        self.storage.lock().unwrap().fill(0);
     }
 }

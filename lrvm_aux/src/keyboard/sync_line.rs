@@ -1,7 +1,7 @@
 //! The synchronous line keyboard component offers a simple UTF-8 line reading system.
 //! See [`SyncLineKeyboard`] for more details.
 
-use std::cell::RefCell;
+use std::sync::Mutex;
 
 use lrvm::board::Bus;
 use lrvm_tools::{
@@ -20,7 +20,7 @@ use lrvm_tools::{
 ///
 /// The buffer is guaranteed to contain valid UTF-8 data.
 pub struct SyncLineKeyboard {
-    buffer: RefCell<Vec<u32>>,
+    buffer: Mutex<Vec<u32>>,
     capacity: u32,
     handler: Box<dyn Fn() -> String>,
     hw_id: u64,
@@ -51,7 +51,7 @@ impl SyncLineKeyboard {
         let capacity = capacity / 4;
 
         Ok(Self {
-            buffer: RefCell::new(vec![0; (capacity - 1) as usize]),
+            buffer: Mutex::new(vec![0; (capacity - 1) as usize]),
             capacity: capacity - 1,
             handler,
             hw_id,
@@ -81,7 +81,7 @@ impl Bus for SyncLineKeyboard {
         if addr == self.capacity {
             0
         } else {
-            self.buffer.borrow()[addr as usize]
+            self.buffer.lock().unwrap()[addr as usize]
         }
     }
 
@@ -99,7 +99,7 @@ impl Bus for SyncLineKeyboard {
                         word += (byte as u32) << ((3 - byte_index) * 8);
 
                         if byte_index == 3 {
-                            let mut buffer = self.buffer.borrow_mut();
+                            let mut buffer = self.buffer.lock().unwrap();
 
                             if pos >= buffer.len() {
                                 eprintln!(
@@ -119,7 +119,7 @@ impl Bus for SyncLineKeyboard {
                     }
 
                     if byte_index > 0 {
-                        let mut buffer = self.buffer.borrow_mut();
+                        let mut buffer = self.buffer.lock().unwrap();
 
                         if pos >= buffer.len() {
                             eprintln!(
@@ -141,6 +141,6 @@ impl Bus for SyncLineKeyboard {
     }
 
     fn reset(&self) {
-        self.buffer.borrow_mut().fill(0);
+        self.buffer.lock().unwrap().fill(0);
     }
 }

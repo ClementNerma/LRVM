@@ -2,8 +2,8 @@
 //! See [`BufferedDisplay`] for more details.
 
 use std::{
-    cell::RefCell,
     str::{Utf8Error, from_utf8},
+    sync::Mutex,
 };
 
 use lrvm::board::Bus;
@@ -27,7 +27,7 @@ pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, &'a [u8])>;
 /// The buffer may contain invalid UTF-8 data. When a display request is received, the handler is called with the decoded UTF-8 string,
 /// which is a result object handling either the valid UTF-8 string or a decoding error object with the faulty raw buffer's content.
 pub struct BufferedDisplay {
-    buffer: RefCell<Vec<u32>>,
+    buffer: Mutex<Vec<u32>>,
     words: u32,
     handler: Box<dyn Fn(DecodedStr)>,
     hw_id: u64,
@@ -59,7 +59,7 @@ impl BufferedDisplay {
         let capacity = capacity / 4;
 
         Ok(Self {
-            buffer: RefCell::new(vec![0; (capacity - 1) as usize]),
+            buffer: Mutex::new(vec![0; (capacity - 1) as usize]),
             words: capacity - 1,
             handler,
             hw_id,
@@ -104,19 +104,19 @@ impl Bus for BufferedDisplay {
         let addr = addr / 4;
 
         if addr < self.words {
-            let mut buffer = self.buffer.borrow_mut();
+            let mut buffer = self.buffer.lock().unwrap();
             buffer[addr as usize] = word;
             return;
         }
 
         match word {
             0xAA => {
-                let bytes = words_to_bytes(self.buffer.borrow().as_slice());
+                let bytes = words_to_bytes(self.buffer.lock().unwrap().as_slice());
                 (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.as_ref())))
             }
 
             0xBB => {
-                let bytes = words_to_bytes(self.buffer.borrow().as_slice());
+                let bytes = words_to_bytes(self.buffer.lock().unwrap().as_slice());
                 (self.handler)(Ok(&String::from_utf8_lossy(&bytes)))
             }
 
@@ -127,6 +127,6 @@ impl Bus for BufferedDisplay {
     }
 
     fn reset(&self) {
-        self.buffer.borrow_mut().fill(0);
+        self.buffer.lock().unwrap().fill(0);
     }
 }

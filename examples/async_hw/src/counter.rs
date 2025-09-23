@@ -1,9 +1,8 @@
 use lrvm::board::Bus;
 use lrvm_tools::exceptions::AuxHwException;
 use lrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
-use std::cell::RefCell;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use thread::JoinHandle;
@@ -21,7 +20,7 @@ pub struct AsyncCounter {
     must_stop: Arc<AtomicBool>,
 
     /// Child thread incrementing the counter every second
-    counting_thread: RefCell<Option<JoinHandle<()>>>,
+    counting_thread: Mutex<Option<JoinHandle<()>>>,
 }
 
 impl AsyncCounter {
@@ -31,13 +30,13 @@ impl AsyncCounter {
             hw_id,
             counter: Arc::default(),
             must_stop: Arc::default(),
-            counting_thread: RefCell::default(),
+            counting_thread: Mutex::default(),
         }
     }
 
     /// Stop the counting thread (if any is alive)
     pub fn stop(&self) {
-        if let Some(handle) = self.counting_thread.borrow_mut().take() {
+        if let Some(handle) = self.counting_thread.lock().unwrap().take() {
             self.must_stop.store(true, Ordering::SeqCst);
             handle.join().unwrap();
         }
@@ -85,7 +84,7 @@ impl Bus for AsyncCounter {
         let thread_must_stop = Arc::clone(&self.must_stop);
 
         // Create the thread which will increment the counter each second
-        *self.counting_thread.borrow_mut() = Some(thread::spawn(move || {
+        *self.counting_thread.lock().unwrap() = Some(thread::spawn(move || {
             loop {
                 // Forever, wait for 1 second...
                 for _ in 1..100 {

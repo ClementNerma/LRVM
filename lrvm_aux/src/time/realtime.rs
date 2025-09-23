@@ -2,7 +2,7 @@
 //! See [`RealtimeClock`] for more details.
 
 use std::{
-    cell::RefCell,
+    sync::Mutex,
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
@@ -21,14 +21,14 @@ use lrvm_tools::{
 /// The fourth to sixth words use the same format, but with the time elapsed since the component was last reset.
 pub struct RealtimeClock {
     hw_id: u64,
-    reset_at: RefCell<Instant>,
+    reset_at: Mutex<Instant>,
 }
 
 impl RealtimeClock {
     pub fn new(hw_id: u64) -> Self {
         Self {
             hw_id,
-            reset_at: RefCell::new(Instant::now()),
+            reset_at: Mutex::new(Instant::now()),
         }
     }
 }
@@ -52,7 +52,7 @@ impl Bus for RealtimeClock {
                 }
             }
         } else {
-            self.reset_at.borrow().elapsed()
+            self.reset_at.lock().unwrap().elapsed()
         };
 
         match addr % 3 {
@@ -72,6 +72,6 @@ impl Bus for RealtimeClock {
     }
 
     fn reset(&self) {
-        *self.reset_at.borrow_mut() = Instant::now();
+        *self.reset_at.lock().unwrap() = Instant::now();
     }
 }
