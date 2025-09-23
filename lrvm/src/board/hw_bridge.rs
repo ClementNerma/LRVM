@@ -2,59 +2,6 @@ use std::{cell::RefCell, rc::Rc};
 
 use super::Bus;
 
-/// Auxiliary component's bus and internal data cache
-struct AuxWithCache {
-    /// Auxiliary component's [`Bus`] interface
-    shared_bus: Rc<RefCell<Box<dyn Bus>>>,
-    /// Data cache for this auxiliary component
-    cache: AuxCache,
-}
-
-/// Cache of an auxiliary component
-#[derive(Debug, Clone)]
-pub struct AuxCache {
-    /// Auxiliary component's ID
-    pub id: usize,
-    /// Auxiliary component's hardware identifier
-    pub hw_id: u64,
-    /// Auxiliary component's generic name
-    pub name: String,
-    /// Auxiliary component's metadata
-    pub metadata: [u32; 8],
-    /// Auxiliary component's size
-    pub size: u32,
-}
-
-impl AuxWithCache {
-    /// Create the cache from an auxiliary component
-    pub fn create_from_aux(id: usize, shared_bus: Rc<RefCell<Box<dyn Bus>>>) -> Self {
-        let bus = shared_bus.borrow();
-
-        let mut name = bus.name().to_string();
-
-        while name.len() > 32 {
-            name.pop();
-        }
-
-        let metadata = bus.metadata();
-        let hw_id = ((metadata[0] as u64) << 32) + metadata[1] as u64;
-        let size = metadata[2];
-
-        std::mem::drop(bus);
-
-        AuxWithCache {
-            shared_bus,
-            cache: AuxCache {
-                id,
-                hw_id,
-                name,
-                metadata,
-                size,
-            },
-        }
-    }
-}
-
 /// The hardware bridge is an internal component that allows internal components to communicate with auxiliary ones.  
 /// It contains a small cache which allows to quickly fetch specific data about components.  
 /// Multiple hardware bridges can co-exit on the motheboard, but their cache is not shared.
@@ -143,5 +90,58 @@ impl HardwareBridge {
         self.aux
             .get(aux_id)
             .map(|aux| aux.shared_bus.borrow_mut().reset())
+    }
+}
+
+/// Auxiliary component's bus and internal data cache
+struct AuxWithCache {
+    /// Auxiliary component's [`Bus`] interface
+    shared_bus: Rc<RefCell<Box<dyn Bus>>>,
+    /// Data cache for this auxiliary component
+    cache: AuxCache,
+}
+
+/// Cache of an auxiliary component
+#[derive(Debug, Clone)]
+pub struct AuxCache {
+    /// Auxiliary component's ID
+    pub id: usize,
+    /// Auxiliary component's hardware identifier
+    pub hw_id: u64,
+    /// Auxiliary component's generic name
+    pub name: String,
+    /// Auxiliary component's metadata
+    pub metadata: [u32; 8],
+    /// Auxiliary component's size
+    pub size: u32,
+}
+
+impl AuxWithCache {
+    /// Create the cache from an auxiliary component
+    pub fn create_from_aux(id: usize, shared_bus: Rc<RefCell<Box<dyn Bus>>>) -> Self {
+        let bus = shared_bus.borrow();
+
+        let mut name = bus.name().to_string();
+
+        while name.len() > 32 {
+            name.pop();
+        }
+
+        let metadata = bus.metadata();
+        let hw_id = ((metadata[0] as u64) << 32) + metadata[1] as u64;
+        let size = metadata[2];
+
+        std::mem::drop(bus);
+
+        AuxWithCache {
+            shared_bus,
+            cache: AuxCache {
+                id,
+                hw_id,
+                name,
+                metadata,
+                size,
+            },
+        }
     }
 }
