@@ -29,7 +29,7 @@ impl SyncCharKeyboard {
     /// Create a synchronous character keyboard component.
     pub fn new(handler: Box<dyn Fn() -> char>, hw_id: u64) -> Self {
         Self {
-            buffer: RefCell::new(0 as char),
+            buffer: RefCell::new('\0'),
             handler,
             hw_id,
         }
@@ -78,6 +78,6 @@ impl Bus for SyncCharKeyboard {
     }
 
     fn reset(&self) {
-        *self.buffer.borrow_mut() = 0 as char;
+        *self.buffer.borrow_mut() = '\0';
     }
 }
