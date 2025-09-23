@@ -431,13 +431,16 @@ Now our component is finally complete, and fully functionnal! Here is the final 
 
 ```rust
 use lrvm::board::Bus;
-use lrvm_tools::exceptions::AuxHwException;
-use lrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
-use thread::JoinHandle;
+use lrvm_tools::{
+    exceptions::AuxHwException,
+    metadata::{DeviceCategory, DeviceMetadata}
+};
+use std::{
+    sync::{Arc, Mutex, atomic::{AtomicBool, AtomicU32, Ordering}},
+    thread,
+    time::Duration,
+    thread::JoinHandle
+};
 
 /// A 1-word-long component that contains a readable counter.  
 /// The counter is incremented each second, asynchronously.
