@@ -1,6 +1,8 @@
 //! The synchronous character keyboard component offers a simple one-character reading system.
 //! See [`SyncLineKeyboard`] for more details.
 
+use std::cell::RefCell;
+
 use lrvm::board::Bus;
 use lrvm_tools::{
     exceptions::AuxHwException,
@@ -18,8 +20,8 @@ use lrvm_tools::{
 ///
 /// The buffer is guaranteed to contain a valid UTF-8 character.
 pub struct SyncCharKeyboard {
-    buffer: char,
-    handler: Box<dyn FnMut() -> char>,
+    buffer: RefCell<char>,
+    handler: RefCell<Box<dyn FnMut() -> char>>,
     hw_id: u64,
 }
 
@@ -27,8 +29,8 @@ impl SyncCharKeyboard {
     /// Create a synchronous character keyboard component.
     pub fn new(handler: Box<dyn FnMut() -> char>, hw_id: u64) -> Self {
         Self {
-            buffer: 0 as char,
-            handler,
+            buffer: RefCell::new(0 as char),
+            handler: RefCell::new(handler),
             hw_id,
         }
     }
@@ -50,9 +52,9 @@ impl Bus for SyncCharKeyboard {
         .encode()
     }
 
-    fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
+    fn read(&self, addr: u32, ex: &mut u16) -> u32 {
         if addr == 0 {
-            self.buffer as u32
+            *self.buffer.borrow() as u32
         } else if addr == 4 {
             *ex = AuxHwException::MemoryNotReadable.into();
             0
@@ -61,12 +63,12 @@ impl Bus for SyncCharKeyboard {
         }
     }
 
-    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
+    fn write(&self, addr: u32, word: u32, ex: &mut u16) {
         if addr == 0 {
             *ex = 0x31 << 8;
         } else if addr == 4 {
             match word {
-                0x01 => self.buffer = (self.handler)(),
+                0x01 => *self.buffer.borrow_mut() = (self.handler.borrow_mut())(),
                 0x02 => self.reset(),
                 code => *ex = AuxHwException::UnknownOperation(code as u8).into(),
             }
@@ -75,7 +77,7 @@ impl Bus for SyncCharKeyboard {
         }
     }
 
-    fn reset(&mut self) {
-        self.buffer = 0 as char;
+    fn reset(&self) {
+        *self.buffer.borrow_mut() = 0 as char;
     }
 }

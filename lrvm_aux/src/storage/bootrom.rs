@@ -91,7 +91,7 @@ impl Bus for BootRom {
         .encode()
     }
 
-    fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
+    fn read(&self, addr: u32, _ex: &mut u16) -> u32 {
         let addr = addr / 4;
 
         if addr < self.len {
@@ -101,9 +101,9 @@ impl Bus for BootRom {
         }
     }
 
-    fn write(&mut self, _addr: u32, _word: u32, ex: &mut u16) {
+    fn write(&self, _addr: u32, _word: u32, ex: &mut u16) {
         *ex = AuxHwException::MemoryNotWritable.into();
     }
 
-    fn reset(&mut self) {}
+    fn reset(&self) {}
 }

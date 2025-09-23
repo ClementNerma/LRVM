@@ -1,13 +1,15 @@
 //! The RAM component offers a simple RAM that resets with the motherboard.
 //! See [`RAM`] for more details.
 
+use std::cell::RefCell;
+
 use lrvm::board::Bus;
 use lrvm_tools::metadata::{DeviceMetadata, MemoryType};
 
 /// The RAM component offers a simple non-persistent storage.
 /// When it receives a RESET request from the motherboard, all the storage is zeroed.
 pub struct Ram {
-    storage: Vec<u32>,
+    storage: RefCell<Vec<u32>>,
     size: u32,
     hw_id: u64,
 }
@@ -22,12 +24,12 @@ impl Ram {
             Err("RAM's size must be a multiple of 4 bytes")
         } else {
             Ok(Self {
-                storage: vec![
+                storage: RefCell::new(vec![
                     0;
                     size.try_into().map_err(|_| {
                         "RAM size cannot exceed your CPU architecture's supported size"
                     })?
-                ],
+                ]),
                 size: size / 4,
                 hw_id,
             })
@@ -43,7 +45,7 @@ impl Ram {
             .map_err(|_| "RAM's length cannot be larger than 2^32 words")?;
 
         Ok(Self {
-            storage,
+            storage: RefCell::new(storage),
             size: size / 4,
             hw_id,
         })
@@ -81,7 +83,7 @@ impl Ram {
         storage.resize(size as usize, 0);
 
         Ok(Self {
-            storage,
+            storage: RefCell::new(storage),
             size,
             hw_id,
         })
@@ -109,15 +111,16 @@ impl Bus for Ram {
         .encode()
     }
 
-    fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
-        self.storage[addr as usize / 4]
+    fn read(&self, addr: u32, _ex: &mut u16) -> u32 {
+        self.storage.borrow()[addr as usize / 4]
     }
 
-    fn write(&mut self, addr: u32, word: u32, _ex: &mut u16) {
-        self.storage[addr as usize / 4] = word;
+    fn write(&self, addr: u32, word: u32, _ex: &mut u16) {
+        self.storage.borrow_mut()[addr as usize / 4] = word;
     }
 
-    fn reset(&mut self) {
-        self.storage = vec![0; self.storage.len()];
+    fn reset(&self) {
+        let mut storage = self.storage.borrow_mut();
+        *storage = vec![0; storage.len()];
     }
 }

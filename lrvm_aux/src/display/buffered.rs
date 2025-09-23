@@ -1,7 +1,10 @@
 //! The buffered display component offers a simple UTF-8 display system.
 //! See [`BufferedDisplay`] for more details.
 
-use std::str::{from_utf8, Utf8Error};
+use std::{
+    cell::RefCell,
+    str::{Utf8Error, from_utf8},
+};
 
 use lrvm::board::Bus;
 use lrvm_tools::{
@@ -24,9 +27,9 @@ pub type DecodedStr<'a> = Result<&'a str, (Utf8Error, &'a [u8])>;
 /// The buffer may contain invalid UTF-8 data. When a display request is received, the handler is called with the decoded UTF-8 string,
 /// which is a result object handling either the valid UTF-8 string or a decoding error object with the faulty raw buffer's content.
 pub struct BufferedDisplay {
-    buffer: Vec<u32>,
+    buffer: RefCell<Vec<u32>>,
     words: u32,
-    handler: Box<dyn FnMut(DecodedStr)>,
+    handler: RefCell<Box<dyn FnMut(DecodedStr)>>,
     hw_id: u64,
 }
 
@@ -56,9 +59,9 @@ impl BufferedDisplay {
         let capacity = capacity / 4;
 
         Ok(Self {
-            buffer: vec![0; (capacity - 1) as usize],
+            buffer: RefCell::new(vec![0; (capacity - 1) as usize]),
             words: capacity - 1,
-            handler,
+            handler: RefCell::new(handler),
             hw_id,
         })
     }
@@ -92,28 +95,29 @@ impl Bus for BufferedDisplay {
         .encode()
     }
 
-    fn read(&mut self, _addr: u32, ex: &mut u16) -> u32 {
+    fn read(&self, _addr: u32, ex: &mut u16) -> u32 {
         *ex = AuxHwException::MemoryNotReadable.into();
         0
     }
 
-    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
+    fn write(&self, addr: u32, word: u32, ex: &mut u16) {
         let addr = addr / 4;
 
         if addr < self.words {
-            self.buffer[addr as usize] = word;
+            let mut buffer = self.buffer.borrow_mut();
+            buffer[addr as usize] = word;
             return;
         }
 
         match word {
             0xAA => {
-                let bytes = words_to_bytes(&self.buffer);
-                (self.handler)(from_utf8(&bytes).map_err(|err| (err, bytes.as_ref())))
+                let bytes = words_to_bytes(self.buffer.borrow().as_slice());
+                (self.handler.borrow_mut())(from_utf8(&bytes).map_err(|err| (err, bytes.as_ref())))
             }
 
             0xBB => {
-                let bytes = words_to_bytes(&self.buffer);
-                (self.handler)(Ok(&String::from_utf8_lossy(&bytes)))
+                let bytes = words_to_bytes(self.buffer.borrow().as_slice());
+                (self.handler.borrow_mut())(Ok(&String::from_utf8_lossy(&bytes)))
             }
 
             0xFF => self.reset(),
@@ -122,7 +126,8 @@ impl Bus for BufferedDisplay {
         }
     }
 
-    fn reset(&mut self) {
-        self.buffer = vec![0; self.buffer.len()];
+    fn reset(&self) {
+        let mut buffer = self.buffer.borrow_mut();
+        *buffer = vec![0; buffer.len()];
     }
 }

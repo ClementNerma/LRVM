@@ -1,7 +1,10 @@
 //! The buffered display component offers a simple UTF-8 display system.
 //! See [`BufferedDisplay`] for more details.
 
-use std::io::{stdout, Write};
+use std::{
+    cell::RefCell,
+    io::{Write, stdout},
+};
 
 use lrvm::board::Bus;
 use lrvm_tools::{
@@ -12,14 +15,17 @@ use lrvm_tools::{
 // The character display works by sending to a display callback the character written in the only word of the display.
 // It may be an invalid UTF-8 character, in which case the invalid word will be sent to the header instead of the decoded string.
 pub struct CharDisplay {
-    handler: Box<dyn FnMut(Result<char, u32>)>,
+    handler: RefCell<Box<dyn FnMut(Result<char, u32>)>>,
     hw_id: u64,
 }
 
 impl CharDisplay {
     /// Create a character display component.
     pub fn new(handler: Box<dyn FnMut(Result<char, u32>)>, hw_id: u64) -> Self {
-        Self { handler, hw_id }
+        Self {
+            handler: RefCell::new(handler),
+            hw_id,
+        }
     }
 
     /// Create a println!-based character display component, tolerating invalid UTF-8 characters ('�' displayed instead)
@@ -44,14 +50,14 @@ impl Bus for CharDisplay {
         DeviceMetadata::new(self.hw_id, 4, DisplayType::Buffered.into(), None, None).encode()
     }
 
-    fn read(&mut self, _addr: u32, ex: &mut u16) -> u32 {
+    fn read(&self, _addr: u32, ex: &mut u16) -> u32 {
         *ex = AuxHwException::MemoryNotReadable.into();
         0
     }
 
-    fn write(&mut self, _addr: u32, word: u32, _ex: &mut u16) {
-        (self.handler)(std::char::from_u32(word).ok_or(word))
+    fn write(&self, _addr: u32, word: u32, _ex: &mut u16) {
+        (self.handler.borrow_mut())(std::char::from_u32(word).ok_or(word))
     }
 
-    fn reset(&mut self) {}
+    fn reset(&self) {}
 }

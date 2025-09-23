@@ -1,7 +1,10 @@
 //! The real time clock component provides a way to get informations about the current time.  
 //! See [`RealtimeClock`] for more details.
 
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
+use std::{
+    cell::RefCell,
+    time::{Instant, SystemTime, UNIX_EPOCH},
+};
 
 use lrvm::board::Bus;
 use lrvm_tools::{
@@ -18,14 +21,14 @@ use lrvm_tools::{
 /// The fourth to sixth words use the same format, but with the time elapsed since the component was last reset.
 pub struct RealtimeClock {
     hw_id: u64,
-    reset_at: Instant,
+    reset_at: RefCell<Instant>,
 }
 
 impl RealtimeClock {
     pub fn new(hw_id: u64) -> Self {
         Self {
             hw_id,
-            reset_at: Instant::now(),
+            reset_at: RefCell::new(Instant::now()),
         }
     }
 }
@@ -39,7 +42,7 @@ impl Bus for RealtimeClock {
         DeviceMetadata::new(self.hw_id, 24, ClockType::Realtime.wrap(), None, None).encode()
     }
 
-    fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
+    fn read(&self, addr: u32, ex: &mut u16) -> u32 {
         let time = if addr < 14 {
             match SystemTime::now().duration_since(UNIX_EPOCH) {
                 Ok(duration) => duration,
@@ -49,7 +52,7 @@ impl Bus for RealtimeClock {
                 }
             }
         } else {
-            self.reset_at.elapsed()
+            self.reset_at.borrow().elapsed()
         };
 
         match addr % 3 {
@@ -64,11 +67,11 @@ impl Bus for RealtimeClock {
         }
     }
 
-    fn write(&mut self, _addr: u32, _word: u32, ex: &mut u16) {
+    fn write(&self, _addr: u32, _word: u32, ex: &mut u16) {
         *ex = AuxHwException::MemoryNotWritable.encode();
     }
 
-    fn reset(&mut self) {
-        self.reset_at = Instant::now();
+    fn reset(&self) {
+        *self.reset_at.borrow_mut() = Instant::now();
     }
 }

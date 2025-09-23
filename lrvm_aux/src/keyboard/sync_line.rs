@@ -1,6 +1,8 @@
 //! The synchronous line keyboard component offers a simple UTF-8 line reading system.
 //! See [`SyncLineKeyboard`] for more details.
 
+use std::cell::RefCell;
+
 use lrvm::board::Bus;
 use lrvm_tools::{
     exceptions::AuxHwException,
@@ -18,9 +20,9 @@ use lrvm_tools::{
 ///
 /// The buffer is guaranteed to contain valid UTF-8 data.
 pub struct SyncLineKeyboard {
-    buffer: Vec<u32>,
+    buffer: RefCell<Vec<u32>>,
     capacity: u32,
-    handler: Box<dyn FnMut() -> String>,
+    handler: RefCell<Box<dyn FnMut() -> String>>,
     hw_id: u64,
 }
 
@@ -49,9 +51,9 @@ impl SyncLineKeyboard {
         let capacity = capacity / 4;
 
         Ok(Self {
-            buffer: vec![0; (capacity - 1) as usize],
+            buffer: RefCell::new(vec![0; (capacity - 1) as usize]),
             capacity: capacity - 1,
-            handler,
+            handler: RefCell::new(handler),
             hw_id,
         })
     }
@@ -73,17 +75,17 @@ impl Bus for SyncLineKeyboard {
         .encode()
     }
 
-    fn read(&mut self, addr: u32, _ex: &mut u16) -> u32 {
+    fn read(&self, addr: u32, _ex: &mut u16) -> u32 {
         let addr = addr / 4;
 
         if addr == self.capacity {
             0
         } else {
-            self.buffer[addr as usize]
+            self.buffer.borrow()[addr as usize]
         }
     }
 
-    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
+    fn write(&self, addr: u32, word: u32, ex: &mut u16) {
         if addr / 4 != self.capacity {
             *ex = 0x31 << 8;
         } else {
@@ -93,16 +95,21 @@ impl Bus for SyncLineKeyboard {
                     let mut byte_index = 0;
                     let mut pos = 0;
 
-                    for byte in (self.handler)().bytes() {
+                    for byte in (self.handler.borrow_mut())().bytes() {
                         word += (byte as u32) << ((3 - byte_index) * 8);
 
                         if byte_index == 3 {
-                            if pos >= self.buffer.len() {
-                                eprintln!("Warning: input is too long for synchronous keyboard's buffer (max. {} bytes)", self.capacity * 4);
+                            let mut buffer = self.buffer.borrow_mut();
+
+                            if pos >= buffer.len() {
+                                eprintln!(
+                                    "Warning: input is too long for synchronous keyboard's buffer (max. {} bytes)",
+                                    self.capacity * 4
+                                );
                                 return;
                             }
 
-                            self.buffer[pos] = word;
+                            buffer[pos] = word;
                             pos += 1;
                             byte_index = 0;
                             word = 0;
@@ -112,12 +119,17 @@ impl Bus for SyncLineKeyboard {
                     }
 
                     if byte_index > 0 {
-                        if pos >= self.buffer.len() {
-                            eprintln!("Warning: input is too long for synchronous keyboard's buffer (max. {} bytes)", self.capacity * 4);
+                        let mut buffer = self.buffer.borrow_mut();
+
+                        if pos >= buffer.len() {
+                            eprintln!(
+                                "Warning: input is too long for synchronous keyboard's buffer (max. {} bytes)",
+                                self.capacity * 4
+                            );
                             return;
                         }
 
-                        self.buffer[pos] = word;
+                        buffer[pos] = word;
                     }
                 }
 
@@ -128,7 +140,8 @@ impl Bus for SyncLineKeyboard {
         }
     }
 
-    fn reset(&mut self) {
-        self.buffer = vec![0; self.buffer.len()];
+    fn reset(&self) {
+        let mut buffer = self.buffer.borrow_mut();
+        *buffer = vec![0; buffer.len()];
     }
 }

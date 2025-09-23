@@ -44,7 +44,7 @@ pub fn assemble(source: &str) -> Result<Vec<u8>, String> {
 /// Assemble a LASM source code to machine code and split it to words.
 /// Returns an error message in case of error.
 pub fn assemble_words(source: &str) -> Result<Vec<u32>, String> {
-    assemble(source).map(bytes_to_words)
+    assemble(source).map(|b| bytes_to_words(b.as_slice()))
 }
 
 /// Convert a LASM source code to a strongly-typed program

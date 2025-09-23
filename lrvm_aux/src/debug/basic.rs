@@ -1,5 +1,7 @@
 //! The basic debug component offers a simple debugging system.
 //! See [`BasicDebug`] for more details.
+use std::cell::RefCell;
+
 use lrvm::board::Bus;
 use lrvm_tools::{
     exceptions::AuxHwException,
@@ -26,7 +28,7 @@ use lrvm_tools::{
 /// * Word 15: "DEBUG" message
 pub struct BasicDebug {
     hw_id: u64,
-    debugger: Box<dyn FnMut(DebugInfo)>,
+    debugger: RefCell<Box<dyn FnMut(DebugInfo)>>,
 }
 
 /// An information to debug
@@ -53,7 +55,10 @@ impl BasicDebug {
     /// Create a new Basic Debug Interface (BDI).  
     /// The debugger is a function that takes an information to debug, see [`DebugInfo`] for more details.
     pub fn new(hw_id: u64, debugger: Box<dyn FnMut(DebugInfo)>) -> Self {
-        Self { hw_id, debugger }
+        Self {
+            hw_id,
+            debugger: RefCell::new(debugger),
+        }
     }
 
     /// Create a new Basic Debug Interface (BDI) with a println!-backed debugger
@@ -126,12 +131,12 @@ impl Bus for BasicDebug {
         .encode()
     }
 
-    fn read(&mut self, _addr: u32, ex: &mut u16) -> u32 {
+    fn read(&self, _addr: u32, ex: &mut u16) -> u32 {
         *ex = AuxHwException::MemoryNotReadable.encode();
         0
     }
 
-    fn write(&mut self, addr: u32, word: u32, _ex: &mut u16) {
+    fn write(&self, addr: u32, word: u32, _ex: &mut u16) {
         let info = match addr / 4 {
             0 => DebugInfo::UnsignedByteHex(word as u8),
             1 => DebugInfo::UnsignedHalfWordHex(word as u16),
@@ -152,8 +157,8 @@ impl Bus for BasicDebug {
             _ => unreachable!("Tried to write to out-of-range address in basic debug interface"),
         };
 
-        (self.debugger)(info);
+        (self.debugger.borrow_mut())(info);
     }
 
-    fn reset(&mut self) {}
+    fn reset(&self) {}
 }

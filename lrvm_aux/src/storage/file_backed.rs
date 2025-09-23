@@ -2,6 +2,7 @@
 //! See [`FileBackedMem`] for more details.
 
 use std::{
+    cell::RefCell,
     cmp::Ordering,
     fs::{File, OpenOptions},
     io::{Read, Result as IOResult, Seek, SeekFrom, Write},
@@ -18,7 +19,7 @@ use lrvm_tools::{
 ///
 /// It uses a real file to store its data and is perfect for storing data that persists after the VM is destroyed.
 pub struct FileBackedMem {
-    handler: File,
+    handler: RefCell<File>,
     size: u32,
     real_size: u32,
     writable: bool,
@@ -39,7 +40,9 @@ impl FileBackedMem {
         let real_size = (unaligned_real_size / 4) * 4;
 
         if real_size != unaligned_real_size {
-            println!("Warning: opened unaligned file as aligned (rounded size to nearest lower multiple of 4 bytes)");
+            println!(
+                "Warning: opened unaligned file as aligned (rounded size to nearest lower multiple of 4 bytes)"
+            );
         }
 
         let _: usize = real_size.try_into().expect(
@@ -49,7 +52,7 @@ impl FileBackedMem {
         Ok(Self {
             size: real_size,
             real_size,
-            handler,
+            handler: RefCell::new(handler),
             writable,
             hw_id,
         })
@@ -66,7 +69,7 @@ impl FileBackedMem {
 
         match mem.real_size.cmp(&size) {
             Ordering::Greater => mem.size = size,
-            Ordering::Less => mem.handler.set_len(size.into())?,
+            Ordering::Less => mem.handler.borrow_mut().set_len(size.into())?,
             Ordering::Equal => {}
         }
 
@@ -102,19 +105,21 @@ impl Bus for FileBackedMem {
         .encode()
     }
 
-    fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
+    fn read(&self, addr: u32, ex: &mut u16) -> u32 {
         if addr >= self.real_size {
             return 0;
         }
 
         let mut buffer = [0; 4];
 
-        if self.handler.seek(SeekFrom::Start(addr.into())).is_err() {
+        let mut handler = self.handler.borrow_mut();
+
+        if handler.seek(SeekFrom::Start(addr.into())).is_err() {
             *ex = AuxHwException::GenericPhysicalReadError.into();
             return 0;
         }
 
-        if self.handler.read_exact(&mut buffer).is_err() {
+        if handler.read_exact(&mut buffer).is_err() {
             *ex = AuxHwException::GenericPhysicalReadError.into();
             return 0;
         }
@@ -122,14 +127,16 @@ impl Bus for FileBackedMem {
         u32::from_be_bytes(buffer)
     }
 
-    fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
+    fn write(&self, addr: u32, word: u32, ex: &mut u16) {
         if !self.writable {
             *ex = AuxHwException::MemoryNotWritable.into();
         } else if addr < self.real_size {
-            self.handler.seek(SeekFrom::Start(addr.into())).unwrap();
-            self.handler.write_all(&word.to_be_bytes()).unwrap();
+            let mut handler = self.handler.borrow_mut();
+
+            handler.seek(SeekFrom::Start(addr.into())).unwrap();
+            handler.write_all(&word.to_be_bytes()).unwrap();
         }
     }
 
-    fn reset(&mut self) {}
+    fn reset(&self) {}
 }

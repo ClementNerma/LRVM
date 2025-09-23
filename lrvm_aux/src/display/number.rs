@@ -1,7 +1,10 @@
 //! The number display component offers a extremely simple way to display directly unsigned 32-bit numbers.
 //! See [`NumberDisplay`] for more details.
 
-use std::io::{stdout, Write};
+use std::{
+    cell::RefCell,
+    io::{Write, stdout},
+};
 
 use lrvm::board::Bus;
 use lrvm_tools::{
@@ -33,7 +36,7 @@ pub struct NumberDisplay {
     hw_id: u64,
 
     /// The parameters are the number to display, the format to use, and if a newline symbol should be printed afterwards.
-    handler: Box<dyn FnMut(u32, NumberDisplayFormat, bool)>,
+    handler: RefCell<Box<dyn FnMut(u32, NumberDisplayFormat, bool)>>,
 }
 
 impl NumberDisplay {
@@ -41,7 +44,10 @@ impl NumberDisplay {
     /// The handler can is supposed to display the provided number, but this is not required.  
     /// The parameters are the number to display, the format to use, and if a newline symbol should be printed afterwards.
     pub fn new(handler: Box<dyn FnMut(u32, NumberDisplayFormat, bool)>, hw_id: u64) -> Self {
-        Self { hw_id, handler }
+        Self {
+            hw_id,
+            handler: RefCell::new(handler),
+        }
     }
 
     /// Create a number display which print! the numbers
@@ -75,13 +81,13 @@ impl Bus for NumberDisplay {
         DeviceMetadata::new(self.hw_id, 64, DisplayType::Number.wrap(), None, None).encode()
     }
 
-    fn read(&mut self, _addr: u32, ex: &mut u16) -> u32 {
+    fn read(&self, _addr: u32, ex: &mut u16) -> u32 {
         *ex = AuxHwException::MemoryNotReadable.encode();
         0
     }
 
-    fn write(&mut self, addr: u32, word: u32, _ex: &mut u16) {
-        (self.handler)(
+    fn write(&self, addr: u32, word: u32, _ex: &mut u16) {
+        (self.handler.borrow_mut())(
             word,
             match addr % 16 {
                 0 => NumberDisplayFormat::Hex,
@@ -94,5 +100,5 @@ impl Bus for NumberDisplay {
         );
     }
 
-    fn reset(&mut self) {}
+    fn reset(&self) {}
 }
