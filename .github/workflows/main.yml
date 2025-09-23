@@ -8,16 +8,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
       - name: Cache unpublished "broken-md-links" dependency
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin
           key: broken-md-links-tool
+
       - name: Get "broken-md-links" tool
         run: |
           if ! type broken-md-links > /dev/null; then
             cargo install --git https://github.com/ClementNerma/broken-md-links.git
           fi
+
       - name: Look for broken MD links
         run: broken-md-links ${GITHUB_WORKSPACE}
 
@@ -25,21 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Cache cargo registry
+
+      - name: Cache Cargo install
         uses: actions/cache@v4
         with:
-          path: ~/.cargo/registry
+          path: ~/.cargo
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo build
+
+      - name: Cache build artifacts
         uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Run Cargo tests
         run: |
           cargo test -- --test-threads=1
@@ -48,21 +49,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Cache cargo registry
+ 
+      - name: Cache Cargo install
         uses: actions/cache@v4
         with:
-          path: ~/.cargo/registry
+          path: ~/.cargo
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo build
+
+      - name: Cache build artifacts
         uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Check linting
         run: |
           cargo clippy -- -D warnings
