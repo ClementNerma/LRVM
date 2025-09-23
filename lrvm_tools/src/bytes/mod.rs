@@ -1,9 +1,7 @@
 //! Utilities to deal with bytes
 
 /// Convert a list of bytes to a list of words
-pub fn bytes_to_words(bytes: impl AsRef<[u8]>) -> Vec<u32> {
-    let bytes = bytes.as_ref();
-
+pub fn bytes_to_words(bytes: &[u8]) -> Vec<u32> {
     let rem = bytes.len() % 4;
     let mut words = Vec::with_capacity(bytes.len() / 4 + usize::from(rem == 0));
     let mut word = 0;
@@ -25,9 +23,8 @@ pub fn bytes_to_words(bytes: impl AsRef<[u8]>) -> Vec<u32> {
 }
 
 /// Convert a list of words to a list of bytes
-pub fn words_to_bytes(bytes: impl AsRef<[u32]>) -> Vec<u8> {
+pub fn words_to_bytes(bytes: &[u32]) -> Vec<u8> {
     bytes
-        .as_ref()
         .iter()
         .flat_map(|word| word.to_be_bytes().to_vec())
         .collect()
