@@ -1,8 +1,9 @@
 use lrvm::board::Bus;
 use lrvm_tools::exceptions::AuxHwException;
 use lrvm_tools::metadata::{DeviceCategory, DeviceMetadata};
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::cell::RefCell;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::thread;
 use std::time::Duration;
 use thread::JoinHandle;
@@ -20,7 +21,7 @@ pub struct AsyncCounter {
     must_stop: Arc<AtomicBool>,
 
     /// Child thread incrementing the counter every second
-    counting_thread: Option<JoinHandle<()>>,
+    counting_thread: RefCell<Option<JoinHandle<()>>>,
 }
 
 impl AsyncCounter {
@@ -30,12 +31,12 @@ impl AsyncCounter {
             hw_id,
             counter: Arc::default(),
             must_stop: Arc::default(),
-            counting_thread: None,
+            counting_thread: RefCell::default(),
         }
     }
 
     /// Stop the counting thread (if any is alive)
-    pub fn stop(&mut self) {
+    pub fn stop(&self) {
         if let Some(handle) = self.counting_thread.take() {
             self.must_stop.store(true, Ordering::SeqCst);
             handle.join().unwrap();
@@ -56,26 +57,26 @@ impl Bus for AsyncCounter {
 
     // Read an address inside the component
     // There is only one possible address here, so we don't have to worry about its value
-    fn read(&mut self, _addr: u32, _ex: &mut u16) -> u32 {
+    fn read(&self, _addr: u32, _ex: &mut u16) -> u32 {
         self.counter.load(Ordering::SeqCst)
     }
 
     // Write an address inside the component
     // This is not allowed inside our component, which is read-only
-    fn write(&mut self, _addr: u32, _word: u32, ex: &mut u16) {
+    fn write(&self, _addr: u32, _word: u32, ex: &mut u16) {
         *ex = AuxHwException::MemoryNotWritable.encode();
     }
 
     // Reset the component
-    fn reset(&mut self) {
+    fn reset(&self) {
         // Stop the existing thread
         self.stop();
 
         // Create a shared counter
-        self.counter = Arc::new(AtomicU32::new(0));
+        self.counter.store(0, Ordering::SeqCst);
 
         // Create a "must stop" HALT signal
-        self.must_stop = Arc::new(AtomicBool::new(false));
+        self.must_stop.store(false, Ordering::SeqCst);
 
         // Clone its lock to use it from another thread
         let thread_counter = Arc::clone(&self.counter);
@@ -84,19 +85,21 @@ impl Bus for AsyncCounter {
         let thread_must_stop = Arc::clone(&self.must_stop);
 
         // Create the thread which will increment the counter each second
-        self.counting_thread = Some(thread::spawn(move || loop {
-            // Forever, wait for 1 second...
-            for _ in 1..100 {
-                thread::sleep(Duration::from_millis(10));
+        *self.counting_thread.borrow_mut() = Some(thread::spawn(move || {
+            loop {
+                // Forever, wait for 1 second...
+                for _ in 1..100 {
+                    thread::sleep(Duration::from_millis(10));
 
-                // ...while periodically listening to HALT signals...
-                if thread_must_stop.load(Ordering::SeqCst) {
-                    return;
+                    // ...while periodically listening to HALT signals...
+                    if thread_must_stop.load(Ordering::SeqCst) {
+                        return;
+                    }
                 }
-            }
 
-            // ...then increment the counter
-            thread_counter.fetch_add(1, Ordering::SeqCst);
+                // ...then increment the counter
+                thread_counter.fetch_add(1, Ordering::SeqCst);
+            }
         }));
     }
 }

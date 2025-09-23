@@ -3,39 +3,31 @@
 //!
 //! The motherboard can also emulate a reset button through the [`reset`] function which propagates the even through all connected [`Bus`].
 
-use std::{cell::RefCell, rc::Rc};
-
 use crate::{cpu::Cpu, mem::MappedMemory};
 
 use super::{Bus, HardwareBridge};
 
 /// Virtual motherboard
 pub struct MotherBoard {
-    /// Auxiliary components connected to the motherboard
-    aux: Vec<Rc<RefCell<Box<dyn Bus>>>>,
     /// Central Processing Unit (CPU)
     cpu: Cpu,
+
+    /// Auxiliary components connected to the motherboard
+    hwb: HardwareBridge,
 }
 
 impl MotherBoard {
     /// Create a new motherboard with a set of components
     pub fn new(components: impl IntoIterator<Item = Box<dyn Bus>>) -> Self {
-        let aux = components
-            .into_iter()
-            .map(|cp| Rc::new(RefCell::new(cp)))
-            .collect::<Vec<_>>();
-
-        assert!(
-            aux.len() <= u32::MAX as usize,
-            "Cannot connect more than 2^32 components!"
-        );
+        // Instanciate the hardware bridge
+        let hwb = HardwareBridge::new(components);
 
         // Instanciate the memory
-        let mem = MappedMemory::new(HardwareBridge::new(aux.clone()));
+        let mem = MappedMemory::new(hwb.clone());
 
         Self {
-            cpu: Cpu::new(HardwareBridge::new(aux.clone()), mem),
-            aux,
+            cpu: Cpu::new(hwb.clone(), mem),
+            hwb,
         }
     }
 
@@ -61,14 +53,14 @@ impl MotherBoard {
     pub fn reset(&mut self) {
         self.cpu.reset();
 
-        for aux in self.aux.iter() {
-            aux.borrow_mut().reset();
+        for aux_id in 0..self.hwb.count() {
+            self.hwb.reset(aux_id);
         }
     }
 
     /// Get the number of connected components
     pub fn count(&self) -> usize {
-        self.aux.len()
+        self.hwb.count()
     }
 
     /// Drop the motherboard

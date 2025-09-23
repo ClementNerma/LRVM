@@ -91,7 +91,7 @@ impl MappedMemory {
     /// The related component will be contacted through its [`Bus`] if mounted at this address.
     /// If no component is mount at this address, the `0x00000000` value will be returned.
     /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
-    pub fn read(&mut self, addr: u32, ex: &mut u16) -> u32 {
+    pub fn read(&self, addr: u32, ex: &mut u16) -> u32 {
         assert!(
             addr.is_multiple_of(4),
             "Memory does not support reading from unaligned addresses"
@@ -121,7 +121,7 @@ impl MappedMemory {
     /// The related component will be contacted through its [`Bus`] if mounted at this address.
     /// If no component is mount at this address, the write will simply be ignored.
     /// If the value of `ex` is not zero when this function returns, a hardware exception occurred with the exception code and data in it.
-    pub fn write(&mut self, addr: u32, word: u32, ex: &mut u16) {
+    pub fn write(&self, addr: u32, word: u32, ex: &mut u16) {
         assert!(
             addr.is_multiple_of(4),
             "Memory does not support writing to unaligned addresses"

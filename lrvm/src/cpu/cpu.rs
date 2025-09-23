@@ -225,13 +225,13 @@ impl Cpu {
             0x00 => {
                 self.exception(0x01, Some(opcode.into()));
                 Err(())
-            },
+            }
 
             // CPY
             0x01 => {
                 let (reg_dest, value) = args!(REG, REG_OR_LIT_2);
                 self.write_reg(reg_dest, value)
-            },
+            }
 
             // EX
             0x02 => {
@@ -242,7 +242,7 @@ impl Cpu {
                     self.write_reg(reg_a, reg_b_value)?;
                     self.write_reg(reg_b, pivot_a)
                 })
-            },
+            }
 
             // ADD, SUB, MUL, AND, BOR, XOR, SHL, SHR
             0x03..=0x05 | 0x08..=0x0C => {
@@ -254,38 +254,54 @@ impl Cpu {
 
                 let reg_value = self.read_reg(reg)?;
 
-                let compute = self.compute(reg_value, value, match opcode {
-                    0x03 => Op::Add,
-                    0x04 => Op::Sub,
-                    0x05 => Op::Mul,
-                    0x08 => Op::And,
-                    0x09 => Op::Bor,
-                    0x0A => Op::Xor,
-                    0x0B => Op::Shl,
-                    0x0C => Op::Shr,
-                    _ => unreachable!()
-                })?;
+                let compute = self.compute(
+                    reg_value,
+                    value,
+                    match opcode {
+                        0x03 => Op::Add,
+                        0x04 => Op::Sub,
+                        0x05 => Op::Mul,
+                        0x08 => Op::And,
+                        0x09 => Op::Bor,
+                        0x0A => Op::Xor,
+                        0x0B => Op::Shl,
+                        0x0C => Op::Shr,
+                        _ => unreachable!(),
+                    },
+                )?;
 
                 self.write_reg(reg, compute)
-            },
+            }
 
             // DIV
             0x06 => {
                 let (reg, value, mode) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
                 let reg_value = self.read_reg(reg)?;
 
-                let compute = self.compute(reg_value, value, Op::Div { mode: (mode & 0xFF) as u8 })?;
+                let compute = self.compute(
+                    reg_value,
+                    value,
+                    Op::Div {
+                        mode: (mode & 0xFF) as u8,
+                    },
+                )?;
                 self.write_reg(reg, compute)
-            },
+            }
 
             // MOD
             0x07 => {
                 let (reg, value, mode) = args!(REG, REG_OR_LIT_1, REG_OR_LIT_1);
                 let reg_value = self.read_reg(reg)?;
 
-                let compute = self.compute(reg_value, value, Op::Mod { mode: (mode & 0xFF) as u8 })?;
+                let compute = self.compute(
+                    reg_value,
+                    value,
+                    Op::Mod {
+                        mode: (mode & 0xFF) as u8,
+                    },
+                )?;
                 self.write_reg(reg, compute)
-            },
+            }
 
             // CMP
             0x0D => {
@@ -295,7 +311,7 @@ impl Cpu {
                 self.compute(reg_value, value, Op::Sub)?;
 
                 Ok(())
-            },
+            }
 
             // JPR
             0x0E => {
@@ -304,7 +320,7 @@ impl Cpu {
                 self.regs.pc = self.regs.pc.wrapping_add(bytes as u32);
                 self._cycle_changed_pc = true;
                 Ok(())
-            },
+            }
 
             // LSM
             0x0F => {
@@ -316,7 +332,7 @@ impl Cpu {
                     self.exception(0x09, Some(opcode.into()));
                     Err(())
                 }
-            },
+            }
 
             // ITR
             0x10 => {
@@ -324,7 +340,7 @@ impl Cpu {
 
                 self.exception(0xF0, Some(itr_code as u16));
                 Ok(())
-            },
+            }
 
             // IF, IFN
             0x11 | 0x12 => {
@@ -342,12 +358,15 @@ impl Cpu {
                 }
 
                 Ok(())
-            },
+            }
 
             // IF2
             0x13 => {
                 let (flag_a, flag_b, cond) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
-                let (flag_a, flag_b) = (self.regs.af & (1 << (7 - flag_a)) != 0, self.regs.af & (1 << (7 - flag_b)) != 0);
+                let (flag_a, flag_b) = (
+                    self.regs.af & (1 << (7 - flag_a)) != 0,
+                    self.regs.af & (1 << (7 - flag_b)) != 0,
+                );
 
                 let result = match cond {
                     0x01 => flag_a || flag_b,
@@ -359,7 +378,7 @@ impl Cpu {
                     0x07 => flag_b && !flag_a,
                     _ => {
                         self.exception(0x0D, Some(cond as u8 as u16));
-                        return Err(())
+                        return Err(());
                     }
                 };
 
@@ -368,7 +387,7 @@ impl Cpu {
                 }
 
                 Ok(())
-            },
+            }
 
             // LSA
             0x14 => {
@@ -377,7 +396,7 @@ impl Cpu {
                 let word = self.mem_read(v_addr.wrapping_add(add))?;
 
                 self.write_reg(reg_dest, word)
-            },
+            }
 
             // LEA
             0x15 => {
@@ -385,21 +404,21 @@ impl Cpu {
 
                 self.regs.avr = self.mem_read(v_addr.wrapping_add(add.wrapping_mul(mul)))?;
                 Ok(())
-            },
+            }
 
             // WSA
             0x16 => {
                 let (v_addr, add, val) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
                 self.mem_write(v_addr.wrapping_add(add), val)
-            },
+            }
 
             // WEA
             0x17 => {
                 let (v_addr, add, mul) = args!(REG_OR_LIT_1, REG_OR_LIT_1, REG_OR_LIT_1);
 
                 self.mem_write(v_addr.wrapping_add(add.wrapping_mul(mul)), self.regs.avr)
-            },
+            }
 
             // SRM
             0x18 => {
@@ -409,13 +428,18 @@ impl Cpu {
                 let to_write = self.read_reg(reg_swap)?;
                 self.mem_write(v_addr + add, to_write)?;
                 self.write_reg(reg_swap, old_word)
-            },
+            }
 
             // PUSH
             0x19 => {
                 let word = args!(REG_OR_LIT_2);
 
-                let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
+                let stack_v_addr = if self.sv_mode() {
+                    self.regs.ssp
+                } else {
+                    self.regs.usp
+                }
+                .wrapping_sub(4);
 
                 self.mem_write(stack_v_addr, word)?;
 
@@ -426,7 +450,7 @@ impl Cpu {
                 }
 
                 Ok(())
-            },
+            }
 
             // POP
             0x1A => {
@@ -443,13 +467,18 @@ impl Cpu {
                 };
 
                 self.write_reg(reg_dest, word)
-            },
+            }
 
             // CALL
             0x1B => {
                 let jmp_v_addr = args!(REG_OR_LIT_2);
 
-                let stack_v_addr = if self.sv_mode() { self.regs.ssp } else { self.regs.usp }.wrapping_sub(4);
+                let stack_v_addr = if self.sv_mode() {
+                    self.regs.ssp
+                } else {
+                    self.regs.usp
+                }
+                .wrapping_sub(4);
 
                 self.mem_write(stack_v_addr, self.regs.pc + 4)?;
 
@@ -463,7 +492,7 @@ impl Cpu {
                 self._cycle_changed_pc = true;
 
                 Ok(())
-            },
+            }
 
             // HWD
             0x1C => {
@@ -479,19 +508,19 @@ impl Cpu {
                 let hw_data = self.get_hw_info(hw_info, aux_id)?;
 
                 self.write_reg(reg_dest, hw_data)
-            },
+            }
 
             // CYCLES
             0x1D => {
                 let reg_dest = args!(REG);
                 self.write_reg(reg_dest, self.cycles as u32)
-            },
+            }
 
             // HALT
             0x1E => {
                 self.halted = true;
                 Ok(())
-            },
+            }
 
             // RESET
             0x1F => {
@@ -507,16 +536,17 @@ impl Cpu {
                         for id in 0..self.hwb.count() {
                             self.hwb.reset(id).unwrap();
                         }
-                    },
+                    }
 
                     // Reset a specific component (ID in `avr`)
                     0x1 => {
                         let id = usize::try_from(self.regs.avr)
                             .map_err(|_| self.exception(0x10, Some(self.regs.avr as u16)))?;
 
-                            self.hwb.reset(id)
-                                .ok_or_else(|| self.exception(0x10, Some(self.regs.avr as u16)))?;
-                    },
+                        self.hwb
+                            .reset(id)
+                            .ok_or_else(|| self.exception(0x10, Some(self.regs.avr as u16)))?;
+                    }
 
                     // Reset a component based on a condition (operand ID in `avr`)
                     0x2..=0x4 => {
@@ -529,8 +559,8 @@ impl Cpu {
                                 0x2 => id != ignore_id,
                                 0x3 => id < ignore_id,
                                 0x4 => id > ignore_id,
-                                _ => unreachable!()
-                            }
+                                _ => unreachable!(),
+                            },
                         };
 
                         for id in 0..self.hwb.count() {
@@ -538,10 +568,9 @@ impl Cpu {
                                 self.hwb.reset(id).unwrap();
                             }
                         }
-                    },
+                    }
 
                     _ => {}
-
                 };
 
                 // Reset the processor
@@ -550,9 +579,11 @@ impl Cpu {
                 }
 
                 Ok(())
-            },
+            }
 
-            _ => unreachable!("Internal error: processor encountered an instruction with an opcode greater than 0x1F (> 5 bits)")
+            _ => unreachable!(
+                "Internal error: processor encountered an instruction with an opcode greater than 0x1F (> 5 bits)"
+            ),
         }
     }
 
